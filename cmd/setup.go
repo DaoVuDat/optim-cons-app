@@ -56,15 +56,15 @@ var setupCmd = &cobra.Command{
 
 		objConfigs := []*data.Config{
 			{
-				Name:  single.DIMENSION,
+				Name:  single.SphereDimension,
 				Value: "30",
 			},
 			{
-				Name:  single.UPPER_BOUND,
+				Name:  single.SphereUpperBound,
 				Value: "100",
 			},
 			{
-				Name:  single.LOWER_BOUND,
+				Name:  single.SphereLowerBound,
 				Value: "-100",
 			},
 		}

@@ -1,47 +1,48 @@
-package single
+package multi
 
 import (
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/util"
+	"math"
 	"strconv"
 	"strings"
 )
 
 const (
-	SphereDimension  = "Dimensions"
-	SphereUpperBound = "Upper Bound"
-	SphereLowerBound = "Lower Bound"
+	ZDT1Dimension  = "Dimensions"
+	ZDT1UpperBound = "Upper Bound"
+	ZDT1LowerBound = "Lower Bound"
 )
 
 var SphereConfigs = []data.Config{
 	{
-		Name:               SphereDimension,
+		Name:               ZDT1Dimension,
 		ValidationFunction: util.IsValidPositiveInteger,
 	},
 	{
-		Name:               SphereUpperBound,
+		Name:               ZDT1UpperBound,
 		ValidationFunction: util.IsValidFloatList,
 	},
 	{
-		Name:               SphereLowerBound,
+		Name:               ZDT1LowerBound,
 		ValidationFunction: util.IsValidFloatList,
 	},
 }
 
-const SphereName = "sphere"
+const ZDT1Name = "ZDT1"
 
-type sphere struct {
+type zdt1 struct {
 	Dimensions int
 	UpperBound []float64
 	LowerBound []float64
 }
 
-func (s *sphere) Type() data.TypeProblem {
+func (s *zdt1) Type() data.TypeProblem {
 	return data.Single
 }
 
-func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
+func CreateZDT1(configs []*data.Config) (objectives.Problem, error) {
 	var dimension int
 	var upperBound []float64
 	var lowerBound []float64
@@ -53,9 +54,9 @@ func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 		val = strings.Trim(val, " ")
 
 		switch config.Name {
-		case SphereDimension:
+		case ZDT1Dimension:
 			dimension, _ = strconv.Atoi(val)
-		case SphereLowerBound:
+		case ZDT1LowerBound:
 			if strings.Contains(val, ",") {
 				lbs := strings.Split(val, ",")
 				for _, lbStr := range lbs {
@@ -67,7 +68,7 @@ func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 				lowerBound = append(lowerBound, lb)
 			}
 
-		case SphereUpperBound:
+		case ZDT1UpperBound:
 			if strings.Contains(val, ",") {
 				ubs := strings.Split(val, ",")
 				for _, ubStr := range ubs {
@@ -111,7 +112,7 @@ func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 		}
 	}
 
-	return &sphere{
+	return &zdt1{
 		Dimensions: dimension,
 		UpperBound: upperBound,
 		LowerBound: lowerBound,
@@ -119,37 +120,46 @@ func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 
 }
 
-func (s *sphere) Eval(x []float64) *objectives.Result {
+func (s *zdt1) Eval(x []float64) *objectives.Result {
 	//time.Sleep(time.Second * 1)
+
+	values := make([]float64, 2)
+
 	sum := 0.0
-	for i := 0; i < len(x); i++ {
-		sum += x[i] * x[i]
+
+	for i := 1; i < len(x); i++ {
+		sum += x[i]
 	}
+
+	var g float64 = 1 + 9*sum/float64(s.Dimensions-1)
+
+	values[0] = x[0]
+	values[1] = g * (1 - math.Sqrt(x[0]/g))
 
 	return &objectives.Result{
 		Position: x,
 		Solution: x,
-		Value:    []float64{sum},
+		Value:    values,
 	}
 
 }
 
-func (s *sphere) GetUpperBound() []float64 {
+func (s *zdt1) GetUpperBound() []float64 {
 	return s.UpperBound
 }
 
-func (s *sphere) GetLowerBound() []float64 {
+func (s *zdt1) GetLowerBound() []float64 {
 	return s.LowerBound
 }
 
-func (s *sphere) GetDimension() int {
+func (s *zdt1) GetDimension() int {
 	return s.Dimensions
 }
 
-func (s *sphere) FindMin() bool {
+func (s *zdt1) FindMin() bool {
 	return true
 }
 
-func (s *sphere) NumberOfObjectives() int {
+func (s *zdt1) NumberOfObjectives() int {
 	return 1
 }
