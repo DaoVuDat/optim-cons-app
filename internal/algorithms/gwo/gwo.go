@@ -5,6 +5,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
@@ -24,13 +25,13 @@ const (
 type GWOAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
-	Agents            []*objectives.Result
+	Agents            []*single.SingleResult
 	AParam            float64
-	Alpha             *objectives.Result
-	Beta              *objectives.Result
-	Gamma             *objectives.Result
+	Alpha             *single.SingleResult
+	Beta              *single.SingleResult
+	Gamma             *single.SingleResult
 	Convergence       []float64
-	ObjectiveFunction objectives.Problem
+	ObjectiveFunction single.SingleProblem
 }
 
 var Configs = []data.Config{
@@ -49,7 +50,7 @@ var Configs = []data.Config{
 }
 
 func Create(
-	problem objectives.Problem,
+	problem single.SingleProblem,
 	configs []*data.Config,
 ) (*GWOAlgorithm, error) {
 
@@ -70,7 +71,7 @@ func Create(
 	}
 
 	convergence := make([]float64, numsIters)
-	agents := make([]*objectives.Result, numAgents)
+	agents := make([]*single.SingleResult, numAgents)
 
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
@@ -140,7 +141,7 @@ func (g *GWOAlgorithm) Run() error {
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				g.Agents[agentIdx] = g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
+				g.Agents[agentIdx] = g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position, g.Agents[agentIdx])
 
 			}(agentIdx)
 		}
@@ -170,15 +171,15 @@ func (g *GWOAlgorithm) initialization() {
 		}
 	}
 
-	g.Alpha = &objectives.Result{
+	g.Alpha = &single.SingleResult{
 		Value: vals,
 	}
 
-	g.Beta = &objectives.Result{
+	g.Beta = &single.SingleResult{
 		Value: vals,
 	}
 
-	g.Gamma = &objectives.Result{
+	g.Gamma = &single.SingleResult{
 		Value: vals,
 	}
 
@@ -194,8 +195,12 @@ func (g *GWOAlgorithm) initialization() {
 			}
 
 			// evaluate
-			g.Agents[agentIdx] = g.ObjectiveFunction.Eval(positions)
-			g.Agents[agentIdx].Idx = agentIdx
+			newAgent := &single.SingleResult{
+				Idx:      agentIdx,
+				Position: positions,
+				Solution: positions,
+			}
+			g.Agents[agentIdx] = g.ObjectiveFunction.Eval(positions, newAgent)
 		}(agentIdx)
 	}
 	wg.Wait()
@@ -207,11 +212,11 @@ func (g *GWOAlgorithm) initialization() {
 func (g *GWOAlgorithm) findBest() {
 	for i := range g.Agents {
 		if g.Agents[i].Value[0] < g.Alpha.Value[0] {
-			g.Alpha = util.CopyAgent(g.Agents[i])
+			g.Alpha = g.Agents[i].CopyAgent()
 		} else if g.Agents[i].Value[0] < g.Beta.Value[0] {
-			g.Beta = util.CopyAgent(g.Agents[i])
+			g.Beta = g.Agents[i].CopyAgent()
 		} else if g.Agents[i].Value[0] < g.Gamma.Value[0] {
-			g.Gamma = util.CopyAgent(g.Agents[i])
+			g.Gamma = g.Agents[i].CopyAgent()
 		}
 	}
 }

@@ -12,7 +12,9 @@ import (
 	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/algorithms/aha"
 	"golang-moaha-construction/internal/algorithms/ga"
+	"golang-moaha-construction/internal/algorithms/moaha"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/multi"
 	"golang-moaha-construction/internal/objectives/single"
 	"os"
 )
@@ -115,6 +117,46 @@ var setupCmd = &cobra.Command{
 		}
 
 		algorithm, _ = ga.Create(objectiveFunction, algoConfigs)
+		err = algorithm.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Multi-objective
+		multiConfigs := []*data.Config{
+			{
+				Name:  multi.ZDT1Dimension,
+				Value: "30",
+			},
+			{
+				Name:  multi.ZDT1UpperBound,
+				Value: "1",
+			},
+			{
+				Name:  multi.ZDT1LowerBound,
+				Value: "0",
+			},
+		}
+
+		obj, _ := multi.CreateZDT1(multiConfigs)
+
+		algoConfigs = []*data.Config{
+			{
+				Name:  moaha.NumAgents,
+				Value: "100",
+			},
+			{
+				Name:  moaha.NumIters,
+				Value: "300",
+			},
+			{
+				Name:  moaha.ArchiveSize,
+				Value: "100",
+			},
+		}
+
+		algorithm, _ = moaha.Create(obj, algoConfigs)
 		err = algorithm.Run()
 		if err != nil {
 			fmt.Println(err)

@@ -5,16 +5,14 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
-
-var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 const (
 	numberOfObjective = 1
@@ -26,10 +24,10 @@ const (
 type AHAAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
-	Agents            []*objectives.Result
-	BestResult        *objectives.Result
+	Agents            []*single.SingleResult
+	BestResult        *single.SingleResult
 	Convergence       []float64
-	ObjectiveFunction objectives.Problem
+	ObjectiveFunction single.SingleProblem
 }
 
 var Configs = []data.Config{
@@ -44,7 +42,7 @@ var Configs = []data.Config{
 }
 
 func Create(
-	problem objectives.Problem,
+	problem single.SingleProblem,
 	configs []*data.Config,
 ) (*AHAAlgorithm, error) {
 
@@ -62,7 +60,7 @@ func Create(
 	}
 
 	convergence := make([]float64, numsIters)
-	agents := make([]*objectives.Result, numAgents)
+	agents := make([]*single.SingleResult, numAgents)
 
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
@@ -100,16 +98,16 @@ func (a *AHAAlgorithm) Run() error {
 		//wg.Add(a.NumberOfAgents)
 		for agentIdx := range a.Agents {
 
-			r := rnd.Float64()
+			r := rand.Float64()
 
 			if r < 1.0/3.0 {
 				// diagonal flight
 				randDim := util.RandN(dimensions)
 				randNum := 0
 				if dimensions > 3 {
-					randNum = rnd.Intn(dimensions - 1)
+					randNum = rand.Intn(dimensions - 1)
 				} else {
-					randNum = rnd.Intn(dimensions)
+					randNum = rand.Intn(dimensions)
 				}
 				for i := 0; i < randNum; i++ {
 					idx := randDim[i]
@@ -122,13 +120,13 @@ func (a *AHAAlgorithm) Run() error {
 				}
 			} else {
 				// axial flight
-				randNum := rnd.Intn(dimensions)
+				randNum := rand.Intn(dimensions)
 				for i := 0; i < randNum; i++ {
 					directVector[agentIdx][i] = 1
 				}
 			}
 
-			r = rnd.Float64()
+			r = rand.Float64()
 
 			if r < 0.5 {
 				// guided foraging
@@ -155,13 +153,12 @@ func (a *AHAAlgorithm) Run() error {
 
 			for i := range a.Agents[maxIdx].Position {
 				a.Agents[maxIdx].Position[i] =
-					a.ObjectiveFunction.GetLowerBound()[i] + rnd.Float64()*
+					a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
 						(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
 			}
 
 			// evaluate
-			a.Agents[maxIdx] = a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
-			a.Agents[maxIdx].Idx = maxIdx
+			a.Agents[maxIdx] = a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position, a.Agents[maxIdx])
 
 			for i := range visitTable[maxIdx] {
 				visitTable[maxIdx][i] += 1
@@ -223,7 +220,7 @@ func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]f
 		panic("len(maxValIdxs) = 0")
 	}
 
-	r := rnd.NormFloat64()
+	r := rand.NormFloat64()
 	newPos := make([]float64, a.ObjectiveFunction.GetDimension())
 	for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
 		newPos[i] = a.Agents[targetFoodIdx].Position[i] + r*math.Round(directVector[agentIdx][i])*
@@ -232,10 +229,10 @@ func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]f
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos)
+	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
-		a.Agents[agentIdx] = util.CopyAgent(newAgent)
+		a.Agents[agentIdx] = newAgent.CopyAgent()
 
 		for i := range visitTable[agentIdx] {
 			if i == targetFoodIdx {
@@ -263,7 +260,7 @@ func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]f
 }
 
 func (a *AHAAlgorithm) territoryForaging(visitTable [][]float64, directVector [][]float64, agentIdx int) {
-	r := rnd.NormFloat64()
+	r := rand.NormFloat64()
 	newPos := make([]float64, a.ObjectiveFunction.GetDimension())
 	for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
 		newPos[i] = a.Agents[agentIdx].Position[i] + r*math.Round(directVector[agentIdx][i])*a.Agents[agentIdx].Position[i]
@@ -271,10 +268,10 @@ func (a *AHAAlgorithm) territoryForaging(visitTable [][]float64, directVector []
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos)
+	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
-		a.Agents[agentIdx] = util.CopyAgent(newAgent)
+		a.Agents[agentIdx] = newAgent.CopyAgent()
 
 		for i := range visitTable[agentIdx] {
 			visitTable[agentIdx][i] += 1
@@ -306,7 +303,7 @@ func (a *AHAAlgorithm) initialization() {
 		}
 	}
 
-	a.BestResult = &objectives.Result{
+	a.BestResult = &single.SingleResult{
 		Value: vals,
 	}
 
@@ -317,13 +314,18 @@ func (a *AHAAlgorithm) initialization() {
 			defer wg.Done()
 			positions := make([]float64, a.ObjectiveFunction.GetDimension())
 			for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
-				positions[i] = a.ObjectiveFunction.GetLowerBound()[i] + rnd.Float64()*
+				positions[i] = a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
 					(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
 			}
 
 			// evaluate
-			a.Agents[agentIdx] = a.ObjectiveFunction.Eval(positions)
-			a.Agents[agentIdx].Idx = agentIdx
+			newAgent := &single.SingleResult{
+				Idx:      agentIdx,
+				Position: positions,
+				Solution: positions,
+			}
+
+			a.Agents[agentIdx] = a.ObjectiveFunction.Eval(positions, newAgent)
 		}(agentIdx)
 	}
 	wg.Wait()
@@ -335,7 +337,7 @@ func (a *AHAAlgorithm) initialization() {
 func (a *AHAAlgorithm) findBest() {
 	for i := range a.Agents {
 		if a.Agents[i].Value[0] < a.BestResult.Value[0] {
-			a.BestResult = util.CopyAgent(a.Agents[i])
+			a.BestResult = a.Agents[i].CopyAgent()
 		}
 	}
 }

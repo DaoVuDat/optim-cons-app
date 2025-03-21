@@ -10,17 +10,8 @@ var (
 	ErrInvalidNumberOfObjectives = errors.New("mismatch number of objectives")
 )
 
-type Result struct {
-	Idx         int
-	Position    []float64
-	Solution    []float64
-	Value       []float64
-	Constraints []float64
-	Penalty     []float64
-}
-
-type Problem interface {
-	Eval(x []float64) *Result
+type Problem[T any] interface {
+	Eval(pos []float64, x *T) *T
 	GetUpperBound() []float64
 	GetLowerBound() []float64
 	GetDimension() int

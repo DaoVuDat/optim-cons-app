@@ -21,11 +21,11 @@ var SphereConfigs = []data.Config{
 	},
 	{
 		Name:               SphereUpperBound,
-		ValidationFunction: util.IsValidFloatList,
+		ValidationFunction: util.IsValidFList,
 	},
 	{
 		Name:               SphereLowerBound,
-		ValidationFunction: util.IsValidFloatList,
+		ValidationFunction: util.IsValidFList,
 	},
 }
 
@@ -41,7 +41,7 @@ func (s *sphere) Type() data.TypeProblem {
 	return data.Single
 }
 
-func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
+func CreateSphere(configs []*data.Config) (objectives.Problem[SingleResult], error) {
 	var dimension int
 	var upperBound []float64
 	var lowerBound []float64
@@ -119,14 +119,16 @@ func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 
 }
 
-func (s *sphere) Eval(x []float64) *objectives.Result {
+func (s *sphere) Eval(x []float64, agent *SingleResult) *SingleResult {
 	//time.Sleep(time.Second * 1)
+
 	sum := 0.0
 	for i := 0; i < len(x); i++ {
 		sum += x[i] * x[i]
 	}
 
-	return &objectives.Result{
+	return &SingleResult{
+		Idx:      agent.Idx,
 		Position: x,
 		Solution: x,
 		Value:    []float64{sum},

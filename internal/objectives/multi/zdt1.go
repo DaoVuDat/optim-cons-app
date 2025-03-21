@@ -3,6 +3,7 @@ package multi
 import (
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"strconv"
@@ -22,11 +23,11 @@ var SphereConfigs = []data.Config{
 	},
 	{
 		Name:               ZDT1UpperBound,
-		ValidationFunction: util.IsValidFloatList,
+		ValidationFunction: util.IsValidFList,
 	},
 	{
 		Name:               ZDT1LowerBound,
-		ValidationFunction: util.IsValidFloatList,
+		ValidationFunction: util.IsValidFList,
 	},
 }
 
@@ -39,10 +40,10 @@ type zdt1 struct {
 }
 
 func (s *zdt1) Type() data.TypeProblem {
-	return data.Single
+	return data.Multi
 }
 
-func CreateZDT1(configs []*data.Config) (objectives.Problem, error) {
+func CreateZDT1(configs []*data.Config) (objectives.Problem[MultiResult], error) {
 	var dimension int
 	var upperBound []float64
 	var lowerBound []float64
@@ -120,7 +121,7 @@ func CreateZDT1(configs []*data.Config) (objectives.Problem, error) {
 
 }
 
-func (s *zdt1) Eval(x []float64) *objectives.Result {
+func (s *zdt1) Eval(x []float64, agent *MultiResult) *MultiResult {
 	//time.Sleep(time.Second * 1)
 
 	values := make([]float64, 2)
@@ -136,10 +137,18 @@ func (s *zdt1) Eval(x []float64) *objectives.Result {
 	values[0] = x[0]
 	values[1] = g * (1 - math.Sqrt(x[0]/g))
 
-	return &objectives.Result{
-		Position: x,
-		Solution: x,
-		Value:    values,
+	return &MultiResult{
+		SingleResult: single.SingleResult{
+			Position: x,
+			Solution: x,
+			Value:    values,
+			Idx:      agent.Idx,
+		},
+		CrowdingDistance: agent.CrowdingDistance,
+		Dominated:        agent.Dominated,
+		Rank:             agent.Rank,
+		DominationSet:    agent.DominationSet,
+		DominatedCount:   agent.DominatedCount,
 	}
 
 }

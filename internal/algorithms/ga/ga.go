@@ -2,6 +2,7 @@ package ga
 
 import (
 	"fmt"
+	"golang-moaha-construction/internal/objectives/single"
 	"math"
 	"math/rand"
 	"sort"
@@ -29,10 +30,10 @@ type GAAlgorithm struct {
 	CrossoverRate     float64
 	MutationRate      float64
 	ElitismCount      int
-	Population        []*objectives.Result
+	Population        []*single.SingleResult
 	Convergence       []float64
-	ObjectiveFunction objectives.Problem
-	Best              *objectives.Result
+	ObjectiveFunction single.SingleProblem
+	Best              *single.SingleResult
 }
 
 var Configs = []data.Config{
@@ -58,7 +59,7 @@ var Configs = []data.Config{
 	},
 }
 
-func Create(problem objectives.Problem, configs []*data.Config) (*GAAlgorithm, error) {
+func Create(problem single.SingleProblem, configs []*data.Config) (*GAAlgorithm, error) {
 	var popSize, maxIters, elitismCount int
 	var crossoverRate, mutationRate float64
 
@@ -79,7 +80,7 @@ func Create(problem objectives.Problem, configs []*data.Config) (*GAAlgorithm, e
 	}
 
 	convergence := make([]float64, maxIters)
-	population := make([]*objectives.Result, popSize)
+	population := make([]*single.SingleResult, popSize)
 
 	// This implementation supports only one objective.
 	if problem.NumberOfObjectives() != 1 {
@@ -114,12 +115,12 @@ func (ga *GAAlgorithm) Run() error {
 
 	// Main GA loop (each iteration represents a generation)
 	for iter := 0; iter < ga.MaxIterations; iter++ {
-		newPopulation := make([]*objectives.Result, ga.PopulationSize)
+		newPopulation := make([]*single.SingleResult, ga.PopulationSize)
 
 		// Elitism: preserve the best individuals.
 		sortedPop := ga.sortPopulationByFitness()
 		for i := 0; i < ga.ElitismCount; i++ {
-			newPopulation[i] = util.CopyAgent(sortedPop[i])
+			newPopulation[i] = sortedPop[i].CopyAgent()
 		}
 
 		// Generate offspring for the rest of the population.
@@ -146,8 +147,13 @@ func (ga *GAAlgorithm) Run() error {
 				// Ensure the child is within boundaries.
 				outOfBoundaries(childPos, lowerBound, upperBound)
 				// Evaluate the child solution.
-				child := ga.ObjectiveFunction.Eval(childPos)
-				child.Idx = idx
+
+				child := &single.SingleResult{
+					Idx:      idx,
+					Position: childPos,
+					Solution: childPos,
+				}
+				child = ga.ObjectiveFunction.Eval(childPos, child)
 				newPopulation[idx] = child
 			}(i)
 		}
@@ -177,8 +183,14 @@ func (ga *GAAlgorithm) initialization() {
 			for d := 0; d < dim; d++ {
 				pos[d] = lowerBound[d] + rand.Float64()*(upperBound[d]-lowerBound[d])
 			}
-			ga.Population[idx] = ga.ObjectiveFunction.Eval(pos)
-			ga.Population[idx].Idx = idx
+
+			newGene := &single.SingleResult{
+				Idx:      idx,
+				Position: pos,
+				Solution: pos,
+			}
+
+			ga.Population[idx] = ga.ObjectiveFunction.Eval(pos, newGene)
 		}(i)
 	}
 	wg.Wait()
@@ -192,11 +204,11 @@ func (ga *GAAlgorithm) findBest() {
 			best = ga.Population[i]
 		}
 	}
-	ga.Best = util.CopyAgent(best)
+	ga.Best = best.CopyAgent()
 }
 
-func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
-	sorted := make([]*objectives.Result, len(ga.Population))
+func (ga *GAAlgorithm) sortPopulationByFitness() []*single.SingleResult {
+	sorted := make([]*single.SingleResult, len(ga.Population))
 	copy(sorted, ga.Population)
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i].Value[0] < sorted[j].Value[0]
@@ -205,7 +217,7 @@ func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
 }
 
 // tournamentSelection selects the best individual among a random sample.
-func tournamentSelection(pop []*objectives.Result, tournamentSize int) *objectives.Result {
+func tournamentSelection(pop []*single.SingleResult, tournamentSize int) *single.SingleResult {
 	popSize := len(pop)
 	best := pop[rand.Intn(popSize)]
 	for i := 1; i < tournamentSize; i++ {

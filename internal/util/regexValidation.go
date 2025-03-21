@@ -37,7 +37,7 @@ func IsValidBoolean(input string) error {
 	}
 }
 
-func IsValidFloatList(input string) error {
+func IsValidFList(input string) error {
 	re := regexp.MustCompile(`^[0-9]+(\.[0-9]+)?(,[0-9]+(\.[0-9]+)?)*$`)
 
 	if re.MatchString(input) {
