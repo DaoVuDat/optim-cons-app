@@ -100,14 +100,14 @@ func GetNonDominatedAgents(agents []*MultiResult) []*MultiResult {
 	res := make([]*MultiResult, 0)
 	for _, agent := range agents {
 		if !agent.Dominated {
-			agents = append(agents, agent.CopyAgent())
+			res = append(res, agent.CopyAgent())
 		}
 	}
 
 	return res
 }
 
-func NonDominatedSort(agents []*MultiResult) [][]int {
+func NonDominatedSort(agents []*MultiResult) ([]*MultiResult, [][]int) {
 	// clear domination set and domination count
 	for i := range agents {
 		agents[i].DominationSet = make([]int, 0)
@@ -136,7 +136,7 @@ func NonDominatedSort(agents []*MultiResult) [][]int {
 
 		if agents[i].DominatedCount == 0 {
 			paretoFront[0] = append(paretoFront[0], agents[i].Idx)
-			agents[i].Rank = 1
+			agents[i].Rank = 0
 		}
 	}
 
@@ -154,7 +154,7 @@ func NonDominatedSort(agents []*MultiResult) [][]int {
 
 				if q.DominatedCount == 0 {
 					Q = append(Q, q.Idx)
-					q.Rank = (k + 1) + 1
+					q.Rank = k + 1
 				}
 			}
 		}
@@ -168,7 +168,7 @@ func NonDominatedSort(agents []*MultiResult) [][]int {
 		k++
 	}
 
-	return paretoFront
+	return agents, paretoFront
 }
 
 type SortedDEDC struct {
