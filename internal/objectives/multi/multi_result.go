@@ -61,6 +61,18 @@ func (agent *MultiResult) Dominates(other *MultiResult) bool {
 	return anyConstraint
 }
 
+func MergeAgents(a []*MultiResult, b []*MultiResult) []*MultiResult {
+	res := make([]*MultiResult, len(a)+len(b))
+	for i := 0; i < len(a); i++ {
+		res[i] = a[i]
+	}
+
+	for i := 0; i < len(b); i++ {
+		res[i+len(a)] = b[i]
+	}
+
+	return res
+}
 func DetermineDomination(agents []*MultiResult) []*MultiResult {
 	// clear the dominated
 	for i := range agents {
@@ -118,7 +130,7 @@ func NonDominatedSort(agents []*MultiResult) ([]*MultiResult, [][]int) {
 		make([]int, 0),
 	}
 
-	for i := 0; i < len(agents)-1; i++ {
+	for i := 0; i < len(agents); i++ {
 		for j := i + 1; j < len(agents); j++ {
 			p := agents[i]
 			q := agents[j]

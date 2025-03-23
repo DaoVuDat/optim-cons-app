@@ -1,15 +1,14 @@
 package moaha
 
 import (
-	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/objectives/multi"
 	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -71,10 +70,6 @@ func Create(
 
 	archive := make([]*multi.MultiResult, 0, archiveSize)
 
-	if numberOfObjective != problem.NumberOfObjectives() {
-		return nil, objectives.ErrInvalidNumberOfObjectives
-	}
-
 	return &MOAHAAlgorithm{
 		NumberOfAgents:    numAgents,
 		NumberOfIter:      numsIters,
@@ -82,6 +77,7 @@ func Create(
 		ObjectiveFunction: problem,
 		Agents:            agents,
 		Archive:           archive,
+		ArchiveSize:       archiveSize,
 	}, nil
 }
 
@@ -106,6 +102,11 @@ func (a *MOAHAAlgorithm) Run() error {
 	visitTable := initializeNMMatrix(a.NumberOfAgents, a.NumberOfAgents)
 
 	for l < a.NumberOfIter {
+		newPop := make([]*multi.MultiResult, 0)
+		agents, paretoFront := multi.NonDominatedSort(a.Agents)
+
+		a.Agents = agents
+
 		// direct vector
 		directVector := initializeNMMatrix(a.NumberOfAgents, dimensions)
 
@@ -114,6 +115,7 @@ func (a *MOAHAAlgorithm) Run() error {
 
 			r := rand.Float64()
 
+			//fmt.Println("")
 			if r < 1.0/3.0 {
 				// diagonal flight
 				randDim := util.RandN(dimensions)
@@ -123,8 +125,13 @@ func (a *MOAHAAlgorithm) Run() error {
 				} else {
 					randNum = rand.Intn(dimensions)
 				}
+
+				//test := []int{19, 28, 27, 7, 29, 20, 9, 4, 12, 15, 21, 6, 13, 25, 2, 23, 8, 26, 30, 1, 5, 14, 17, 24, 16, 10, 18, 22, 11, 3}
+
 				for i := 0; i < randNum; i++ {
 					idx := randDim[i]
+					//idx = test[i] - 1 // test
+
 					directVector[agentIdx][idx] = 1
 				}
 			} else if r > 2.0/3.0 {
@@ -135,19 +142,20 @@ func (a *MOAHAAlgorithm) Run() error {
 			} else {
 				// axial flight
 				randNum := rand.Intn(dimensions)
+				//fmt.Println()
 				for i := 0; i < randNum; i++ {
 					directVector[agentIdx][i] = 1
 				}
 			}
 
 			r = rand.Float64()
-
+			//fmt.Println()
 			if r < 0.5 {
 				// guided foraging
-				a.guidedForaging(visitTable, directVector, agentIdx)
+				a.guidedForaging(visitTable, directVector, agentIdx, paretoFront, newPop)
 			} else {
 				// territory foraging
-				a.territoryForaging(visitTable, directVector, agentIdx)
+				a.territoryForaging(visitTable, directVector, agentIdx, paretoFront, newPop)
 			}
 
 		}
@@ -156,41 +164,48 @@ func (a *MOAHAAlgorithm) Run() error {
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			maxVal := -math.MaxFloat64
-			maxIdx := 0
-			for i := range a.Agents {
-				if a.Agents[i].Value[0] > maxVal {
-					maxVal = a.Agents[i].Value[0]
-					maxIdx = i
+			a.Agents, paretoFront = multi.NonDominatedSort(a.Agents)
+
+			for _, idx := range paretoFront[len(paretoFront)-1] {
+
+				for i := range a.Agents[idx].Position {
+					a.Agents[idx].Position[i] =
+						a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
+							(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
+				}
+				// evaluate
+				a.Agents[idx] = a.ObjectiveFunction.Eval(a.Agents[idx].Position, a.Agents[idx])
+
+				for i := range visitTable[idx] {
+					visitTable[idx][i] += 1
+				}
+
+				maxVals := maxRowMatrix(visitTable)
+				for i := range visitTable[idx] {
+					if i == idx {
+						continue
+					}
+					visitTable[i][idx] = maxVals[i] + 1
 				}
 			}
 
-			for i := range a.Agents[maxIdx].Position {
-				a.Agents[maxIdx].Position[i] =
-					a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
-						(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
-			}
-
-			// evaluate
-			a.Agents[maxIdx] = a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position, a.Agents[maxIdx])
-
-			for i := range visitTable[maxIdx] {
-				visitTable[maxIdx][i] += 1
-			}
-
-			maxVals := maxRowMatrix(visitTable)
-			for i := range visitTable[maxIdx] {
-				if i == maxIdx {
-					continue
-				}
-				visitTable[i][maxIdx] = maxVals[i] + 1
-			}
 		}
 
-		a.findBest()
+		// Determine Domination with a.Agents and newPop
+		newSolutions := multi.DetermineDomination(multi.MergeAgents(a.Agents, newPop))
+		// Get Non-Dominated -> newNonDominatedPop
+		newNonDominatedPop := multi.GetNonDominatedAgents(newSolutions)
 
-		a.Convergence[l] = a.BestResult.Value[0]
-		bar.Describe(fmt.Sprintf("Iter %d: %e", l+1, a.BestResult.Value[0]))
+		// Determine Domination with newDominatedPop and a.Archive
+		newSolutions = multi.DetermineDomination(multi.MergeAgents(newNonDominatedPop, a.Archive))
+		// Get Non-Dominated -> a.Archive
+		a.Archive = multi.GetNonDominatedAgents(newSolutions)
+
+		if len(a.Archive) > a.ArchiveSize {
+			a.Archive = multi.DECD(a.Archive, len(a.Archive)-a.ArchiveSize)
+		}
+
+		//bar.Describe(fmt.Sprintf("Iter %d: %e", l+1, a.BestResult.Value[0]))
 		bar.Add(1)
 
 		l++
@@ -199,7 +214,9 @@ func (a *MOAHAAlgorithm) Run() error {
 	return nil
 }
 
-func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int) {
+func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*multi.MultiResult) {
+	nonDominatedMUT := make([]*multi.MultiResult, 0)
+
 	vals := visitTable[agentIdx]
 	maxVal := -math.MaxFloat64
 	maxValIdxs := make([]int, 0)
@@ -218,15 +235,21 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 
 	targetFoodIdx := 0
 	if len(maxValIdxs) >= 2 {
-		candidateIdx := maxValIdxs[0]
-		minFitness := a.Agents[candidateIdx].Value[0]
 
-		for i := 1; i < len(maxValIdxs); i++ {
-			if a.Agents[maxValIdxs[i]].Value[0] < minFitness {
-				minFitness = a.Agents[maxValIdxs[i]].Value[0]
-				candidateIdx = maxValIdxs[i]
+		candidates := make([]*multi.MultiResult, 0)
+		for _, idx := range maxValIdxs {
+			candidates = append(candidates, a.Agents[idx])
+		}
+
+		candidates = multi.DetermineDomination(candidates)
+		for _, candidate := range candidates {
+			if !candidate.Dominated {
+				nonDominatedMUT = append(nonDominatedMUT, candidate)
 			}
 		}
+
+		candidateIdx := rand.Intn(len(nonDominatedMUT))
+		//fmt.Println()
 		targetFoodIdx = candidateIdx
 	} else if len(maxValIdxs) == 1 {
 		targetFoodIdx = maxValIdxs[0]
@@ -245,7 +268,32 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 
 	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
 
-	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
+	// TODO: return the k-th rank of current agent
+	// Sanity check the index of current agent
+	frontIdx := 0
+	for i := range paretoFront {
+		if slices.Contains(paretoFront[i], agentIdx) {
+			frontIdx = i
+			break
+		}
+	}
+
+	// compare the new value to other agents in the same front
+	dominatedFlag := 0
+	for _, v := range paretoFront[frontIdx] {
+		if newAgent.Dominates(a.Agents[v]) {
+			dominatedFlag = 1
+			break
+		} else if a.Agents[v].Dominates(newAgent) {
+			dominatedFlag = -1
+			break
+		}
+	}
+
+	newR := rand.Float64()
+	if dominatedFlag == 1 || (dominatedFlag == 0 && newR > 0.5) {
+		tPop = append(tPop, a.Agents[agentIdx].CopyAgent())
+
 		a.Agents[agentIdx] = newAgent.CopyAgent()
 
 		for i := range visitTable[agentIdx] {
@@ -270,21 +318,59 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 			}
 			visitTable[agentIdx][i] += 1
 		}
+
+		tPop = append(tPop, newAgent.CopyAgent())
 	}
 }
 
-func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector [][]float64, agentIdx int) {
-	r := rand.NormFloat64()
+func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*multi.MultiResult) {
+	r1 := rand.Float64()
+	r2 := rand.NormFloat64()
 	newPos := make([]float64, a.ObjectiveFunction.GetDimension())
-	for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
-		newPos[i] = a.Agents[agentIdx].Position[i] + r*math.Round(directVector[agentIdx][i])*a.Agents[agentIdx].Position[i]
+	if r1 > 0.5 {
+		for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
+			newPos[i] = a.Agents[agentIdx].Position[i] + r2*math.Round(directVector[agentIdx][i])*a.Agents[agentIdx].Position[i]
+		}
+	} else {
+		// randomly selected from archive
+		selectedIdx := rand.Intn(len(a.Archive))
+		agentInArchive := a.Archive[selectedIdx]
+		for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
+			newPos[i] = agentInArchive.Position[i] + r2*math.Round(directVector[agentIdx][i])*agentInArchive.Position[i]
+		}
 	}
 
 	a.outOfBoundaries(newPos)
 
 	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
 
-	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
+	// TODO: return the k-th rank of current agent
+	// Sanity check the index of current agent
+	frontIdx := 0
+	for i := range paretoFront {
+		if slices.Contains(paretoFront[i], agentIdx) {
+			frontIdx = i
+			break
+		}
+	}
+
+	// compare the new value to other agents in the same front
+	dominatedFlag := 0
+	for _, v := range paretoFront[frontIdx] {
+		if newAgent.Dominates(a.Agents[v]) {
+			dominatedFlag = 1
+			break
+		} else if a.Agents[v].Dominates(newAgent) {
+			dominatedFlag = -1
+			break
+		}
+	}
+
+	newR := rand.Float64()
+	//fmt.Println()
+	if dominatedFlag == 1 || (dominatedFlag == 0 && newR > 0.5) {
+		tPop = append(tPop, a.Agents[agentIdx].CopyAgent())
+
 		a.Agents[agentIdx] = newAgent.CopyAgent()
 
 		for i := range visitTable[agentIdx] {
@@ -303,6 +389,8 @@ func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector 
 		for i := range visitTable[agentIdx] {
 			visitTable[agentIdx][i] += 1
 		}
+
+		tPop = append(tPop, newAgent.CopyAgent())
 	}
 }
 
@@ -347,6 +435,9 @@ func (a *MOAHAAlgorithm) initialization() {
 		}(agentIdx)
 	}
 	wg.Wait()
+
+	// for testing
+	//a.Agents = GenerateSampleData()
 
 	//a.findBest()
 }
@@ -394,4 +485,36 @@ func maxRowMatrix(matrix [][]float64) []float64 {
 		res[i] = maxVal
 	}
 	return res
+}
+
+// / TEST DATA
+var positions = [][]float64{
+	{0.00954412393479120, 0.233841448051443, 0.599638846212200},
+	{0.834358463080465, 0.0425958199795087, 0.472012727659440},
+	{0.0750859712826976, 0.915428283338453, 0.246150381698419},
+	{0.240153814932937, 0.415171957056320, 0.321363186897567},
+	{0.160515492126281, 0.283016309280290, 0.0463956624669029},
+}
+
+var values = [][]float64{
+	{0.00954412393479120, 4.53772729578733},
+	{0.834358463080465, 1.65245422855959},
+	{0.0750859712826976, 5.54331444056112},
+	{0.240153814932937, 3.29650757510864},
+	{0.160515492126281, 1.85111995937698},
+}
+
+func GenerateSampleData() []*multi.MultiResult {
+	agents := make([]*multi.MultiResult, len(positions))
+	for i := 0; i < len(positions); i++ {
+		agents[i] = &multi.MultiResult{
+			SingleResult: single.SingleResult{
+				Position: positions[i],
+				Value:    values[i],
+				Idx:      i,
+			},
+		}
+	}
+
+	return agents
 }

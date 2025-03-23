@@ -16,7 +16,7 @@ const (
 	ZDT1LowerBound = "Lower Bound"
 )
 
-var SphereConfigs = []data.Config{
+var ZDT1Configs = []data.Config{
 	{
 		Name:               ZDT1Dimension,
 		ValidationFunction: util.IsValidPositiveInteger,
@@ -170,5 +170,5 @@ func (s *zdt1) FindMin() bool {
 }
 
 func (s *zdt1) NumberOfObjectives() int {
-	return 1
+	return 2
 }

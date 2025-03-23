@@ -17,6 +17,7 @@ import (
 	"golang-moaha-construction/internal/objectives/multi"
 	"golang-moaha-construction/internal/objectives/single"
 	"os"
+	"time"
 )
 
 const logo = `
@@ -87,11 +88,11 @@ var setupCmd = &cobra.Command{
 		var algorithm algorithms.Algorithm
 
 		algorithm, _ = aha.Create(objectiveFunction, algoConfigs)
-		err := algorithm.Run()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		//err := algorithm.Run()
+		//if err != nil {
+		//	fmt.Println(err)
+		//	os.Exit(1)
+		//}
 
 		algoConfigs = []*data.Config{
 			{
@@ -117,11 +118,11 @@ var setupCmd = &cobra.Command{
 		}
 
 		algorithm, _ = ga.Create(objectiveFunction, algoConfigs)
-		err = algorithm.Run()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		//err = algorithm.Run()
+		//if err != nil {
+		//	fmt.Println(err)
+		//	os.Exit(1)
+		//}
 
 		// Multi-objective
 		multiConfigs := []*data.Config{
@@ -144,23 +145,48 @@ var setupCmd = &cobra.Command{
 		algoConfigs = []*data.Config{
 			{
 				Name:  moaha.NumAgents,
-				Value: "100",
+				Value: "1000",
 			},
 			{
 				Name:  moaha.NumIters,
-				Value: "300",
+				Value: "1000",
 			},
 			{
 				Name:  moaha.ArchiveSize,
-				Value: "100",
+				Value: "300",
 			},
 		}
 
 		algorithm, _ = moaha.Create(obj, algoConfigs)
-		err = algorithm.Run()
+		now := time.Now()
+		err := algorithm.Run()
+		fmt.Println(time.Since(now))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		}
+
+		// show results
+		moahaAlgo := algorithm.(*moaha.MOAHAAlgorithm)
+
+		fmt.Println("Number Of Archived Agents: ", len(moahaAlgo.Archive))
+		fmt.Println("Number Of Agents: ", len(moahaAlgo.Agents))
+		fmt.Println("Number Of Iterations: ", moahaAlgo.NumberOfIter)
+		fmt.Println("Number Of Dimension: ", len(moahaAlgo.Agents[0].Position))
+
+		for idx := 0; idx < obj.NumberOfObjectives(); idx++ {
+
+			for i, agent := range moahaAlgo.Archive {
+
+				fmt.Printf("  %f", agent.Value[idx])
+				if i != len(moahaAlgo.Archive)-1 {
+					fmt.Printf(",")
+				} else {
+					fmt.Printf(";")
+				}
+
+			}
+			fmt.Printf("\n\n\n")
 		}
 
 		return
