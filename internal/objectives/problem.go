@@ -10,6 +10,11 @@ var (
 	ErrInvalidNumberOfObjectives = errors.New("mismatch number of objectives")
 )
 
+type LoadDataType struct {
+	Name  string
+	Value string
+}
+
 type Problem[T any] interface {
 	Eval(pos []float64, x *T) *T
 	GetUpperBound() []float64
@@ -18,4 +23,5 @@ type Problem[T any] interface {
 	FindMin() bool
 	NumberOfObjectives() int
 	Type() data.TypeProblem
+	LoadData(configs []data.Config) error
 }

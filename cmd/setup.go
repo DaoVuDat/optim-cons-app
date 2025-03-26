@@ -145,15 +145,15 @@ var setupCmd = &cobra.Command{
 		algoConfigs = []*data.Config{
 			{
 				Name:  moaha.NumAgents,
-				Value: "1000",
+				Value: "300",
 			},
 			{
 				Name:  moaha.NumIters,
-				Value: "1000",
+				Value: "500",
 			},
 			{
 				Name:  moaha.ArchiveSize,
-				Value: "300",
+				Value: "100",
 			},
 		}
 
@@ -291,7 +291,7 @@ var setupCmd = &cobra.Command{
 		//		fmt.Println(errorStyle.Render(err.Error()))
 		//		os.Exit(1)
 		//	}
-		//case "cons-lay":
+		//case "conslay":
 		//	//problem = objectives.NewConsLay()
 		//}
 		//

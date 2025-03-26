@@ -155,3 +155,7 @@ func (s *sphere) FindMin() bool {
 func (s *sphere) NumberOfObjectives() int {
 	return 1
 }
+
+func (s *sphere) LoadData(configs []data.Config) error {
+	return nil
+}

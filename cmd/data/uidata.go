@@ -11,7 +11,7 @@ import (
 
 var Objectives = []list.Item{
 	data.NewItem(single.SphereName, "Optimize Sphere Function"),
-	data.NewItem("cons-lay", "Optimize Construction Layout"),
+	data.NewItem("conslay", "Optimize Construction Layout"),
 }
 
 var Algorithms = []list.Item{

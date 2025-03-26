@@ -172,3 +172,7 @@ func (s *zdt1) FindMin() bool {
 func (s *zdt1) NumberOfObjectives() int {
 	return 2
 }
+
+func (s *zdt1) LoadData(configs []data.Config) error {
+	return nil
+}
