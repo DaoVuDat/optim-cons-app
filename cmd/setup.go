@@ -9,15 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	listui "golang-moaha-construction/cmd/ui/list"
 	multiinput "golang-moaha-construction/cmd/ui/multiInput"
-	"golang-moaha-construction/internal/algorithms"
-	"golang-moaha-construction/internal/algorithms/aha"
-	"golang-moaha-construction/internal/algorithms/ga"
-	"golang-moaha-construction/internal/algorithms/moaha"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/multi"
-	"golang-moaha-construction/internal/objectives/single"
-	"os"
-	"time"
+	"golang-moaha-construction/internal/objectives/multi/cons-lay"
+	"log"
 )
 
 const logo = `
@@ -57,136 +51,107 @@ var setupCmd = &cobra.Command{
 	Long:  `The command setup the algorithm for specific objective function to optimize.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		objConfigs := []*data.Config{
-			{
-				Name:  single.SphereDimension,
-				Value: "30",
-			},
-			{
-				Name:  single.SphereUpperBound,
-				Value: "100",
-			},
-			{
-				Name:  single.SphereLowerBound,
-				Value: "-100",
-			},
-		}
+		//algoConfigs := []*data.Config{
+		//	{
+		//		Name:  moaha.NumAgents,
+		//		Value: "300",
+		//	},
+		//	{
+		//		Name:  moaha.NumIters,
+		//		Value: "500",
+		//	},
+		//	{
+		//		Name:  moaha.ArchiveSize,
+		//		Value: "100",
+		//	},
+		//}
 
-		objectiveFunction, _ := single.CreateSphere(objConfigs)
-
-		algoConfigs := []*data.Config{
-			{
-				Name:  aha.NUM_AGENTS,
-				Value: "30",
-			},
-			{
-				Name:  aha.NUM_ITERS,
-				Value: "500",
-			},
-		}
-
-		var algorithm algorithms.Algorithm
-
-		algorithm, _ = aha.Create(objectiveFunction, algoConfigs)
+		//_, _ = moaha.Create(obj, algoConfigs)
+		//now := time.Now()
 		//err := algorithm.Run()
+		//fmt.Println(time.Since(now))
 		//if err != nil {
 		//	fmt.Println(err)
 		//	os.Exit(1)
 		//}
-
-		algoConfigs = []*data.Config{
-			{
-				Name:  ga.PopulationSizeParam,
-				Value: "30",
-			},
-			{
-				Name:  ga.MaxIterationsParam,
-				Value: "500",
-			},
-			{
-				Name:  ga.CrossoverRateParam,
-				Value: "0.8",
-			},
-			{
-				Name:  ga.MutationRateParam,
-				Value: "0.2",
-			},
-			{
-				Name:  ga.ElitismCountParam,
-				Value: "5",
-			},
-		}
-
-		algorithm, _ = ga.Create(objectiveFunction, algoConfigs)
-		//err = algorithm.Run()
-		//if err != nil {
-		//	fmt.Println(err)
-		//	os.Exit(1)
+		//
+		//// show results
+		//moahaAlgo := algorithm.(*moaha.MOAHAAlgorithm)
+		//
+		//fmt.Println("Number Of Archived Agents: ", len(moahaAlgo.Archive))
+		//fmt.Println("Number Of Agents: ", len(moahaAlgo.Agents))
+		//fmt.Println("Number Of Iterations: ", moahaAlgo.NumberOfIter)
+		//fmt.Println("Number Of Dimension: ", len(moahaAlgo.Agents[0].Position))
+		//
+		//for idx := 0; idx < obj.NumberOfObjectives(); idx++ {
+		//
+		//	for i, agent := range moahaAlgo.Archive {
+		//
+		//		fmt.Printf("  %f", agent.Value[idx])
+		//		if i != len(moahaAlgo.Archive)-1 {
+		//			fmt.Printf(",")
+		//		} else {
+		//			fmt.Printf(";")
+		//		}
+		//
+		//	}
+		//	fmt.Printf("\n\n\n")
 		//}
 
-		// Multi-objective
-		multiConfigs := []*data.Config{
+		consLayoutConfigs := []data.Config{
 			{
-				Name:  multi.ZDT1Dimension,
-				Value: "30",
+				Name:  cons_lay.ConsLayoutLength,
+				Value: "120",
 			},
 			{
-				Name:  multi.ZDT1UpperBound,
-				Value: "1",
+				Name:  cons_lay.ConsLayoutWidth,
+				Value: "95",
 			},
 			{
-				Name:  multi.ZDT1LowerBound,
-				Value: "0",
-			},
-		}
-
-		obj, _ := multi.CreateZDT1(multiConfigs)
-
-		algoConfigs = []*data.Config{
-			{
-				Name:  moaha.NumAgents,
-				Value: "300",
+				Name:  cons_lay.DynamicLocations,
+				Value: "./data/conslay/dynamic_locations.xlsx", // path to the file
 			},
 			{
-				Name:  moaha.NumIters,
-				Value: "500",
-			},
-			{
-				Name:  moaha.ArchiveSize,
-				Value: "100",
+				Name:  cons_lay.StaticLocations,
+				Value: "./data/conslay/fixed_locations.xlsx", // path to the file
 			},
 		}
 
-		algorithm, _ = moaha.Create(obj, algoConfigs)
-		now := time.Now()
-		err := algorithm.Run()
-		fmt.Println(time.Since(now))
+		// TODO: objectives - select objectives and show configs relevant to those
+
+		consLayObj, _ := cons_lay.Create()
+		err := consLayObj.LoadData(consLayoutConfigs)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
+			return
 		}
 
-		// show results
-		moahaAlgo := algorithm.(*moaha.MOAHAAlgorithm)
+		consLay := consLayObj.(*cons_lay.ConsLay)
 
-		fmt.Println("Number Of Archived Agents: ", len(moahaAlgo.Archive))
-		fmt.Println("Number Of Agents: ", len(moahaAlgo.Agents))
-		fmt.Println("Number Of Iterations: ", moahaAlgo.NumberOfIter)
-		fmt.Println("Number Of Dimension: ", len(moahaAlgo.Agents[0].Position))
+		fmt.Println("\tDynamic Data")
+		for i := range consLay.DynamicLocations {
 
-		for idx := 0; idx < obj.NumberOfObjectives(); idx++ {
+			fmt.Printf("%d: Name = %s, L = %f, W = %f, fixed = %t \n",
+				i+1,
+				consLay.DynamicLocations[i].Name,
+				consLay.DynamicLocations[i].Length,
+				consLay.DynamicLocations[i].Width,
+				consLay.DynamicLocations[i].IsFixed,
+			)
+		}
 
-			for i, agent := range moahaAlgo.Archive {
+		fmt.Println("\tStatic Data")
+		for i := range consLay.StaticLocations {
 
-				fmt.Printf("  %f", agent.Value[idx])
-				if i != len(moahaAlgo.Archive)-1 {
-					fmt.Printf(",")
-				} else {
-					fmt.Printf(";")
-				}
-
-			}
-			fmt.Printf("\n\n\n")
+			fmt.Printf("%d: Name = %s, L = %f, W = %f, x = %f, y = %f, fixed = %t \n",
+				i+1,
+				consLay.StaticLocations[i].Name,
+				consLay.StaticLocations[i].Length,
+				consLay.StaticLocations[i].Width,
+				consLay.StaticLocations[i].X,
+				consLay.StaticLocations[i].Y,
+				consLay.StaticLocations[i].IsFixed,
+			)
 		}
 
 		return

@@ -176,3 +176,5 @@ func (s *zdt1) NumberOfObjectives() int {
 func (s *zdt1) LoadData(configs []data.Config) error {
 	return nil
 }
+
+func (s *zdt1) AddObjective(objective string) error { return nil }

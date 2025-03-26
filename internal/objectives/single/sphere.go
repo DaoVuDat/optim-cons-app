@@ -159,3 +159,5 @@ func (s *sphere) NumberOfObjectives() int {
 func (s *sphere) LoadData(configs []data.Config) error {
 	return nil
 }
+
+func (s *sphere) AddObjective(objective string) error { return nil }
