@@ -1,10 +1,8 @@
 package cons_lay
 
-import "golang-moaha-construction/internal/data"
-
 const (
 	HoistingObjectiveType  = "Hoisting Objective"
-	HoistingTime           = "HoistingTimeData"
+	HoistingTimeData       = "HoistingTimeData"
 	PrefabricatedLocations = "PrefabricatedLocations"
 	NumberOfFloors         = "Number of Floors"
 	FloorHeight            = "Floor Height"
@@ -16,37 +14,7 @@ const (
 	Vwg                    = "Vwg"
 )
 
-var HoistingConfigs = []*data.Config{
-	{
-		Name: PrefabricatedLocations,
-	},
-	{
-		Name: NumberOfFloors,
-	},
-	{
-		Name: HoistingTime,
-	},
-	{
-		Name: FloorHeight,
-	},
-	{
-		Name: CraneLocations,
-	},
-	{
-		Name: ZM,
-	},
-	{
-		Name: Vuvg,
-	},
-	{
-		Name: Vlvg,
-	},
-	{
-		Name: Vag,
-	},
-	{
-		Name: Vwg,
-	},
+type HoistingConfigs struct {
 }
 
 type Crane struct {
@@ -54,10 +22,31 @@ type Crane struct {
 	Radius float64
 }
 
-type HoistingObjective struct {
+type HoistingTime struct {
+	Coordinate     Coordinate
+	HoistingNumber int
+	Name           string
+	BuildingName   string
 }
 
-func (obj *HoistingObjective) LoadHoistingData(configs []data.Config) error {
+type HoistingObjective struct {
+	PrefabricatedLocations []Location
+	NumberOfFloors         int
+	HoistingTime           []HoistingTime
+	FloorHeight            float64
+	CraneLocations         []Crane
+	ZM                     float64
+	Vuvg                   float64
+	Vlvg                   float64
+	Vag                    float64
+	Vwg                    float64
+}
 
-	return nil
+func (obj *HoistingObjective) Eval() float64 {
+	return 0
+}
+
+func CoverRangeOfCrane(crane Crane, buildings []Location) bool {
+
+	return true
 }

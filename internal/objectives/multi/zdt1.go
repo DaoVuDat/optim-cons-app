@@ -177,4 +177,4 @@ func (s *zdt1) LoadData(configs []data.Config) error {
 	return nil
 }
 
-func (s *zdt1) AddObjective(objective string) error { return nil }
+func (s *zdt1) AddObjective(name string, objective any) error { return nil }

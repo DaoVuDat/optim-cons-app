@@ -1,7 +1,5 @@
 package cons_lay
 
-import "golang-moaha-construction/internal/data"
-
 const (
 	RiskObjectiveType       = "Risk Objective"
 	HazardInteractionMatrix = "Hazard Interaction Matrix"
@@ -9,18 +7,10 @@ const (
 )
 
 type RiskObjective struct {
+	HazardInteractionMatrix [][]float64
+	Delta                   float64
 }
 
-var RiskConfigs = []*data.Config{
-	{
-		Name: HazardInteractionMatrix,
-	},
-	{
-		Name: Delta,
-	},
-}
-
-func (obj *RiskObjective) LoadData(configs []data.Config) error {
-
-	return nil
+func (obj *RiskObjective) Eval() float64 {
+	return 0
 }

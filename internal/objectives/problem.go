@@ -24,5 +24,5 @@ type Problem[T any] interface {
 	NumberOfObjectives() int
 	Type() data.TypeProblem
 	LoadData(configs []data.Config) error
-	AddObjective(string) error
+	AddObjective(string, any) error
 }

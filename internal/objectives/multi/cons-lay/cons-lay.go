@@ -8,7 +8,6 @@ import (
 	"golang-moaha-construction/internal/objectives/multi"
 	"golang-moaha-construction/internal/objectives/single"
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -31,7 +30,8 @@ type ConsLay struct {
 	LowerBound       []float64
 	StaticLocations  []Location
 	DynamicLocations []Location
-	Objectives       []string
+	Objectives       map[string]any
+	Phases           [][]string
 }
 
 func (s *ConsLay) Type() data.TypeProblem {
@@ -94,11 +94,51 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
-func (s *ConsLay) AddObjective(objective string) error {
-	if slices.Contains(s.Objectives, objective) {
-		return errors.New("the objective has been existed")
+func IsOverlapped(b1, b2 Location) (bool, float64) {
+	
+	l1 := -math.Abs(b1.Coordinate.X-b2.Coordinate.X) + b1.Length/2 + b2.Length/2
+	l2 := -math.Abs(b1.Coordinate.Y-b2.Coordinate.Y) + b1.Width/2 + b2.Width/2
+
+	if l1 <= 0 {
+		return false, 0
 	}
-	s.Objectives = append(s.Objectives, objective)
+
+	if l2 <= 0 {
+		return false, 0
+	}
+
+	return true, math.Max(0, l1) + math.Max(0, l2)
+}
+
+func IsOutOfBound(minL, maxL, minW, maxW float64, b Location) (bool, float64) {
+
+	l1 := minL + b.Length/2 - b.Coordinate.X
+	l2 := b.Coordinate.X + b.Length/2 - maxL
+	l3 := minW + b.Width/2 - b.Coordinate.Y
+	l4 := b.Coordinate.Y + b.Width/2 - maxW
+
+	if l1 <= 0 && l2 <= 0 && l3 <= 0 && l4 <= 0 {
+		return false, 0
+	}
+
+	return true, math.Max(0, l1) + math.Max(0, l2) + math.Max(0, l3) + math.Max(0, l4)
+}
+
+func (s *ConsLay) AddObjective(name string, objective any) error {
+	if _, ok := s.Objectives[name]; ok {
+		return errors.New("the objective has been existed: " + name)
+	}
+
+	switch objective.(type) {
+	case HoistingObjective:
+		// create hoisting objective
+		s.Objectives[name] = objective.(HoistingObjective)
+	case RiskObjective:
+		// create risk objective
+		s.Objectives[name] = objective.(RiskObjective)
+	default:
+		return errors.New("invalid objective type: " + name)
+	}
 	return nil
 }
 
@@ -120,13 +160,17 @@ var Configs = []data.Config{
 	},
 }
 
+type Coordinate struct {
+	X float64
+	Y float64
+}
+
 type Location struct {
-	X       float64
-	Y       float64
-	Length  float64
-	Width   float64
-	IsFixed bool
-	Name    string
+	Coordinate Coordinate
+	Length     float64
+	Width      float64
+	IsFixed    bool
+	Name       string
 }
 
 func (s *ConsLay) LoadData(configs []data.Config) error {
@@ -205,11 +249,13 @@ func (s *ConsLay) LoadData(configs []data.Config) error {
 				}
 
 				s.StaticLocations = append(s.StaticLocations, Location{
-					Name:    name,
-					Length:  length,
-					Width:   width,
-					X:       x,
-					Y:       y,
+					Name:   name,
+					Length: length,
+					Width:  width,
+					Coordinate: Coordinate{
+						X: x,
+						Y: y,
+					},
 					IsFixed: true,
 				})
 			}
@@ -258,8 +304,34 @@ func (s *ConsLay) LoadData(configs []data.Config) error {
 					IsFixed: false,
 				})
 			}
-		}
-	}
+		case Phases:
+			// load data from file
+			file, err := excelize.OpenFile(val)
+			if err != nil {
+				return err
+			}
 
+			rows, err := file.GetRows("Sheet1")
+			if err != nil {
+				return err
+			}
+
+			for _, row := range rows {
+				for i, cell := range row {
+					switch i {
+					case 1:
+						vals := strings.Split(cell, ",")
+						for eachTF := range vals {
+							vals[eachTF] = strings.TrimSpace(vals[eachTF])
+						}
+						s.Phases = append(s.Phases, vals)
+					}
+
+				}
+			}
+
+		}
+
+	}
 	return nil
 }

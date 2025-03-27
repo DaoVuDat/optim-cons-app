@@ -160,4 +160,4 @@ func (s *sphere) LoadData(configs []data.Config) error {
 	return nil
 }
 
-func (s *sphere) AddObjective(objective string) error { return nil }
+func (s *sphere) AddObjective(name string, objective any) error { return nil }
