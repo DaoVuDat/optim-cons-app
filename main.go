@@ -5,248 +5,132 @@ package main
 
 import (
 	"fmt"
-	"github.com/xuri/excelize/v2"
-	"golang-moaha-construction/internal/data"
 	conslay "golang-moaha-construction/internal/objectives/multi/cons-lay"
 	"log"
-	"strconv"
 )
 
 func main() {
+	// Create cons-lay problem and add objectives
+	fmt.Println("=== Construction Layout ===")
+	consLayoutConfigs := conslay.ConsLayConfigs{
+		ConsLayoutLength: 120,
+		ConsLayoutWidth:  95,
+	}
 
-	// Generic Configs
-	consLayoutConfigs := []data.Config{
-		{
-			Name:  conslay.ConsLayoutLength,
-			Value: "120",
-		},
-		{
-			Name:  conslay.ConsLayoutWidth,
-			Value: "95",
-		},
-		{
-			Name:  conslay.DynamicLocations,
-			Value: "./data/conslay/dynamic_locations.xlsx", // path to the file
-		},
-		{
-			Name:  conslay.StaticLocations,
-			Value: "./data/conslay/fixed_locations.xlsx", // path to the file
-		},
-		{
-			Name:  conslay.Phases,
-			Value: "./data/conslay/phaseBuilding.xlsx", // path to the file
-		},
+	// LOAD LOCATIONS
+	locations, fixedLocations, nonFixedLocations, err := conslay.ReadLocationsFromFile("./data/conslay/locations.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("\tLocations")
+	for name := range locations {
+		fmt.Printf("Name = %s, Symbol = %s, X = %f, Y = %f, Length = %f, Width = %f, fixed = %t \n",
+			locations[name].Name,
+			locations[name].Symbol,
+			locations[name].Coordinate.X,
+			locations[name].Coordinate.Y,
+			locations[name].Length,
+			locations[name].Width,
+			locations[name].IsFixed,
+		)
+	}
+	consLayoutConfigs.Locations = locations
+	consLayoutConfigs.NonFixedLocations = nonFixedLocations
+	consLayoutConfigs.FixedLocations = fixedLocations
+
+	fmt.Println("#Locations", len(consLayoutConfigs.Locations))
+	fmt.Println("#FixedLocations", len(consLayoutConfigs.FixedLocations))
+	fmt.Println("#NonFixedLocations", len(consLayoutConfigs.NonFixedLocations))
+
+	// LOAD PHASES
+	phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("\tPhases")
+	for i := range phases {
+		fmt.Println(phases[i])
+	}
+	consLayoutConfigs.Phases = phases
+
+	consLayObj, err := conslay.CreateConsLayFromConfig(consLayoutConfigs)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// TODO: objectives - select objectives and show configs relevant to those
+	fmt.Println("=== Hoisting Objective ===")
+	hoistingTime, err := conslay.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
 
-	dataFile, err := excelize.OpenFile("./data/conslay/crane_locations.xlsx")
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
-	rows, err := dataFile.GetRows("Sheet1")
+	// Hoisting Objective Configs
+	hoistingConfigs := conslay.HoistingConfigs{
+		NumberOfFloors: 10,
+		HoistingTime:   hoistingTime,
+		FloorHeight:    3.2,
+		ZM:             2,
+		Vuvg:           37.5,
+		Vlvg:           37.5 / 2,
+		Vag:            50,
+		Vwg:            0.5,
+	}
+
+	hoistingObj, err := conslay.CreateHoistingObjectiveFromConfig(hoistingConfigs)
 	if err != nil {
 		log.Fatal(err)
-		return
+	}
+
+	// select TF that is crane (fixed locations only) - after Selection
+	// simulate selected crane
+	type SelectedCrane struct {
+		Name          string // for reference from FixedLocations
+		BuildingNames []string
+		Radius        float64
+	}
+
+	selectedCrane := []SelectedCrane{
+		{
+			Name:          "TF14",
+			BuildingNames: []string{"TF8", "TF9", "TF10"},
+			Radius:        40,
+		},
 	}
 
 	craneLocations := make([]conslay.Crane, 0)
-
-	for idx, row := range rows {
-		if idx == 0 {
-			continue
+	for _, loc := range selectedCrane {
+		if craneLoc, ok := consLayObj.Locations[loc.Name]; ok {
+			craneLocations = append(craneLocations, conslay.Crane{
+				Location:     craneLoc,
+				BuildingName: loc.BuildingNames,
+				Radius:       loc.Radius,
+			})
 		}
-		var name string
-		var length float64
-		var width float64
-		var x float64
-		var y float64
-		var radius float64
-		for i, cell := range row {
-			switch i {
-			case 0:
-				name = cell
-			case 1:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				length = val
-			case 2:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				width = val
-			case 3:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				x = val
-			case 4:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				y = val
-			case 5:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				radius = val
-			}
-
-		}
-		craneLocations = append(craneLocations, conslay.Crane{
-			Location: conslay.Location{
-				Coordinate: conslay.Coordinate{
-					X: x,
-					Y: y,
-				},
-				Length:  length,
-				Width:   width,
-				IsFixed: true,
-				Name:    name,
-			},
-			Radius: radius,
-		})
 	}
 
-	dataFile, err = excelize.OpenFile("./data/conslay/prefabricated_locations.xlsx")
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	hoistingObj.CraneLocations = craneLocations
 
-	rows, err = dataFile.GetRows("Sheet1")
-	if err != nil {
-		log.Fatal(err)
-		return
+	// select TF that is prefabricated - in Evaluation
+	selectedPref := []string{
+		"TF8", "TF9", "TF10",
 	}
-
 	prefLocs := make([]conslay.Location, 0)
-
-	for idx, row := range rows {
-		if idx == 0 {
-			continue
+	for _, loc := range selectedPref {
+		if prefLoc, ok := consLayObj.Locations[loc]; ok {
+			prefLocs = append(prefLocs, conslay.Location{
+				Coordinate: prefLoc.Coordinate,
+				Length:     prefLoc.Length,
+				Width:      prefLoc.Width,
+				IsFixed:    true,
+				Name:       prefLoc.Name,
+				Symbol:     loc,
+			})
 		}
-		var name string
-		var length float64
-		var width float64
-		for i, cell := range row {
-			switch i {
-			case 0:
-				name = cell
-			case 1:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				length = val
-			case 2:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				width = val
-			}
-
-		}
-		prefLocs = append(prefLocs, conslay.Location{
-			Length:  length,
-			Width:   width,
-			IsFixed: false,
-			Name:    name,
-		})
 	}
+	hoistingObj.PrefabricatedLocations = prefLocs
 
-	dataFile, err = excelize.OpenFile("./data/conslay/f1_hoisting_time_data.xlsx")
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	rows, err = dataFile.GetRows("Sheet1")
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	hoistingTime := make([]conslay.HoistingTime, 0)
-
-	for idx, row := range rows {
-		if idx == 0 {
-			continue
-		}
-		var name string
-		var buildingName string
-		var x float64
-		var y float64
-		var hoistingNumber int
-		for i, cell := range row {
-			switch i {
-			case 0:
-				name = cell
-			case 1:
-				buildingName = cell
-			case 2:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				x = val
-			case 3:
-				val, err := strconv.ParseFloat(cell, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				y = val
-			case 4:
-				val, err := strconv.ParseInt(cell, 10, 64)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				hoistingNumber = int(val)
-			}
-
-		}
-		hoistingTime = append(hoistingTime, conslay.HoistingTime{
-			Coordinate: conslay.Coordinate{
-				X: x,
-				Y: y,
-			},
-			HoistingNumber: hoistingNumber,
-			Name:           name,
-			BuildingName:   buildingName,
-		})
-	}
-
-	hoistingObj := conslay.HoistingObjective{
-		PrefabricatedLocations: prefLocs,
-		NumberOfFloors:         10,
-		HoistingTime:           hoistingTime,
-		FloorHeight:            3.2,
-		CraneLocations:         craneLocations,
-		ZM:                     2,
-		Vuvg:                   37.5,
-		Vlvg:                   37.5 / 2,
-		Vag:                    50,
-		Vwg:                    0.5,
-	}
 	fmt.Println("\tHoisting Time")
 	for i := range hoistingObj.HoistingTime {
 		fmt.Printf("%d: Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
@@ -282,45 +166,10 @@ func main() {
 		)
 	}
 
-	// Create cons-lay problem and add objectives
-	consLayObj, _ := conslay.Create()
-	err = consLayObj.LoadData(consLayoutConfigs)
+	// Add objectives to cons-lay problem
+	err = consLayObj.AddObjective(conslay.HoistingObjectiveType, hoistingObj)
 	if err != nil {
 		log.Fatal(err)
-		return
-	}
-
-	consLay := consLayObj.(*conslay.ConsLay)
-
-	fmt.Println("\tDynamic Data")
-	for i := range consLay.DynamicLocations {
-
-		fmt.Printf("%d: Name = %s, L = %f, W = %f, fixed = %t \n",
-			i+1,
-			consLay.DynamicLocations[i].Name,
-			consLay.DynamicLocations[i].Length,
-			consLay.DynamicLocations[i].Width,
-			consLay.DynamicLocations[i].IsFixed,
-		)
-	}
-
-	fmt.Println("\tStatic Data")
-	for i := range consLay.StaticLocations {
-
-		fmt.Printf("%d: Name = %s, L = %f, W = %f, x = %f, y = %f, fixed = %t \n",
-			i+1,
-			consLay.StaticLocations[i].Name,
-			consLay.StaticLocations[i].Length,
-			consLay.StaticLocations[i].Width,
-			consLay.StaticLocations[i].Coordinate.X,
-			consLay.StaticLocations[i].Coordinate.Y,
-			consLay.StaticLocations[i].IsFixed,
-		)
-	}
-
-	fmt.Println("\tPhases")
-	for i := range consLay.Phases {
-		fmt.Println(consLay.Phases[i])
 	}
 
 	return

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/objectives/multi"
 	"golang-moaha-construction/internal/objectives/single"
 	"math"
@@ -15,31 +14,81 @@ import (
 const (
 	ConsLayoutLength = "Construction Layout Length"
 	ConsLayoutWidth  = "Construction Layout Width"
-	DynamicLocations = "DynamicLocations"
-	StaticLocations  = "StaticLocations"
+	DynamicLocations = "NonFixedLocations"
+	StaticLocations  = "FixedLocations"
 	Phases           = "Phases"
+)
+
+// list constraints
+
+const (
+	ConstraintOverlap             = "Overlap"
+	ConstraintOutOfBound          = "OutOfBound"
+	ConstraintsCoverInCraneRadius = "CoverInCraneRadius"
 )
 
 const ConsLayoutName = "Construction-Layout"
 
+type Coordinate struct {
+	X float64
+	Y float64
+}
+
+type Location struct {
+	Coordinate Coordinate
+	Rotation   bool
+	Length     float64
+	Width      float64
+	IsFixed    bool
+	Symbol     string
+	Name       string
+}
+
 type ConsLay struct {
-	Dimensions       int
-	LayoutLength     float64
-	LayoutWidth      float64
-	UpperBound       []float64
-	LowerBound       []float64
-	StaticLocations  []Location
-	DynamicLocations []Location
-	Objectives       map[string]any
-	Phases           [][]string
+	Dimensions        int
+	LayoutLength      float64
+	LayoutWidth       float64
+	UpperBound        []float64
+	LowerBound        []float64
+	FixedLocations    []Location
+	NonFixedLocations []Location
+	Locations         map[string]Location
+	Objectives        map[string]any
+	Constraints       map[string]struct{}
+	Phases            [][]string
+}
+
+type ConsLayConfigs struct {
+	ConsLayoutLength  float64
+	ConsLayoutWidth   float64
+	Locations         map[string]Location
+	NonFixedLocations []Location
+	FixedLocations    []Location
+	Phases            [][]string
 }
 
 func (s *ConsLay) Type() data.TypeProblem {
 	return data.Multi
 }
 
-func Create() (objectives.Problem[multi.MultiResult], error) {
-	return &ConsLay{}, nil
+func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
+
+	consLay := &ConsLay{
+		LayoutLength:      consLayConfigs.ConsLayoutLength,
+		LayoutWidth:       consLayConfigs.ConsLayoutWidth,
+		Locations:         consLayConfigs.Locations,
+		FixedLocations:    consLayConfigs.FixedLocations,
+		NonFixedLocations: consLayConfigs.NonFixedLocations,
+		Phases:            consLayConfigs.Phases,
+		Objectives:        make(map[string]any),
+		Constraints:       make(map[string]struct{}),
+	}
+
+	// TODO: calculate upper and lower bound
+
+	// TODO: calculate dimension depending on the number of dynamic locations
+
+	return consLay, nil
 }
 
 func (s *ConsLay) Eval(x []float64, agent *multi.MultiResult) *multi.MultiResult {
@@ -94,8 +143,41 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
+func (s *ConsLay) AddObjective(name string, objective any) error {
+	if _, ok := s.Objectives[name]; ok {
+		return errors.New("the objective has been existed: " + name)
+	}
+
+	switch objective.(type) {
+	case HoistingObjective:
+		// create hoisting objective
+		s.Objectives[name] = objective
+	case *HoistingObjective:
+		s.Objectives[name] = objective
+	case RiskObjective:
+		// create risk objective
+		s.Objectives[name] = objective
+	case *RiskObjective:
+		s.Objectives[name] = objective
+	default:
+		return errors.New("invalid objective type: " + name)
+	}
+	return nil
+}
+
+func (s *ConsLay) AddConstraint(name string, constraint any) error {
+	if _, ok := s.Constraints[name]; ok {
+		return errors.New("the constraint has been existed: " + name)
+	}
+
+	s.Constraints[name] = struct{}{}
+	return nil
+}
+
+// Constraints Utility Functions
+
 func IsOverlapped(b1, b2 Location) (bool, float64) {
-	
+
 	l1 := -math.Abs(b1.Coordinate.X-b2.Coordinate.X) + b1.Length/2 + b2.Length/2
 	l2 := -math.Abs(b1.Coordinate.Y-b2.Coordinate.Y) + b1.Width/2 + b2.Width/2
 
@@ -124,214 +206,129 @@ func IsOutOfBound(minL, maxL, minW, maxW float64, b Location) (bool, float64) {
 	return true, math.Max(0, l1) + math.Max(0, l2) + math.Max(0, l3) + math.Max(0, l4)
 }
 
-func (s *ConsLay) AddObjective(name string, objective any) error {
-	if _, ok := s.Objectives[name]; ok {
-		return errors.New("the objective has been existed: " + name)
+// Readers Utility Functions
+
+func ReadLocationsFromFile(filePath string) (locations map[string]Location, fixedLocations, nonFixedLocations []Location, err error) {
+
+	// load data from file
+	file, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 
-	switch objective.(type) {
-	case HoistingObjective:
-		// create hoisting objective
-		s.Objectives[name] = objective.(HoistingObjective)
-	case RiskObjective:
-		// create risk objective
-		s.Objectives[name] = objective.(RiskObjective)
-	default:
-		return errors.New("invalid objective type: " + name)
+	rows, err := file.GetRows("Sheet1")
+	if err != nil {
+		return nil, nil, nil, err
 	}
-	return nil
+
+	locations = make(map[string]Location)
+	fixedLocations = make([]Location, 0)
+	nonFixedLocations = make([]Location, 0)
+
+	for rowIdx, row := range rows {
+		if rowIdx == 0 {
+			continue
+		}
+		var name string
+		var symbol string
+		var length float64
+		var width float64
+		var x float64
+		var y float64
+		var isFixed = true
+		for i, cell := range row {
+			switch i {
+			case 0:
+				name = cell
+			case 1:
+				symbol = cell
+			case 2:
+				val, err := strconv.ParseFloat(cell, 64)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				length = val
+			case 3:
+				val, err := strconv.ParseFloat(cell, 64)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				width = val
+			case 4:
+				if strings.Contains(cell, "-") {
+					isFixed = false
+					break
+				}
+				val, err := strconv.ParseFloat(cell, 64)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				x = val
+			case 5:
+				if strings.Contains(cell, "-") {
+					isFixed = false
+					break
+				}
+				val, err := strconv.ParseFloat(cell, 64)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				y = val
+			}
+		}
+
+		newLocation := Location{
+			Name:   name,
+			Symbol: symbol,
+			Length: length,
+			Width:  width,
+			Coordinate: Coordinate{
+				X: x,
+				Y: y,
+			},
+			IsFixed:  isFixed,
+			Rotation: false,
+		}
+
+		if isFixed {
+			fixedLocations = append(fixedLocations, newLocation)
+		} else {
+			nonFixedLocations = append(nonFixedLocations, newLocation)
+		}
+
+		locations[symbol] = newLocation
+	}
+
+	return locations, fixedLocations, nonFixedLocations, nil
 }
 
-var Configs = []data.Config{
-	{
-		Name: DynamicLocations,
-	},
-	{
-		Name: StaticLocations,
-	},
-	{
-		Name: Phases,
-	},
-	{
-		Name: ConsLayoutLength,
-	},
-	{
-		Name: ConsLayoutWidth,
-	},
-}
+func ReadPhasesFromFile(filePath string) ([][]string, error) {
 
-type Coordinate struct {
-	X float64
-	Y float64
-}
+	// load data from file
+	file, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, err
+	}
 
-type Location struct {
-	Coordinate Coordinate
-	Length     float64
-	Width      float64
-	IsFixed    bool
-	Name       string
-}
+	rows, err := file.GetRows("Sheet1")
+	if err != nil {
+		return nil, err
+	}
 
-func (s *ConsLay) LoadData(configs []data.Config) error {
-
-	for _, config := range configs {
-
-		val := config.Value
-
-		// sanity check
-		val = strings.Trim(val, " ")
-
-		switch config.Name {
-		case ConsLayoutWidth:
-			layoutWidth, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				return err
-			}
-			s.LayoutWidth = layoutWidth
-
-		case ConsLayoutLength:
-			layoutLength, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				return err
-			}
-
-			s.LayoutLength = layoutLength
-		case StaticLocations:
-			// load data from file
-			file, err := excelize.OpenFile(val)
-			if err != nil {
-				return err
-			}
-
-			rows, err := file.GetRows("Sheet1")
-			if err != nil {
-				return err
-			}
-			for rowIdx, row := range rows {
-				if rowIdx == 0 {
-					continue
+	phases := make([][]string, 0)
+	for _, row := range rows {
+		for i, cell := range row {
+			switch i {
+			case 1:
+				vals := strings.Split(cell, ",")
+				for eachTF := range vals {
+					vals[eachTF] = strings.TrimSpace(vals[eachTF])
 				}
-				var name string
-				var length float64
-				var width float64
-				var x float64
-				var y float64
-				for i, cell := range row {
-					switch i {
-					case 0:
-						name = cell
-					case 1:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						length = val
-					case 2:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						width = val
-					case 3:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						x = val
-					case 4:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						y = val
-					}
-				}
-
-				s.StaticLocations = append(s.StaticLocations, Location{
-					Name:   name,
-					Length: length,
-					Width:  width,
-					Coordinate: Coordinate{
-						X: x,
-						Y: y,
-					},
-					IsFixed: true,
-				})
-			}
-
-		case DynamicLocations:
-			// load data from file
-			file, err := excelize.OpenFile(val)
-			if err != nil {
-				return err
-			}
-
-			rows, err := file.GetRows("Sheet1")
-			if err != nil {
-				return err
-			}
-			for rowIdx, row := range rows {
-				if rowIdx == 0 {
-					continue
-				}
-				var name string
-				var length float64
-				var width float64
-				for i, cell := range row {
-					switch i {
-					case 0:
-						name = cell
-					case 1:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						length = val
-					case 2:
-						val, err := strconv.ParseFloat(cell, 64)
-						if err != nil {
-							return err
-						}
-						width = val
-					}
-				}
-
-				s.DynamicLocations = append(s.DynamicLocations, Location{
-					Name:    name,
-					Length:  length,
-					Width:   width,
-					IsFixed: false,
-				})
-			}
-		case Phases:
-			// load data from file
-			file, err := excelize.OpenFile(val)
-			if err != nil {
-				return err
-			}
-
-			rows, err := file.GetRows("Sheet1")
-			if err != nil {
-				return err
-			}
-
-			for _, row := range rows {
-				for i, cell := range row {
-					switch i {
-					case 1:
-						vals := strings.Split(cell, ",")
-						for eachTF := range vals {
-							vals[eachTF] = strings.TrimSpace(vals[eachTF])
-						}
-						s.Phases = append(s.Phases, vals)
-					}
-
-				}
+				phases = append(phases, vals)
 			}
 
 		}
-
 	}
-	return nil
+
+	return phases, nil
 }
