@@ -15,7 +15,7 @@ type SingleResult struct {
 }
 
 type SingleProblem interface {
-	Eval(pos []float64, x *SingleResult) *SingleResult
+	Eval(pos []float64) (values []float64, constraints []float64, penalty []float64)
 	GetUpperBound() []float64
 	GetLowerBound() []float64
 	GetDimension() int

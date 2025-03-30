@@ -1,4 +1,4 @@
-package cons_lay
+package conslay_continuous
 
 import (
 	"math"

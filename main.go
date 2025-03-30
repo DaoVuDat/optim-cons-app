@@ -5,12 +5,12 @@ package main
 
 import (
 	"fmt"
-	conslay "golang-moaha-construction/internal/objectives/multi/cons-lay"
+	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 	"log"
 )
 
 func main() {
-	// Create cons-lay problem and add objectives
+	// Create conslay_continuous problem and add objectives
 	fmt.Println("=== Construction Layout ===")
 	consLayoutConfigs := conslay.ConsLayConfigs{
 		ConsLayoutLength: 120,
@@ -166,7 +166,7 @@ func main() {
 		)
 	}
 
-	// Add objectives to cons-lay problem
+	// Add objectives to conslay_continuous problem
 	err = consLayObj.AddObjective(conslay.HoistingObjectiveType, hoistingObj)
 	if err != nil {
 		log.Fatal(err)

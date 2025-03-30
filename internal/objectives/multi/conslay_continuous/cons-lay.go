@@ -1,11 +1,9 @@
-package cons_lay
+package conslay_continuous
 
 import (
 	"errors"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/multi"
-	"golang-moaha-construction/internal/objectives/single"
 	"math"
 	"strconv"
 	"strings"
@@ -56,6 +54,7 @@ type ConsLay struct {
 	Objectives        map[string]any
 	Constraints       map[string]struct{}
 	Phases            [][]string
+	Rounding          bool
 }
 
 type ConsLayConfigs struct {
@@ -65,6 +64,7 @@ type ConsLayConfigs struct {
 	NonFixedLocations []Location
 	FixedLocations    []Location
 	Phases            [][]string
+	Rounding          bool
 }
 
 func (s *ConsLay) Type() data.TypeProblem {
@@ -84,42 +84,92 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		Constraints:       make(map[string]struct{}),
 	}
 
-	// TODO: calculate upper and lower bound
+	// Find the x, y, r of Non-fixed Locations
+	dimensions := len(consLay.NonFixedLocations) * 3
+	upperBound := make([]float64, dimensions)
+	lowerBound := make([]float64, dimensions)
+	for i := 0; i < len(consLay.NonFixedLocations); i++ {
+		idx := i * 3
+		// upper bound for x, y, r
+		upperBound[idx] = consLay.LayoutLength
+		upperBound[idx+1] = consLay.LayoutWidth
+		upperBound[idx+2] = 1.0
 
-	// TODO: calculate dimension depending on the number of dynamic locations
+		// lower bound for x, y, r
+		lowerBound[idx] = 0
+		lowerBound[idx+1] = 0
+		lowerBound[idx+2] = 0
+	}
+
+	consLay.Dimensions = dimensions
+	consLay.UpperBound = upperBound
+	consLay.LowerBound = lowerBound
 
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(x []float64, agent *multi.MultiResult) *multi.MultiResult {
-	//time.Sleep(time.Second * 1)
+func (s *ConsLay) Eval(input []float64) (values []float64, constraints []float64, penalty []float64) {
+	// add x, y, r to non-fixed locations
+	nonFixedLocations := make([]Location, len(s.NonFixedLocations))
+	mapLocations := make(map[string]Location, len(s.Locations))
 
-	values := make([]float64, 2)
+	for i := 0; i < len(nonFixedLocations); i++ {
+		loc := s.NonFixedLocations[i]
+		idx := i * 3
+		x := input[idx]
+		y := input[idx+1]
+		r := input[idx+2]
 
-	sum := 0.0
+		width := loc.Width
+		length := loc.Length
+		rotation := false
 
-	for i := 1; i < len(x); i++ {
-		sum += x[i]
+		if math.Round(r) > 0 {
+			rotation = true
+			width = loc.Length
+			length = loc.Width
+		}
+
+		if s.Rounding {
+			x = math.Round(x)
+			y = math.Round(y)
+		}
+
+		location := Location{
+			Coordinate: Coordinate{
+				X: x,
+				Y: y,
+			}, // update x, y
+			Rotation: rotation, // update r
+			Length:   length,   // change length and width if rotation is true
+			Width:    width,
+			IsFixed:  false,
+			Symbol:   loc.Symbol,
+			Name:     loc.Name,
+		}
+
+		nonFixedLocations[i] = location
+		mapLocations[loc.Symbol] = location
 	}
 
-	var g float64 = 1 + 9*sum/float64(s.Dimensions-1)
-
-	values[0] = x[0]
-	values[1] = g * (1 - math.Sqrt(x[0]/g))
-
-	return &multi.MultiResult{
-		SingleResult: single.SingleResult{
-			Position: x,
-			Solution: x,
-			Value:    values,
-			Idx:      agent.Idx,
-		},
-		CrowdingDistance: agent.CrowdingDistance,
-		Dominated:        agent.Dominated,
-		Rank:             agent.Rank,
-		DominationSet:    agent.DominationSet,
-		DominatedCount:   agent.DominatedCount,
+	// add fixed location to mapLocations
+	for i := 0; i < len(s.FixedLocations); i++ {
+		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
 	}
+
+	// checking constraints
+
+	for k := range s.Constraints {
+		switch k {
+		case ConstraintOverlap:
+
+		case ConstraintOutOfBound:
+
+		case ConstraintsCoverInCraneRadius:
+		}
+	}
+
+	return []float64{0, 0}, []float64{}, []float64{}
 
 }
 
@@ -175,36 +225,6 @@ func (s *ConsLay) AddConstraint(name string, constraint any) error {
 }
 
 // Constraints Utility Functions
-
-func IsOverlapped(b1, b2 Location) (bool, float64) {
-
-	l1 := -math.Abs(b1.Coordinate.X-b2.Coordinate.X) + b1.Length/2 + b2.Length/2
-	l2 := -math.Abs(b1.Coordinate.Y-b2.Coordinate.Y) + b1.Width/2 + b2.Width/2
-
-	if l1 <= 0 {
-		return false, 0
-	}
-
-	if l2 <= 0 {
-		return false, 0
-	}
-
-	return true, math.Max(0, l1) + math.Max(0, l2)
-}
-
-func IsOutOfBound(minL, maxL, minW, maxW float64, b Location) (bool, float64) {
-
-	l1 := minL + b.Length/2 - b.Coordinate.X
-	l2 := b.Coordinate.X + b.Length/2 - maxL
-	l3 := minW + b.Width/2 - b.Coordinate.Y
-	l4 := b.Coordinate.Y + b.Width/2 - maxW
-
-	if l1 <= 0 && l2 <= 0 && l3 <= 0 && l4 <= 0 {
-		return false, 0
-	}
-
-	return true, math.Max(0, l1) + math.Max(0, l2) + math.Max(0, l3) + math.Max(0, l4)
-}
 
 // Readers Utility Functions
 

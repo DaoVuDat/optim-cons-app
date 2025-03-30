@@ -119,7 +119,7 @@ func CreateSphere(configs []*data.Config) (objectives.Problem[SingleResult], err
 
 }
 
-func (s *sphere) Eval(x []float64, agent *SingleResult) *SingleResult {
+func (s *sphere) Eval(x []float64) (values []float64, constraints []float64, penalty []float64) {
 	//time.Sleep(time.Second * 1)
 
 	sum := 0.0
@@ -127,13 +127,7 @@ func (s *sphere) Eval(x []float64, agent *SingleResult) *SingleResult {
 		sum += x[i] * x[i]
 	}
 
-	return &SingleResult{
-		Idx:      agent.Idx,
-		Position: x,
-		Solution: x,
-		Value:    []float64{sum},
-	}
-
+	return []float64{sum}, []float64{}, []float64{}
 }
 
 func (s *sphere) GetUpperBound() []float64 {

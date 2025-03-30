@@ -141,8 +141,9 @@ func (g *GWOAlgorithm) Run() error {
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				g.Agents[agentIdx] = g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position, g.Agents[agentIdx])
+				value, _, _ := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
 
+				g.Agents[agentIdx].Value = value
 			}(agentIdx)
 		}
 
@@ -200,7 +201,11 @@ func (g *GWOAlgorithm) initialization() {
 				Position: positions,
 				Solution: positions,
 			}
-			g.Agents[agentIdx] = g.ObjectiveFunction.Eval(positions, newAgent)
+
+			value, _, _ := g.ObjectiveFunction.Eval(positions)
+			newAgent.Value = value
+
+			g.Agents[agentIdx] = newAgent
 		}(agentIdx)
 	}
 	wg.Wait()

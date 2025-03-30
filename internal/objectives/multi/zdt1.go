@@ -3,7 +3,6 @@ package multi
 import (
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"strconv"
@@ -121,10 +120,10 @@ func CreateZDT1(configs []*data.Config) (objectives.Problem[MultiResult], error)
 
 }
 
-func (s *zdt1) Eval(x []float64, agent *MultiResult) *MultiResult {
+func (s *zdt1) Eval(x []float64) (values []float64, constraints []float64, penalty []float64) {
 	//time.Sleep(time.Second * 1)
 
-	values := make([]float64, 2)
+	values = make([]float64, 2)
 
 	sum := 0.0
 
@@ -137,19 +136,7 @@ func (s *zdt1) Eval(x []float64, agent *MultiResult) *MultiResult {
 	values[0] = x[0]
 	values[1] = g * (1 - math.Sqrt(x[0]/g))
 
-	return &MultiResult{
-		SingleResult: single.SingleResult{
-			Position: x,
-			Solution: x,
-			Value:    values,
-			Idx:      agent.Idx,
-		},
-		CrowdingDistance: agent.CrowdingDistance,
-		Dominated:        agent.Dominated,
-		Rank:             agent.Rank,
-		DominationSet:    agent.DominationSet,
-		DominatedCount:   agent.DominatedCount,
-	}
+	return values, []float64{}, []float64{}
 
 }
 

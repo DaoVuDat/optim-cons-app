@@ -18,7 +18,7 @@ type MultiResult struct {
 }
 
 type MultiProblem interface {
-	Eval(pos []float64, x *MultiResult) *MultiResult
+	Eval(pos []float64) (values []float64, constraints []float64, penalty []float64)
 	GetUpperBound() []float64
 	GetLowerBound() []float64
 	GetDimension() int

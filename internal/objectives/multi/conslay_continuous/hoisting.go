@@ -1,4 +1,4 @@
-package cons_lay
+package conslay_continuous
 
 import (
 	"github.com/xuri/excelize/v2"
@@ -78,56 +78,8 @@ func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*Hoisti
 	return hoistingObj, nil
 }
 
-func (obj *HoistingObjective) Eval() float64 {
+func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
 	return 0
-}
-
-func IsCoverRangeOfCrane(crane Crane, buildings []Location) (bool, float64) {
-	invalidAmountTotal := 0.0
-
-	for _, building := range buildings {
-		// Top Right
-		topRightCoordinate := Coordinate{
-			X: building.Coordinate.X + building.Length/2,
-			Y: building.Coordinate.Y + building.Width/2,
-		}
-
-		topRightAmount := Distance2D(topRightCoordinate, crane.Coordinate) - crane.Radius
-
-		topLeftCoordinate := Coordinate{
-			X: building.Coordinate.X - building.Length/2,
-			Y: building.Coordinate.Y + building.Width/2,
-		}
-
-		topLeftAmount := Distance2D(topLeftCoordinate, crane.Coordinate) - crane.Radius
-
-		bottomLeftCoordinate := Coordinate{
-			X: building.Coordinate.X - building.Length/2,
-			Y: building.Coordinate.Y - building.Width/2,
-		}
-		bottomLeftAmount := Distance2D(bottomLeftCoordinate, crane.Coordinate) - crane.Radius
-
-		bottomRightCoordinate := Coordinate{
-			X: building.Coordinate.X + building.Length/2,
-			Y: building.Coordinate.Y - building.Width/2,
-		}
-		bottomRightAmount := Distance2D(bottomRightCoordinate, crane.Coordinate) - crane.Radius
-
-		if topRightAmount > 0 || topLeftAmount > 0 || bottomLeftAmount > 0 || bottomRightAmount > 0 {
-			invalidAmountTotal += max(0, topLeftAmount) +
-				max(0, topRightAmount) +
-				max(0, bottomLeftAmount) +
-				max(0, bottomRightAmount)
-
-		}
-	}
-
-	if invalidAmountTotal > 0 {
-		return false, invalidAmountTotal
-	} else {
-		return true, 0
-	}
-
 }
 
 // Readers Utility Functions

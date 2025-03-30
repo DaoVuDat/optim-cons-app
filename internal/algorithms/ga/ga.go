@@ -153,7 +153,8 @@ func (ga *GAAlgorithm) Run() error {
 					Position: childPos,
 					Solution: childPos,
 				}
-				child = ga.ObjectiveFunction.Eval(childPos, child)
+				value, _, _ := ga.ObjectiveFunction.Eval(childPos)
+				child.Value = value
 				newPopulation[idx] = child
 			}(i)
 		}
@@ -190,7 +191,10 @@ func (ga *GAAlgorithm) initialization() {
 				Solution: pos,
 			}
 
-			ga.Population[idx] = ga.ObjectiveFunction.Eval(pos, newGene)
+			value, _, _ := ga.ObjectiveFunction.Eval(pos)
+			newGene.Value = value
+
+			ga.Population[idx] = newGene
 		}(i)
 	}
 	wg.Wait()

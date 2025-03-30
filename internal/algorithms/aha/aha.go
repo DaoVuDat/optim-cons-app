@@ -158,7 +158,8 @@ func (a *AHAAlgorithm) Run() error {
 			}
 
 			// evaluate
-			a.Agents[maxIdx] = a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position, a.Agents[maxIdx])
+			value, _, _ := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
+			a.Agents[maxIdx].Value = value
 
 			for i := range visitTable[maxIdx] {
 				visitTable[maxIdx][i] += 1
@@ -229,7 +230,10 @@ func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]f
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
+	newAgent := a.Agents[agentIdx].CopyAgent()
+	value, _, _ := a.ObjectiveFunction.Eval(newPos)
+	newAgent.Position = newPos
+	newAgent.Value = value
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
 		a.Agents[agentIdx] = newAgent.CopyAgent()
@@ -268,7 +272,10 @@ func (a *AHAAlgorithm) territoryForaging(visitTable [][]float64, directVector []
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
+	newAgent := a.Agents[agentIdx].CopyAgent()
+	value, _, _ := a.ObjectiveFunction.Eval(newPos)
+	newAgent.Position = newPos
+	newAgent.Value = value
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
 		a.Agents[agentIdx] = newAgent.CopyAgent()
@@ -325,7 +332,10 @@ func (a *AHAAlgorithm) initialization() {
 				Solution: positions,
 			}
 
-			a.Agents[agentIdx] = a.ObjectiveFunction.Eval(positions, newAgent)
+			value, _, _ := a.ObjectiveFunction.Eval(positions)
+			newAgent.Value = value
+
+			a.Agents[agentIdx] = newAgent
 		}(agentIdx)
 	}
 	wg.Wait()

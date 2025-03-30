@@ -174,7 +174,11 @@ func (a *MOAHAAlgorithm) Run() error {
 							(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
 				}
 				// evaluate
-				a.Agents[idx] = a.ObjectiveFunction.Eval(a.Agents[idx].Position, a.Agents[idx])
+				value, constraints, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
+
+				a.Agents[idx].Value = value
+				a.Agents[idx].Constraints = constraints
+				a.Agents[idx].Penalty = penalty
 
 				for i := range visitTable[idx] {
 					visitTable[idx][i] += 1
@@ -266,9 +270,14 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
+	newAgent := a.Agents[agentIdx].CopyAgent()
 
-	// TODO: return the k-th rank of current agent
+	value, constraints, penalty := a.ObjectiveFunction.Eval(newPos)
+	newAgent.Position = newPos
+	newAgent.Value = value
+	newAgent.Constraints = constraints
+	newAgent.Penalty = penalty
+
 	// Sanity check the index of current agent
 	frontIdx := 0
 	for i := range paretoFront {
@@ -342,9 +351,13 @@ func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector 
 
 	a.outOfBoundaries(newPos)
 
-	newAgent := a.ObjectiveFunction.Eval(newPos, a.Agents[agentIdx])
+	newAgent := a.Agents[agentIdx].CopyAgent()
+	value, constraints, penalty := a.ObjectiveFunction.Eval(newPos)
+	newAgent.Position = newPos
+	newAgent.Value = value
+	newAgent.Constraints = constraints
+	newAgent.Penalty = penalty
 
-	// TODO: return the k-th rank of current agent
 	// Sanity check the index of current agent
 	frontIdx := 0
 	for i := range paretoFront {
@@ -431,24 +444,16 @@ func (a *MOAHAAlgorithm) initialization() {
 					Solution: positions,
 				},
 			}
-			a.Agents[agentIdx] = a.ObjectiveFunction.Eval(positions, newAgent)
+
+			value, constraints, penalty := a.ObjectiveFunction.Eval(positions)
+			newAgent.Value = value
+			newAgent.Constraints = constraints
+			newAgent.Penalty = penalty
+
+			a.Agents[agentIdx] = newAgent
 		}(agentIdx)
 	}
 	wg.Wait()
-
-	// for testing
-	//a.Agents = GenerateSampleData()
-
-	//a.findBest()
-}
-
-// This algorithm solve only one objective
-func (a *MOAHAAlgorithm) findBest() {
-	for i := range a.Agents {
-		if a.Agents[i].Value[0] < a.BestResult.Value[0] {
-			a.BestResult = a.Agents[i].CopyAgent()
-		}
-	}
 }
 
 func (a *MOAHAAlgorithm) outOfBoundaries(pos []float64) {
@@ -485,36 +490,4 @@ func maxRowMatrix(matrix [][]float64) []float64 {
 		res[i] = maxVal
 	}
 	return res
-}
-
-// / TEST DATA
-var positions = [][]float64{
-	{0.00954412393479120, 0.233841448051443, 0.599638846212200},
-	{0.834358463080465, 0.0425958199795087, 0.472012727659440},
-	{0.0750859712826976, 0.915428283338453, 0.246150381698419},
-	{0.240153814932937, 0.415171957056320, 0.321363186897567},
-	{0.160515492126281, 0.283016309280290, 0.0463956624669029},
-}
-
-var values = [][]float64{
-	{0.00954412393479120, 4.53772729578733},
-	{0.834358463080465, 1.65245422855959},
-	{0.0750859712826976, 5.54331444056112},
-	{0.240153814932937, 3.29650757510864},
-	{0.160515492126281, 1.85111995937698},
-}
-
-func GenerateSampleData() []*multi.MultiResult {
-	agents := make([]*multi.MultiResult, len(positions))
-	for i := 0; i < len(positions); i++ {
-		agents[i] = &multi.MultiResult{
-			SingleResult: single.SingleResult{
-				Position: positions[i],
-				Value:    values[i],
-				Idx:      i,
-			},
-		}
-	}
-
-	return agents
 }
