@@ -119,10 +119,7 @@ func (a *MOAHAAlgorithm) Run() error {
 			} else {
 				// axial flight
 				randNum := rand.Intn(dimensions)
-				//fmt.Println()
-				for i := 0; i < randNum; i++ {
-					directVector[agentIdx][i] = 1
-				}
+				directVector[agentIdx][randNum] = 1
 			}
 
 			r = rand.Float64()

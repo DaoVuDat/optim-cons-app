@@ -45,7 +45,9 @@ func main() {
 	fmt.Println("#NonFixedLocations", len(consLayoutConfigs.NonFixedLocations))
 
 	// LOAD PHASES
-	phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
+	phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
+	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
+	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -272,6 +274,8 @@ func main() {
 		}
 		fmt.Println(";")
 	}
+
+	fmt.Println("Archive Size", len(algo.Archive))
 
 	fmt.Println("Min F1", slices.Min(f1Values))
 	fmt.Println("Max F1", slices.Max(f1Values))
