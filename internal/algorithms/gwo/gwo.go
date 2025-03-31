@@ -199,7 +199,6 @@ func (g *GWOAlgorithm) initialization() {
 			newAgent := &single.SingleResult{
 				Idx:      agentIdx,
 				Position: positions,
-				Solution: positions,
 			}
 
 			value, _, _ := g.ObjectiveFunction.Eval(positions)

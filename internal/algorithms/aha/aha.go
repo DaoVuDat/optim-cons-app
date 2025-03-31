@@ -329,7 +329,6 @@ func (a *AHAAlgorithm) initialization() {
 			newAgent := &single.SingleResult{
 				Idx:      agentIdx,
 				Position: positions,
-				Solution: positions,
 			}
 
 			value, _, _ := a.ObjectiveFunction.Eval(positions)

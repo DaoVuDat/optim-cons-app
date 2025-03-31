@@ -8,6 +8,7 @@ import (
 	"golang-moaha-construction/internal/algorithms/moaha"
 	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 	"log"
+	"slices"
 )
 
 func main() {
@@ -103,7 +104,7 @@ func main() {
 	selectedCrane := []SelectedCrane{
 		{
 			Name:          "TF14",
-			BuildingNames: []string{"TF8", "TF9", "TF10"},
+			BuildingNames: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
 			Radius:        40,
 		},
 	}
@@ -255,22 +256,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	f1Values := make([]float64, len(algo.Archive))
+	f2Values := make([]float64, len(algo.Archive))
 	for i := 0; i < 2; i++ {
-		for _, agent := range algo.Archive {
+		values := make([]float64, len(algo.Archive))
+		for idx, agent := range algo.Archive {
+			values[idx] = agent.Value[i]
 			fmt.Print(agent.Value[i])
 			fmt.Print(" , ")
+		}
+		if i == 0 {
+			f1Values = values
+		} else {
+			f2Values = values
 		}
 		fmt.Println(";")
 	}
 
-	for _, val := range algo.Archive[0].Position {
-		fmt.Printf("%f, ", val)
-	}
+	fmt.Println("Min F1", slices.Min(f1Values))
+	fmt.Println("Max F1", slices.Max(f1Values))
 
-	fmt.Println()
-	for _, val := range algo.Archive[0].Value {
-		fmt.Println(val)
-	}
-
-	return
+	fmt.Println("Min F2", slices.Min(f2Values))
+	fmt.Println("Max F2", slices.Max(f2Values))
 }

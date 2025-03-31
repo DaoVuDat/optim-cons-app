@@ -32,7 +32,6 @@ func (agent *MultiResult) CopyAgent() *MultiResult {
 		SingleResult: single.SingleResult{
 			Idx:         agent.Idx,
 			Position:    util.CopyArray(agent.Position),
-			Solution:    util.CopyArray(agent.Solution),
 			Value:       util.CopyArray(agent.Value),
 			Constraints: util.CopyMap(agent.Constraints),
 			Penalty:     util.CopyMap(agent.Penalty),

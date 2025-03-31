@@ -8,7 +8,6 @@ import (
 type SingleResult struct {
 	Idx         int
 	Position    []float64
-	Solution    []float64
 	Value       []float64
 	Constraints map[string]float64
 	Penalty     map[string]float64
@@ -28,7 +27,6 @@ func (agent *SingleResult) CopyAgent() *SingleResult {
 	return &SingleResult{
 		Idx:         agent.Idx,
 		Position:    util.CopyArray(agent.Position),
-		Solution:    util.CopyArray(agent.Solution),
 		Value:       util.CopyArray(agent.Value),
 		Constraints: util.CopyMap(agent.Constraints),
 		Penalty:     util.CopyMap(agent.Penalty),

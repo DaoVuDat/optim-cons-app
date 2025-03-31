@@ -63,7 +63,7 @@ func (obj *RiskObjective) Eval(locations map[string]Location) float64 {
 				return 0
 			}
 
-			hio := obj.HazardInteractionMatrix[idxI][idxI]
+			hio := hij[idxI][idxI]
 			for j := 0; j < len(phases); j++ {
 				facilityNameJ := phases[j]
 				facilityJ := locations[facilityNameJ]
@@ -120,6 +120,12 @@ func (obj *RiskObjective) Eval(locations map[string]Location) float64 {
 		}
 
 		results += phaseResult
+	}
+
+	for _, v := range mapFacility {
+		if v.Count > 1 {
+			results -= (float64(v.Count) - 1) * v.Value
+		}
 	}
 
 	return results

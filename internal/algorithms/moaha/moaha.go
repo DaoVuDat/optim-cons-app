@@ -418,7 +418,6 @@ func (a *MOAHAAlgorithm) initialization() {
 				SingleResult: single.SingleResult{
 					Idx:      agentIdx,
 					Position: positions,
-					Solution: positions,
 				},
 			}
 

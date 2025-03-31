@@ -151,7 +151,6 @@ func (ga *GAAlgorithm) Run() error {
 				child := &single.SingleResult{
 					Idx:      idx,
 					Position: childPos,
-					Solution: childPos,
 				}
 				value, _, _ := ga.ObjectiveFunction.Eval(childPos)
 				child.Value = value
@@ -188,7 +187,6 @@ func (ga *GAAlgorithm) initialization() {
 			newGene := &single.SingleResult{
 				Idx:      idx,
 				Position: pos,
-				Solution: pos,
 			}
 
 			value, _, _ := ga.ObjectiveFunction.Eval(pos)
