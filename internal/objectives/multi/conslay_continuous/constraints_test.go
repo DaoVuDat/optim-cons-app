@@ -857,11 +857,15 @@ func CreateInputPhases() [][]string {
 
 func TestOutOfBoundsConstraint_Eval_Feasible(t *testing.T) {
 	// Setup
-	outOfBoundsConstraint := OutOfBoundsConstraint{
-		MaxWidth:  95,
-		MaxLength: 120,
-		Phases:    CreateInputPhases(),
-	}
+	outOfBoundsConstraint := CreateOutOfBoundsConstraint(
+		0,
+		95,
+		0,
+		120,
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	locations := CreateInputLocation(true)
 
@@ -873,9 +877,11 @@ func TestOutOfBoundsConstraint_Eval_Feasible(t *testing.T) {
 }
 
 func TestOverlapConstraint_Eval_Feasible(t *testing.T) {
-	overlapConstraint := OverlapConstraint{
-		Phases: CreateInputPhases(),
-	}
+	overlapConstraint := CreateOverlapConstraint(
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	locations := CreateInputLocation(true)
 
@@ -887,15 +893,18 @@ func TestOverlapConstraint_Eval_Feasible(t *testing.T) {
 
 func TestCoverRangeCraneConstraint_Eval_Feasible(t *testing.T) {
 	locations := CreateInputLocation(true)
-	coverRangeConstraint := CoverRangeCraneConstraint{
-		Cranes: []Crane{
+	coverRangeConstraint := CreateCoverRangeCraneConstraint(
+		[]Crane{
 			{
 				Location:     locations["TF14"],
 				BuildingName: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
 				Radius:       40,
 			},
 		},
-	}
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	penalty := coverRangeConstraint.Eval(locations)
 	if math.Round(penalty) != 0 {
@@ -905,8 +914,8 @@ func TestCoverRangeCraneConstraint_Eval_Feasible(t *testing.T) {
 
 func TestInclusiveZoneConstraint_Eval_Feasible(t *testing.T) {
 	locations := CreateInputLocation(true)
-	zoneConstraint := InclusiveZoneConstraint{
-		Zones: []Zone{
+	zoneConstraint := CreateInclusiveZoneConstraint(
+		[]Zone{
 			{
 				Location:      locations["TF13"],
 				BuildingNames: []string{"TF7"},
@@ -918,7 +927,10 @@ func TestInclusiveZoneConstraint_Eval_Feasible(t *testing.T) {
 				Size:          15,
 			},
 		},
-	}
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	penalty := zoneConstraint.Eval(locations)
 	if math.Round(penalty) != 0 {
@@ -928,11 +940,15 @@ func TestInclusiveZoneConstraint_Eval_Feasible(t *testing.T) {
 
 func TestOutOfBoundsConstraint_Eval_Infeasible(t *testing.T) {
 	// Setup
-	outOfBoundsConstraint := OutOfBoundsConstraint{
-		MaxWidth:  95,
-		MaxLength: 120,
-		Phases:    CreateInputPhases(),
-	}
+	outOfBoundsConstraint := CreateOutOfBoundsConstraint(
+		0,
+		95,
+		0,
+		120,
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	locations := CreateInputLocation(false)
 
@@ -944,9 +960,11 @@ func TestOutOfBoundsConstraint_Eval_Infeasible(t *testing.T) {
 }
 
 func TestOverlapConstraint_Eval_Infeasible(t *testing.T) {
-	overlapConstraint := OverlapConstraint{
-		Phases: CreateInputPhases(),
-	}
+	overlapConstraint := CreateOverlapConstraint(
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	locations := CreateInputLocation(false)
 
@@ -958,16 +976,18 @@ func TestOverlapConstraint_Eval_Infeasible(t *testing.T) {
 
 func TestCoverRangeCraneConstraint_Eval_Infeasible(t *testing.T) {
 	locations := CreateInputLocation(false)
-	coverRangeConstraint := CoverRangeCraneConstraint{
-		Cranes: []Crane{
+	coverRangeConstraint := CreateCoverRangeCraneConstraint(
+		[]Crane{
 			{
 				Location:     locations["TF14"],
 				BuildingName: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
 				Radius:       40,
 			},
 		},
-		Phases: CreateInputPhases(),
-	}
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	penalty := coverRangeConstraint.Eval(locations)
 	if util.RoundTo(penalty, 2) != 208.81 {
@@ -977,8 +997,8 @@ func TestCoverRangeCraneConstraint_Eval_Infeasible(t *testing.T) {
 
 func TestInclusiveZoneConstraint_Eval_Infeasible(t *testing.T) {
 	locations := CreateInputLocation(false)
-	zoneConstraint := InclusiveZoneConstraint{
-		Zones: []Zone{
+	zoneConstraint := CreateInclusiveZoneConstraint(
+		[]Zone{
 			{
 				Location:      locations["TF13"],
 				BuildingNames: []string{"TF7"},
@@ -990,7 +1010,10 @@ func TestInclusiveZoneConstraint_Eval_Infeasible(t *testing.T) {
 				Size:          15,
 			},
 		},
-	}
+		CreateInputPhases(),
+		0,
+		1,
+	)
 
 	penalty := zoneConstraint.Eval(locations)
 	if util.RoundTo(penalty, 2) != 27.65 {

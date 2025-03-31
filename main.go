@@ -68,14 +68,22 @@ func main() {
 
 	// Hoisting Objective Configs
 	hoistingConfigs := conslay.HoistingConfigs{
+		//PrefabricatedLocations: []string{"TF8", "TF9", "TF10"},
 		NumberOfFloors: 10,
-		HoistingTime:   hoistingTime,
-		FloorHeight:    3.2,
-		ZM:             2,
-		Vuvg:           37.5,
-		Vlvg:           37.5 / 2,
-		Vag:            50,
-		Vwg:            0.5,
+		HoistingTime: map[string][]conslay.HoistingTime{
+			"TF14": hoistingTime,
+		},
+		FloorHeight:          3.2,
+		CraneLocations:       nil,
+		ZM:                   2,
+		Vuvg:                 37.5,
+		Vlvg:                 37.5 / 2,
+		Vag:                  50,
+		Vwg:                  0.5,
+		AlphaHoistingPenalty: 1,
+		AlphaHoisting:        0.25,
+		BetaHoisting:         1, // beta hoisting = n hoisting
+		NHoisting:            1,
 	}
 
 	hoistingObj, err := conslay.CreateHoistingObjectiveFromConfig(hoistingConfigs)
@@ -113,44 +121,23 @@ func main() {
 	hoistingObj.CraneLocations = craneLocations
 
 	// select TF that is prefabricated - in Evaluation
-	selectedPref := []string{
-		"TF8", "TF9", "TF10",
-	}
-	prefLocs := make([]conslay.Location, 0)
-	for _, loc := range selectedPref {
-		if prefLoc, ok := consLayObj.Locations[loc]; ok {
-			prefLocs = append(prefLocs, conslay.Location{
-				Coordinate: prefLoc.Coordinate,
-				Length:     prefLoc.Length,
-				Width:      prefLoc.Width,
-				IsFixed:    true,
-				Name:       prefLoc.Name,
-				Symbol:     loc,
-			})
-		}
-	}
-	hoistingObj.PrefabricatedLocations = prefLocs
+	//selectedPref := []string{"TF8", "TF9", "TF10"}
+	//
+	//hoistingObj.PrefabricatedLocations = selectedPref
 
 	fmt.Println("\tHoisting Time")
-	for i := range hoistingObj.HoistingTime {
-		fmt.Printf("%d: Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
-			i+1,
-			hoistingObj.HoistingTime[i].Name,
-			hoistingObj.HoistingTime[i].BuildingName,
-			hoistingObj.HoistingTime[i].Coordinate.X,
-			hoistingObj.HoistingTime[i].Coordinate.Y,
-			hoistingObj.HoistingTime[i].HoistingNumber,
-		)
-	}
-
-	fmt.Println("\tPrefabricated Locations")
-	for i := range hoistingObj.PrefabricatedLocations {
-		fmt.Printf("%d: Name = %s, L = %f, W = %f \n",
-			i+1,
-			hoistingObj.PrefabricatedLocations[i].Name,
-			hoistingObj.PrefabricatedLocations[i].Length,
-			hoistingObj.PrefabricatedLocations[i].Width,
-		)
+	for k, v := range hoistingObj.HoistingTime {
+		hoistingTimeSlice := v
+		fmt.Printf("Crane name = %s\n", k)
+		for i := range hoistingTimeSlice {
+			fmt.Printf(" => Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
+				hoistingTimeSlice[i].Name,
+				hoistingTimeSlice[i].BuildingName,
+				hoistingTimeSlice[i].Coordinate.X,
+				hoistingTimeSlice[i].Coordinate.Y,
+				hoistingTimeSlice[i].HoistingNumber,
+			)
+		}
 	}
 
 	fmt.Println("\tCrane Locations")

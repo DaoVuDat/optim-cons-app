@@ -119,7 +119,7 @@ func CreateSphere(configs []*data.Config) (objectives.Problem[SingleResult], err
 
 }
 
-func (s *sphere) Eval(x []float64) (values []float64, constraints []float64, penalty []float64) {
+func (s *sphere) Eval(x []float64) (values []float64, constraints map[string]float64, penalty map[string]float64) {
 	//time.Sleep(time.Second * 1)
 
 	sum := 0.0
@@ -127,7 +127,7 @@ func (s *sphere) Eval(x []float64) (values []float64, constraints []float64, pen
 		sum += x[i] * x[i]
 	}
 
-	return []float64{sum}, []float64{}, []float64{}
+	return []float64{sum}, map[string]float64{}, map[string]float64{}
 }
 
 func (s *sphere) GetUpperBound() []float64 {

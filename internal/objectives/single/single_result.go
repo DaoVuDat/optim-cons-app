@@ -10,8 +10,8 @@ type SingleResult struct {
 	Position    []float64
 	Solution    []float64
 	Value       []float64
-	Constraints []float64
-	Penalty     []float64
+	Constraints map[string]float64
+	Penalty     map[string]float64
 }
 
 type SingleProblem interface {

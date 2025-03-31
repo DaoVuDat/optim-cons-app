@@ -2,53 +2,72 @@ package conslay_continuous
 
 import (
 	"math"
-	"slices"
+)
+
+// list constraints
+
+const (
+	ConstraintOverlap             = "Overlap"
+	ConstraintOutOfBound          = "OutOfBound"
+	ConstraintsCoverInCraneRadius = "CoverInCraneRadius"
+	ConstraintInclusiveZone       = "InclusiveZone"
 )
 
 type Constrainter interface {
 	Eval(map[string]Location) float64
+	GetName() string
+	GetAlphaPenalty() float64
+	GetPowerPenalty() float64
 }
 
 // Cover Range of Crane
 
 type CoverRangeCraneConstraint struct {
-	Cranes []Crane
-	Phases [][]string
+	Cranes                 []Crane
+	Phases                 [][]string
+	Name                   string
+	AlphaCoverRangePenalty float64
+	PowerCoverRangePenalty float64
+}
+
+func CreateCoverRangeCraneConstraint(
+	cranes []Crane, phases [][]string,
+	alphaCoverRangePenalty float64,
+	powerCoverRangePenalty float64,
+) *CoverRangeCraneConstraint {
+	return &CoverRangeCraneConstraint{
+		Cranes:                 cranes,
+		Phases:                 phases,
+		Name:                   ConstraintsCoverInCraneRadius,
+		AlphaCoverRangePenalty: alphaCoverRangePenalty,
+		PowerCoverRangePenalty: powerCoverRangePenalty,
+	}
+}
+
+func (c CoverRangeCraneConstraint) GetName() string {
+	return c.Name
+}
+
+func (c CoverRangeCraneConstraint) GetAlphaPenalty() float64 {
+	return c.AlphaCoverRangePenalty
+}
+
+func (c CoverRangeCraneConstraint) GetPowerPenalty() float64 {
+	return c.PowerCoverRangePenalty
 }
 
 func (c CoverRangeCraneConstraint) Eval(mapLocations map[string]Location) float64 {
 	amount := 0.0
 
-	for _, phase := range c.Phases {
-		for _, crane := range c.Cranes {
-			// check crane exists in phase
-			if !slices.Contains(phase, crane.Symbol) {
-				continue
-			}
-
-			buildings := make([]Location, 0)
-			for _, building := range crane.BuildingName {
-				if !slices.Contains(phase, building) {
-					continue
-				}
-
-				buildingLocation := mapLocations[building]
-				buildings = append(buildings, buildingLocation)
-			}
-			_, val := IsCoverRangeOfCrane(crane, buildings)
-			amount += val
+	for i := 0; i < len(c.Cranes); i++ {
+		buildings := make([]Location, len(c.Cranes[i].BuildingName))
+		for j := 0; j < len(c.Cranes[i].BuildingName); j++ {
+			buildings[j] = mapLocations[c.Cranes[i].BuildingName[j]]
 		}
-	}
 
-	//for i := 0; i < len(c.Cranes); i++ {
-	//	buildings := make([]Location, len(c.Cranes[i].BuildingName))
-	//	for j := 0; j < len(c.Cranes[i].BuildingName); j++ {
-	//		buildings[j] = mapLocations[c.Cranes[i].BuildingName[j]]
-	//	}
-	//
-	//	_, val := IsCoverRangeOfCrane(c.Cranes[i], buildings)
-	//	amount += val
-	//}
+		_, val := IsCoverRangeOfCrane(c.Cranes[i], buildings)
+		amount += val
+	}
 
 	return amount
 }
@@ -104,21 +123,39 @@ func IsCoverRangeOfCrane(crane Crane, buildings []Location) (bool, float64) {
 // Overlap Constraint
 
 type OverlapConstraint struct {
-	Phases [][]string
+	Phases              [][]string
+	Name                string
+	AlphaOverlapPenalty float64
+	PowerOverlapPenalty float64
+}
+
+func CreateOverlapConstraint(
+	phases [][]string,
+	alphaOverlapPenalty float64,
+	powerOverlapPenalty float64,
+) *OverlapConstraint {
+	return &OverlapConstraint{
+		Phases:              phases,
+		Name:                ConstraintOverlap,
+		AlphaOverlapPenalty: alphaOverlapPenalty,
+		PowerOverlapPenalty: powerOverlapPenalty,
+	}
+}
+
+func (c OverlapConstraint) GetName() string {
+	return c.Name
+}
+
+func (c OverlapConstraint) GetAlphaPenalty() float64 {
+	return c.AlphaOverlapPenalty
+}
+
+func (c OverlapConstraint) GetPowerPenalty() float64 {
+	return c.PowerOverlapPenalty
 }
 
 func (c OverlapConstraint) Eval(mapLocations map[string]Location) float64 {
 	amount := 0.0
-
-	//// convert map to slice
-	//sliceLocations := slices.Collect(maps.Values(mapLocations))
-	//
-	//for i := 0; i < len(sliceLocations)-1; i++ {
-	//	for j := i + 1; j < len(sliceLocations); j++ {
-	//		_, val := IsOverlapped(sliceLocations[i], sliceLocations[j])
-	//		amount += val
-	//	}
-	//}
 
 	for _, phase := range c.Phases {
 		numberOfLocations := len(phase)
@@ -152,11 +189,44 @@ func IsOverlapped(b1, b2 Location) (bool, float64) {
 // Out of Bounds Constraint
 
 type OutOfBoundsConstraint struct {
-	MinWidth  float64
-	MaxWidth  float64
-	MinLength float64
-	MaxLength float64
-	Phases    [][]string // Out of bounds the construction layout => No need to calculate each phase
+	MinWidth                float64
+	MaxWidth                float64
+	MinLength               float64
+	MaxLength               float64
+	Phases                  [][]string // Out of bounds the construction layout => No need to calculate each phase
+	Name                    string
+	AlphaOutOfBoundsPenalty float64
+	PowerOutOfBoundsPenalty float64
+}
+
+func CreateOutOfBoundsConstraint(minWidth, maxWidth, minLength, maxLength float64,
+	phases [][]string,
+	alphaOutOfBoundsPenalty float64,
+	powerOutOfBoundsPenalty float64,
+) *OutOfBoundsConstraint {
+
+	return &OutOfBoundsConstraint{
+		MinWidth:                minWidth,
+		MaxWidth:                maxWidth,
+		MinLength:               minLength,
+		MaxLength:               maxLength,
+		Phases:                  phases,
+		Name:                    ConstraintOutOfBound,
+		AlphaOutOfBoundsPenalty: alphaOutOfBoundsPenalty,
+		PowerOutOfBoundsPenalty: powerOutOfBoundsPenalty,
+	}
+}
+
+func (c OutOfBoundsConstraint) GetName() string {
+	return c.Name
+}
+
+func (c OutOfBoundsConstraint) GetAlphaPenalty() float64 {
+	return c.AlphaOutOfBoundsPenalty
+}
+
+func (c OutOfBoundsConstraint) GetPowerPenalty() float64 {
+	return c.PowerOutOfBoundsPenalty
 }
 
 func (c OutOfBoundsConstraint) Eval(mapLocations map[string]Location) float64 {
@@ -194,8 +264,38 @@ type Zone struct {
 }
 
 type InclusiveZoneConstraint struct {
-	Zones  []Zone
-	Phases [][]string // Building is fixed => No need to calculate each phase
+	Zones                     []Zone
+	Phases                    [][]string // Building is fixed => No need to calculate each phase
+	Name                      string
+	AlphaInclusiveZonePenalty float64
+	PowerInclusiveZonePenalty float64
+}
+
+func CreateInclusiveZoneConstraint(
+	zones []Zone,
+	phases [][]string,
+	alphaInclusiveZonePenalty float64,
+	powerInclusiveZonePenalty float64,
+) *InclusiveZoneConstraint {
+	return &InclusiveZoneConstraint{
+		Zones:                     zones,
+		Phases:                    phases,
+		Name:                      ConstraintInclusiveZone,
+		AlphaInclusiveZonePenalty: alphaInclusiveZonePenalty,
+		PowerInclusiveZonePenalty: powerInclusiveZonePenalty,
+	}
+}
+
+func (c InclusiveZoneConstraint) GetName() string {
+	return c.Name
+}
+
+func (c InclusiveZoneConstraint) GetAlphaPenalty() float64 {
+	return c.AlphaInclusiveZonePenalty
+}
+
+func (c InclusiveZoneConstraint) GetPowerPenalty() float64 {
+	return c.PowerInclusiveZonePenalty
 }
 
 func (c InclusiveZoneConstraint) Eval(mapLocations map[string]Location) float64 {

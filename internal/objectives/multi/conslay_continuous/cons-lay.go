@@ -5,6 +5,8 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"math"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -15,14 +17,6 @@ const (
 	DynamicLocations = "NonFixedLocations"
 	StaticLocations  = "FixedLocations"
 	Phases           = "Phases"
-)
-
-// list constraints
-
-const (
-	ConstraintOverlap             = "Overlap"
-	ConstraintOutOfBound          = "OutOfBound"
-	ConstraintsCoverInCraneRadius = "CoverInCraneRadius"
 )
 
 const ConsLayoutName = "Construction-Layout"
@@ -42,6 +36,11 @@ type Location struct {
 	Name       string
 }
 
+type Objectiver interface {
+	Eval(mapLocations map[string]Location) float64
+	GetAlphaPenalty() float64
+}
+
 type ConsLay struct {
 	Dimensions        int
 	LayoutLength      float64
@@ -51,8 +50,8 @@ type ConsLay struct {
 	FixedLocations    []Location
 	NonFixedLocations []Location
 	Locations         map[string]Location
-	Objectives        map[string]any
-	Constraints       map[string]struct{}
+	Objectives        map[string]Objectiver
+	Constraints       map[string]Constrainter
 	Phases            [][]string
 	Rounding          bool
 }
@@ -80,8 +79,8 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		FixedLocations:    consLayConfigs.FixedLocations,
 		NonFixedLocations: consLayConfigs.NonFixedLocations,
 		Phases:            consLayConfigs.Phases,
-		Objectives:        make(map[string]any),
-		Constraints:       make(map[string]struct{}),
+		Objectives:        make(map[string]Objectiver),
+		Constraints:       make(map[string]Constrainter),
 	}
 
 	// Find the x, y, r of Non-fixed Locations
@@ -108,7 +107,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, constraints []float64, penalty []float64) {
+func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[string]float64, penalty map[string]float64) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]Location, len(s.Locations))
@@ -158,19 +157,43 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints []float64
 	}
 
 	// checking constraints
-
-	for k := range s.Constraints {
-		switch k {
-		case ConstraintOverlap:
-
-		case ConstraintOutOfBound:
-
-		case ConstraintsCoverInCraneRadius:
-		}
+	penalty = make(map[string]float64)
+	for k, v := range s.Constraints {
+		penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
 	}
 
-	return []float64{0, 0}, []float64{}, []float64{}
+	// calculate objectives and add penalty to them
+	values = make([]float64, len(s.Objectives))
+	valuesName := make([]string, len(s.Objectives))
 
+	i := 0
+	for k := range s.Objectives {
+		valuesName[i] = k
+		i++
+	}
+
+	// sort values name
+	sort.Slice(valuesName, func(i, j int) bool {
+		return valuesName[i] < valuesName[j]
+	})
+
+	// sort values in alphabetical order
+	for k, v := range s.Objectives {
+		idx, ok := slices.BinarySearch(valuesName, k)
+		if !ok {
+			panic("objective not found")
+		}
+		val := v.Eval(mapLocations)
+
+		// add penalty to objective value
+		for _, penaltyAlpha := range penalty {
+			val += penaltyAlpha * v.GetAlphaPenalty()
+		}
+
+		values[idx] = val
+	}
+
+	return values, map[string]float64{}, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
@@ -193,34 +216,21 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
-func (s *ConsLay) AddObjective(name string, objective any) error {
+func (s *ConsLay) AddObjective(name string, objective Objectiver) error {
 	if _, ok := s.Objectives[name]; ok {
 		return errors.New("the objective has been existed: " + name)
 	}
 
-	switch objective.(type) {
-	case HoistingObjective:
-		// create hoisting objective
-		s.Objectives[name] = objective
-	case *HoistingObjective:
-		s.Objectives[name] = objective
-	case RiskObjective:
-		// create risk objective
-		s.Objectives[name] = objective
-	case *RiskObjective:
-		s.Objectives[name] = objective
-	default:
-		return errors.New("invalid objective type: " + name)
-	}
+	s.Objectives[name] = objective
 	return nil
 }
 
-func (s *ConsLay) AddConstraint(name string, constraint any) error {
+func (s *ConsLay) AddConstraint(name string, constraint Constrainter) error {
 	if _, ok := s.Constraints[name]; ok {
 		return errors.New("the constraint has been existed: " + name)
 	}
 
-	s.Constraints[name] = struct{}{}
+	s.Constraints[name] = constraint
 	return nil
 }
 
