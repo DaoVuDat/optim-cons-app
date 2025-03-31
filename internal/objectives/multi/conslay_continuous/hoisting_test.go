@@ -1,14 +1,31 @@
 package conslay_continuous
 
 import (
+	"golang-moaha-construction/internal/util"
 	"log"
 	"testing"
 )
 
 func TestHoistingObjective_Eval(t *testing.T) {
-	locations := CreateInputLocation(false)
 
-	hoistingTime, err := ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
+	testTable := []struct {
+		locations map[string]Location
+		expected  float64
+		name      string
+	}{
+		{
+			locations: CreateInputLocation(true),
+			expected:  39079.38,
+			name:      "mostly feasible locations",
+		},
+		{
+			locations: CreateInputLocation(false),
+			expected:  42561.22,
+			name:      "infeasible locations",
+		},
+	}
+
+	hoistingTime, err := ReadHoistingTimeDataFromFile("../../../../data/conslay/f1_hoisting_time_data.xlsx")
 
 	if err != nil {
 		log.Fatal(err)
@@ -37,20 +54,23 @@ func TestHoistingObjective_Eval(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	craneLocations := make([]Crane, 0)
-	craneLocations = append(craneLocations, Crane{
-		Location:     locations["TF14"],
-		BuildingName: []string{"TF8", "TF9", "TF10"},
-		Radius:       40,
-	})
-
-	hoistingObj.CraneLocations = craneLocations
-
 	// calculate result
-	result := hoistingObj.Eval(locations)
+	for _, test := range testTable {
+		craneLocations := make([]Crane, 0)
+		craneLocations = append(craneLocations, Crane{
+			Location:     test.locations["TF14"],
+			BuildingName: []string{"TF8", "TF9", "TF10"},
+			Radius:       40,
+		})
 
-	// TODO: check this
-	if result != 0.0 {
-		t.Errorf("expected result to be 0, got %f", result)
+		hoistingObj.CraneLocations = craneLocations
+		t.Run(test.name, func(t *testing.T) {
+
+			result := hoistingObj.Eval(test.locations)
+			if util.RoundTo(result, 2) != test.expected {
+				t.Errorf("expected result to be %f, got %f", test.expected, result)
+			}
+		})
 	}
+
 }

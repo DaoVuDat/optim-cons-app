@@ -38,6 +38,7 @@ type HoistingConfigs struct {
 	AlphaHoisting        float64
 	BetaHoisting         float64
 	NHoisting            float64
+	Phases               [][]string
 }
 
 type Crane struct {
@@ -67,6 +68,7 @@ type HoistingObjective struct {
 	AlphaHoisting        float64
 	BetaHoisting         float64
 	NHoisting            float64
+	Phases               [][]string
 }
 
 func CreateHoistingObjective() (*HoistingObjective, error) {
@@ -88,6 +90,7 @@ func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*Hoisti
 		AlphaHoisting:        hoistingConfigs.AlphaHoisting,
 		BetaHoisting:         hoistingConfigs.BetaHoisting,
 		NHoisting:            hoistingConfigs.NHoisting,
+		Phases:               hoistingConfigs.Phases,
 	}
 	return hoistingObj, nil
 }
@@ -104,7 +107,7 @@ func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
 			HDjg[prefabricatedName] = Distance2D(crane.Coordinate, locations[prefabricatedName].Coordinate)
 		}
 
-		hoistingTime := obj.HoistingTime[crane.Name]
+		hoistingTime := obj.HoistingTime[crane.Symbol]
 		for _, hoisting := range hoistingTime {
 			// calculate distance between hoisting and prefabricated
 			HDkg := Distance2D(hoisting.Coordinate, crane.Coordinate)

@@ -36,6 +36,19 @@ type Location struct {
 	Name       string
 }
 
+func (loc Location) ConvertToIdx() (int, error) {
+	// strip "TF" and convert to int
+	idxStr := strings.Trim(loc.Symbol, "TF")
+
+	idx, err := strconv.Atoi(idxStr)
+	if err != nil {
+		return 0, err
+	}
+
+	// convert back to 0 index-based
+	return idx - 1, nil
+}
+
 type Objectiver interface {
 	Eval(mapLocations map[string]Location) float64
 	GetAlphaPenalty() float64
