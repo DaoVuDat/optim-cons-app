@@ -30,7 +30,7 @@ func (agent *SingleResult) CopyAgent() *SingleResult {
 		Position:    util.CopyArray(agent.Position),
 		Solution:    util.CopyArray(agent.Solution),
 		Value:       util.CopyArray(agent.Value),
-		Constraints: util.CopyArray(agent.Constraints),
-		Penalty:     util.CopyArray(agent.Penalty),
+		Constraints: util.CopyMap(agent.Constraints),
+		Penalty:     util.CopyMap(agent.Penalty),
 	}
 }

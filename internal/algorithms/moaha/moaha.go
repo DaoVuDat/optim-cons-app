@@ -9,8 +9,6 @@ import (
 	"math"
 	"math/rand"
 	"slices"
-	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -33,51 +31,30 @@ type MOAHAAlgorithm struct {
 	Archive           []*multi.MultiResult
 }
 
-var Configs = []data.Config{
-	{
-		Name:               NumAgents,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               NumIters,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
+type Configs struct {
+	NumAgents     int
+	NumIterations int
+	ArchiveSize   int
 }
 
 func Create(
 	problem multi.MultiProblem,
-	configs []*data.Config,
+	configs Configs,
 ) (*MOAHAAlgorithm, error) {
 
-	var numsIters, numAgents, archiveSize int
+	convergence := make([]float64, configs.NumIterations)
+	agents := make([]*multi.MultiResult, configs.NumAgents)
 
-	for _, config := range configs {
-		// sanity check
-		val := strings.Trim(config.Value, " ")
-		switch config.Name {
-		case NumAgents:
-			numAgents, _ = strconv.Atoi(val)
-		case NumIters:
-			numsIters, _ = strconv.Atoi(val)
-		case ArchiveSize:
-			archiveSize, _ = strconv.Atoi(val)
-
-		}
-	}
-
-	convergence := make([]float64, numsIters)
-	agents := make([]*multi.MultiResult, numAgents)
-
-	archive := make([]*multi.MultiResult, 0, archiveSize)
+	archive := make([]*multi.MultiResult, 0, configs.ArchiveSize)
 
 	return &MOAHAAlgorithm{
-		NumberOfAgents:    numAgents,
-		NumberOfIter:      numsIters,
+		NumberOfAgents:    configs.NumAgents,
+		NumberOfIter:      configs.NumIterations,
 		Convergence:       convergence,
 		ObjectiveFunction: problem,
 		Agents:            agents,
 		Archive:           archive,
-		ArchiveSize:       archiveSize,
+		ArchiveSize:       configs.ArchiveSize,
 	}, nil
 }
 

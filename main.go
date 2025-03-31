@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"golang-moaha-construction/internal/algorithms/moaha"
 	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 	"log"
 )
@@ -153,10 +154,122 @@ func main() {
 		)
 	}
 
-	// Add objectives to conslay_continuous problem
-	err = consLayObj.AddObjective(conslay.HoistingObjectiveType, hoistingObj)
+	// RISK
+	hazardInteraction, err := conslay.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
+
+	// Hoisting Objective Configs
+	riskConfigs := conslay.RiskConfigs{
+		HazardInteractionMatrix: hazardInteraction,
+		Delta:                   0.01,
+		AlphaRiskPenalty:        100,
+		Phases:                  phases,
+	}
+	riskObj, err := conslay.CreateRiskObjectiveFromConfig(riskConfigs)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// Add objectives to conslay_continuous problem
+	err = consLayObj.AddObjective(conslay.HoistingObjectiveType, hoistingObj)
+	err = consLayObj.AddObjective(conslay.RiskObjectiveType, riskObj)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Add constraints
+	outOfBoundsConstraint := conslay.CreateOutOfBoundsConstraint(
+		0,
+		95,
+		0,
+		120,
+		phases,
+		20000,
+		1,
+	)
+
+	overlapConstraint := conslay.CreateOverlapConstraint(
+		phases,
+		20000,
+		1,
+	)
+
+	coverRangeConstraint := conslay.CreateCoverRangeCraneConstraint(
+		craneLocations,
+		phases,
+		20000,
+		1,
+	)
+
+	zoneConstraint := conslay.CreateInclusiveZoneConstraint(
+		[]conslay.Zone{
+			{
+				Location:      locations["TF13"],
+				BuildingNames: []string{"TF7"},
+				Size:          20,
+			},
+			{
+				Location:      locations["TF13"],
+				BuildingNames: []string{"TF1", "TF2"},
+				Size:          15,
+			},
+		},
+		phases,
+		20000,
+		1,
+	)
+	err = consLayObj.AddConstraint(conslay.ConstraintOutOfBound, outOfBoundsConstraint)
+	err = consLayObj.AddConstraint(conslay.ConstraintOverlap, overlapConstraint)
+	err = consLayObj.AddConstraint(conslay.ConstraintInclusiveZone, zoneConstraint)
+	err = consLayObj.AddConstraint(conslay.ConstraintsCoverInCraneRadius, coverRangeConstraint)
+
+	//// ZDT1
+	//
+	//dimensions := 30
+	//upperBound := make([]float64, dimensions)
+	//lowerBound := make([]float64, dimensions)
+	//for i := range upperBound {
+	//	upperBound[i] = 1
+	//	lowerBound[i] = 0
+	//}
+	//
+	//sphereObjective, _ := multi.CreateZDT1(multi.ZDT1Config{
+	//	Dimension:  dimensions,
+	//	UpperBound: upperBound,
+	//	LowerBound: lowerBound,
+	//})
+
+	// MOAHA
+	moahaConfigs := moaha.Configs{
+		NumAgents:     200,
+		NumIterations: 400,
+		ArchiveSize:   100,
+	}
+
+	algo, err := moaha.Create(consLayObj, moahaConfigs)
+	if err != nil {
+		return
+	}
+
+	err = algo.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < 2; i++ {
+		for _, agent := range algo.Archive {
+			fmt.Print(agent.Value[i])
+			fmt.Print(" , ")
+		}
+		fmt.Println(";")
+	}
+
+	for _, val := range algo.Archive[0].Position {
+		fmt.Printf("%f, ", val)
+	}
+
+	fmt.Println()
+	for _, val := range algo.Archive[0].Value {
+		fmt.Println(val)
 	}
 
 	return
