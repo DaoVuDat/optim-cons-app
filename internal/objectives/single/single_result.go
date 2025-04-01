@@ -1,8 +1,10 @@
 package single
 
 import (
+	"fmt"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/util"
+	"strings"
 )
 
 type SingleResult struct {
@@ -31,4 +33,19 @@ func (agent *SingleResult) CopyAgent() *SingleResult {
 		Constraints: util.CopyMap(agent.Constraints),
 		Penalty:     util.CopyMap(agent.Penalty),
 	}
+}
+
+func (agent *SingleResult) PositionString() string {
+	var sb strings.Builder
+	sb.WriteString("[ ")
+
+	for i, v := range agent.Position {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(fmt.Sprintf("%g", v))
+	}
+
+	sb.WriteString(" ]")
+	return sb.String()
 }

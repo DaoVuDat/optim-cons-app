@@ -9,11 +9,12 @@ import (
 	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 	"log"
 	"slices"
+	"strings"
 )
 
 func main() {
 	// Create conslay_continuous problem and add objectives
-	fmt.Println("=== Construction Layout ===")
+	//fmt.Println("=== Construction Layout ===")
 	consLayoutConfigs := conslay.ConsLayConfigs{
 		ConsLayoutLength: 120,
 		ConsLayoutWidth:  95,
@@ -24,25 +25,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("\tLocations")
-	for name := range locations {
-		fmt.Printf("Name = %s, Symbol = %s, X = %f, Y = %f, Length = %f, Width = %f, fixed = %t \n",
-			locations[name].Name,
-			locations[name].Symbol,
-			locations[name].Coordinate.X,
-			locations[name].Coordinate.Y,
-			locations[name].Length,
-			locations[name].Width,
-			locations[name].IsFixed,
-		)
-	}
+	//fmt.Println("\tLocations")
+	//for name := range locations {
+	//	fmt.Printf("Name = %s, Symbol = %s, X = %f, Y = %f, Length = %f, Width = %f, fixed = %t \n",
+	//		locations[name].Name,
+	//		locations[name].Symbol,
+	//		locations[name].Coordinate.X,
+	//		locations[name].Coordinate.Y,
+	//		locations[name].Length,
+	//		locations[name].Width,
+	//		locations[name].IsFixed,
+	//	)
+	//}
 	consLayoutConfigs.Locations = locations
 	consLayoutConfigs.NonFixedLocations = nonFixedLocations
 	consLayoutConfigs.FixedLocations = fixedLocations
 
-	fmt.Println("#Locations", len(consLayoutConfigs.Locations))
-	fmt.Println("#FixedLocations", len(consLayoutConfigs.FixedLocations))
-	fmt.Println("#NonFixedLocations", len(consLayoutConfigs.NonFixedLocations))
+	//fmt.Println("#Locations", len(consLayoutConfigs.Locations))
+	//fmt.Println("#FixedLocations", len(consLayoutConfigs.FixedLocations))
+	//fmt.Println("#NonFixedLocations", len(consLayoutConfigs.NonFixedLocations))
 
 	// LOAD PHASES
 	phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
@@ -51,10 +52,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("\tPhases")
-	for i := range phases {
-		fmt.Println(phases[i])
-	}
+	//fmt.Println("\tPhases")
+	//for i := range phases {
+	//	fmt.Println(phases[i])
+	//}
 	consLayoutConfigs.Phases = phases
 
 	consLayObj, err := conslay.CreateConsLayFromConfig(consLayoutConfigs)
@@ -63,7 +64,7 @@ func main() {
 	}
 
 	// TODO: objectives - select objectives and show configs relevant to those
-	fmt.Println("=== Hoisting Objective ===")
+	//fmt.Println("=== Hoisting Objective ===")
 	hoistingTime, err := conslay.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
 
 	if err != nil {
@@ -129,33 +130,33 @@ func main() {
 	//
 	//hoistingObj.PrefabricatedLocations = selectedPref
 
-	fmt.Println("\tHoisting Time")
-	for k, v := range hoistingObj.HoistingTime {
-		hoistingTimeSlice := v
-		fmt.Printf("Crane name = %s\n", k)
-		for i := range hoistingTimeSlice {
-			fmt.Printf(" => Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
-				hoistingTimeSlice[i].Name,
-				hoistingTimeSlice[i].BuildingName,
-				hoistingTimeSlice[i].Coordinate.X,
-				hoistingTimeSlice[i].Coordinate.Y,
-				hoistingTimeSlice[i].HoistingNumber,
-			)
-		}
-	}
+	//fmt.Println("\tHoisting Time")
+	//for k, v := range hoistingObj.HoistingTime {
+	//	hoistingTimeSlice := v
+	//	fmt.Printf("Crane name = %s\n", k)
+	//	for i := range hoistingTimeSlice {
+	//		fmt.Printf(" => Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
+	//			hoistingTimeSlice[i].Name,
+	//			hoistingTimeSlice[i].BuildingName,
+	//			hoistingTimeSlice[i].Coordinate.X,
+	//			hoistingTimeSlice[i].Coordinate.Y,
+	//			hoistingTimeSlice[i].HoistingNumber,
+	//		)
+	//	}
+	//}
 
-	fmt.Println("\tCrane Locations")
-	for i := range hoistingObj.CraneLocations {
-		fmt.Printf("%d: Name = %s, L = %f, W = %f, x = %f, y = %f, radius = %f \n",
-			i+1,
-			hoistingObj.CraneLocations[i].Location.Name,
-			hoistingObj.CraneLocations[i].Location.Length,
-			hoistingObj.CraneLocations[i].Location.Width,
-			hoistingObj.CraneLocations[i].Location.Coordinate.X,
-			hoistingObj.CraneLocations[i].Location.Coordinate.Y,
-			hoistingObj.CraneLocations[i].Radius,
-		)
-	}
+	//fmt.Println("\tCrane Locations")
+	//for i := range hoistingObj.CraneLocations {
+	//	fmt.Printf("%d: Name = %s, L = %f, W = %f, x = %f, y = %f, radius = %f \n",
+	//		i+1,
+	//		hoistingObj.CraneLocations[i].Location.Name,
+	//		hoistingObj.CraneLocations[i].Location.Length,
+	//		hoistingObj.CraneLocations[i].Location.Width,
+	//		hoistingObj.CraneLocations[i].Location.Coordinate.X,
+	//		hoistingObj.CraneLocations[i].Location.Coordinate.Y,
+	//		hoistingObj.CraneLocations[i].Radius,
+	//	)
+	//}
 
 	// RISK
 	hazardInteraction, err := conslay.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
@@ -257,25 +258,39 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("===== Archive Results")
+	for i := range algo.Archive {
+		fmt.Printf("%d. \n", i+1)
+		fmt.Println(algo.Archive[i].Position)
+		//fmt.Println(algo.Archive[i].PositionString())
+		fmt.Println(algo.Archive[i].Value)
+		fmt.Println(algo.Archive[i].Penalty)
+	}
 
+	fmt.Println("===== Pareto")
 	f1Values := make([]float64, len(algo.Archive))
 	f2Values := make([]float64, len(algo.Archive))
 	for i := 0; i < 2; i++ {
+		var sb strings.Builder
 		values := make([]float64, len(algo.Archive))
 		for idx, agent := range algo.Archive {
+			if idx > 0 {
+				sb.WriteString(", ")
+			}
 			values[idx] = agent.Value[i]
-			fmt.Print(agent.Value[i])
-			fmt.Print(" , ")
+			sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
 		}
+		sb.WriteString(";")
+		fmt.Println(sb.String())
 		if i == 0 {
 			f1Values = values
 		} else {
 			f2Values = values
 		}
-		fmt.Println(";")
+
 	}
 
-	fmt.Println("Archive Size", len(algo.Archive))
+	fmt.Println("===== Archive Size", len(algo.Archive))
 
 	fmt.Println("Min F1", slices.Min(f1Values))
 	fmt.Println("Max F1", slices.Max(f1Values))
