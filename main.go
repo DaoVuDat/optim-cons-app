@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Create conslay_continuous problem and add objectives
-	//fmt.Println("=== Construction Layout ===")
+
 	consLayoutConfigs := conslay.ConsLayConfigs{
 		ConsLayoutLength: 120,
 		ConsLayoutWidth:  95,
@@ -25,25 +25,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println("\tLocations")
-	//for name := range locations {
-	//	fmt.Printf("Name = %s, Symbol = %s, X = %f, Y = %f, Length = %f, Width = %f, fixed = %t \n",
-	//		locations[name].Name,
-	//		locations[name].Symbol,
-	//		locations[name].Coordinate.X,
-	//		locations[name].Coordinate.Y,
-	//		locations[name].Length,
-	//		locations[name].Width,
-	//		locations[name].IsFixed,
-	//	)
-	//}
+
 	consLayoutConfigs.Locations = locations
 	consLayoutConfigs.NonFixedLocations = nonFixedLocations
 	consLayoutConfigs.FixedLocations = fixedLocations
-
-	//fmt.Println("#Locations", len(consLayoutConfigs.Locations))
-	//fmt.Println("#FixedLocations", len(consLayoutConfigs.FixedLocations))
-	//fmt.Println("#NonFixedLocations", len(consLayoutConfigs.NonFixedLocations))
 
 	// LOAD PHASES
 	phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
@@ -52,10 +37,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println("\tPhases")
-	//for i := range phases {
-	//	fmt.Println(phases[i])
-	//}
+
 	consLayoutConfigs.Phases = phases
 
 	consLayObj, err := conslay.CreateConsLayFromConfig(consLayoutConfigs)
@@ -63,8 +45,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: objectives - select objectives and show configs relevant to those
-	//fmt.Println("=== Hoisting Objective ===")
 	hoistingTime, err := conslay.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
 
 	if err != nil {
@@ -73,7 +53,6 @@ func main() {
 
 	// Hoisting Objective Configs
 	hoistingConfigs := conslay.HoistingConfigs{
-		//PrefabricatedLocations: []string{"TF8", "TF9", "TF10"},
 		NumberOfFloors: 10,
 		HoistingTime: map[string][]conslay.HoistingTime{
 			"TF14": hoistingTime,
@@ -124,39 +103,6 @@ func main() {
 	}
 
 	hoistingObj.CraneLocations = craneLocations
-
-	// select TF that is prefabricated - in Evaluation
-	//selectedPref := []string{"TF8", "TF9", "TF10"}
-	//
-	//hoistingObj.PrefabricatedLocations = selectedPref
-
-	//fmt.Println("\tHoisting Time")
-	//for k, v := range hoistingObj.HoistingTime {
-	//	hoistingTimeSlice := v
-	//	fmt.Printf("Crane name = %s\n", k)
-	//	for i := range hoistingTimeSlice {
-	//		fmt.Printf(" => Name = %s, Building Name = %s, X = %f, Y = %f, Hoisting Number = %d \n",
-	//			hoistingTimeSlice[i].Name,
-	//			hoistingTimeSlice[i].BuildingName,
-	//			hoistingTimeSlice[i].Coordinate.X,
-	//			hoistingTimeSlice[i].Coordinate.Y,
-	//			hoistingTimeSlice[i].HoistingNumber,
-	//		)
-	//	}
-	//}
-
-	//fmt.Println("\tCrane Locations")
-	//for i := range hoistingObj.CraneLocations {
-	//	fmt.Printf("%d: Name = %s, L = %f, W = %f, x = %f, y = %f, radius = %f \n",
-	//		i+1,
-	//		hoistingObj.CraneLocations[i].Location.Name,
-	//		hoistingObj.CraneLocations[i].Location.Length,
-	//		hoistingObj.CraneLocations[i].Location.Width,
-	//		hoistingObj.CraneLocations[i].Location.Coordinate.X,
-	//		hoistingObj.CraneLocations[i].Location.Coordinate.Y,
-	//		hoistingObj.CraneLocations[i].Radius,
-	//	)
-	//}
 
 	// RISK
 	hazardInteraction, err := conslay.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
@@ -225,22 +171,6 @@ func main() {
 	err = consLayObj.AddConstraint(conslay.ConstraintOverlap, overlapConstraint)
 	err = consLayObj.AddConstraint(conslay.ConstraintInclusiveZone, zoneConstraint)
 	err = consLayObj.AddConstraint(conslay.ConstraintsCoverInCraneRadius, coverRangeConstraint)
-
-	//// ZDT1
-	//
-	//dimensions := 30
-	//upperBound := make([]float64, dimensions)
-	//lowerBound := make([]float64, dimensions)
-	//for i := range upperBound {
-	//	upperBound[i] = 1
-	//	lowerBound[i] = 0
-	//}
-	//
-	//sphereObjective, _ := multi.CreateZDT1(multi.ZDT1Config{
-	//	Dimension:  dimensions,
-	//	UpperBound: upperBound,
-	//	LowerBound: lowerBound,
-	//})
 
 	// MOAHA
 	moahaConfigs := moaha.Configs{
