@@ -4,15 +4,48 @@ Copyright © 2025 Dao Vu Dat dat.daovu@gmail.com
 package main
 
 import (
+	"embed"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"golang-moaha-construction/internal/algorithms/moaha"
 	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 	"log"
 	"slices"
 	"strings"
+
+	"github.com/wailsapp/wails/v2"
 )
 
+//go:embed all:frontend/build
+var assets embed.FS
+
 func main() {
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "Construction Optimization",
+		Width:  1600,
+		Height: 900,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		DisableResize:    true,
+		BackgroundColour: &options.RGBA{R: 250, G: 248, B: 249, A: 255},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+
+func constructionOptimization() {
 	// Create conslay_continuous problem and add objectives
 
 	consLayoutConfigs := conslay.ConsLayConfigs{

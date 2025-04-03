@@ -1,0 +1,14 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "construction-optimization",
+  "outputfilename": "construction-optimization",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Dao Vu Dat",
+    "email": "dat.daovu@gmail.com"
+  },
+  "wailsjsdir": "./frontend/src/lib"
+}
