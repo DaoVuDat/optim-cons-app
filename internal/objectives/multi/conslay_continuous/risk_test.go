@@ -86,7 +86,7 @@ func CreateSideInputLocation() map[string]Location {
 			Width:      12,
 			IsFixed:    false,
 			Symbol:     "TF8",
-			Name:       "Prefabricated component yard #1 (slab, staircase)",
+			Name:       "Prefabricated components yard #1 (slab, staircase)",
 		},
 
 		"TF9": Location{
@@ -96,7 +96,7 @@ func CreateSideInputLocation() map[string]Location {
 			Width:      6,
 			IsFixed:    false,
 			Symbol:     "TF9",
-			Name:       "Prefabricated component yard #2 (beam, column)",
+			Name:       "Prefabricated components yard #2 (beam, column)",
 		},
 
 		"TF10": Location{
@@ -106,7 +106,7 @@ func CreateSideInputLocation() map[string]Location {
 			Width:      10,
 			IsFixed:    false,
 			Symbol:     "TF10",
-			Name:       "Prefabricated component yard #3 (external wall)",
+			Name:       "Prefabricated components yard #3 (external wall)",
 		},
 		"TF11": Location{
 			Coordinate: Coordinate{X: 3.567509, Y: 87.419745},

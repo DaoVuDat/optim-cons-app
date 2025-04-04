@@ -342,7 +342,7 @@ func (a *AHAAlgorithm) initialization() {
 	a.findBest()
 }
 
-// This algorithm solve only one objective
+// This algorithms solve only one objective
 func (a *AHAAlgorithm) findBest() {
 	for i := range a.Agents {
 		if a.Agents[i].Value[0] < a.BestResult.Value[0] {

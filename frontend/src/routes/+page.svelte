@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
-  import {objectiveStore, ObjectiveType} from "$lib/stores/objectives.svelte";
+  import {type IOptions, objectiveStore} from "$lib/stores/objectives.svelte";
+  import {stepStore} from "$lib/stores/steps.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
 
   let disable = $state(false)
@@ -15,13 +16,14 @@
     disable = !disable
   }
 
-  $inspect(objectiveStore.objectiveList, objectiveStore.selectObjectiveOptions,
-  objectiveStore.selectedObjectiveList,objectiveStore.selectedObjectiveOptions)
+  $inspect(objectiveStore.objectives, objectiveStore.selectObjectiveOption)
 
-
+  const handleClick = (option: IOptions) => {
+    objectiveStore.selectObjectiveOption = option
+  }
 
 </script>
-<div class="h-[calc(100vh-64px-64px)] w-full pt-4 flex flex-col justify-between items-center">
+<div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
   <section class="mt-8 text-black">
     <h1 class="text-5xl font-bold">Select objectives</h1>
@@ -29,25 +31,24 @@
 
 
   <!-- Content -->
-  <section class="px-24 grid grid-cols-13 gap-4 w-[900px] auto-rows-min">
-    <div class="h-96 shadow rounded col-span-6">
-      <select class="flex w-full h-full text-black p-4 borderless" multiple bind:value={objectiveStore.selectObjectiveOptions}>
-        {#each objectiveStore.objectiveList as s (s.value)}
-          <option class="styled-option" value={s.value}>{s.label}</option>
-        {/each}
-      </select>
+  <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
+    <div class="h-96 px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+      {#each objectiveStore.objectiveList as s (s.value)}
+        <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
+          s.value === objectiveStore.selectObjectiveOption?.value ? 'bg-[#422AD5] text-white' : ''
+        )}
+                onclick={() => handleClick(s)}
+        >
+          {s.label}
+          <input type="checkbox" class="custom-checkbox" bind:checked={s.isChecked} onchange={() => {
+            objectiveStore.selectObjective(s)
+          }}/>
+        </button>
+      {/each}
     </div>
-    <div class="flex justify-center items-center col-span-1">
-      <button class="btn" onclick={() => console.log(objectiveStore.selectObjectiveOptions)}>&rarr;</button>
-    </div>
-    <div class="h-96 shadow rounded col-span-6">
-      <select class="w-full h-full text-black p-4 borderless" multiple bind:value={objectiveStore.selectedObjectiveOptions}>
-        {#each objectiveStore.selectedObjectiveList as s (s.value)}
-          <option  value={s.value}>{s.value}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="h-48 bg-red-400 col-span-full">Info</div>
+    <div class="card p-4 bg-base-100 shadow-md rounded-lg col-span-8">{
+        objectiveStore.selectObjectiveOption?.content
+    }</div>
     <!--    <button class={clsx("btn", {-->
     <!--  "btn-disabled": disable-->
     <!--})}-->
@@ -60,29 +61,44 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class={clsx('btn', objectiveStore.objectives.numberOfObjectives.length === 0 ? 'btn-disabled': '')}
-       href="/algorithm">Next</a>
+    <a class={clsx('btn', objectiveStore.objectives.selectedObjectives.length === 0 ? 'btn-disabled': '')}
+       href="/algorithm" onclick={() => stepStore.nextStep()}>Next</a>
   </section>
 </div>
 
 
 <style>
-  .borderless {
-      border: none;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-color: transparent;
+  .custom-checkbox {
+      width: 20px;
+      height: 20px;
+
+      cursor: pointer;
   }
 
-  .styled-option {
-      height: 50px;
-      padding: 10px;
-      margin: 2px 0;
-      line-height: 1.5;
-      border-bottom: 1px solid #eee;
-      color: #333;
+  /* Optional: more custom tick styling (for full control) */
+  /* This part is only needed if you want to fully customize the tick */
+   .custom-checkbox {
+    appearance: none;
+    border: 2px solid #999;
+    border-radius: 5px;
+    background-color: white;
+    position: relative;
   }
 
+  .custom-checkbox:checked {
+    background-color: white;
+    border-color: black;
+  }
+
+  .custom-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 12px;
+    border: solid #422AD5;
+    border-width: 0 2px 2px 0;
+    transform: translate(-48%, -59%) rotate(45deg);
+  }
 </style>

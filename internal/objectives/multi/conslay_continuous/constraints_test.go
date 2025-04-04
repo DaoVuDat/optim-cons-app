@@ -618,7 +618,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      6,
 				IsFixed:    false,
 				Symbol:     "TF8",
-				Name:       "Prefabricated component yard #1 (slab, staircase)",
+				Name:       "Prefabricated components yard #1 (slab, staircase)",
 			},
 			"TF9": Location{
 				Coordinate: Coordinate{X: 76.4180335261621, Y: 41.8787903034157},
@@ -627,7 +627,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      6,
 				IsFixed:    false,
 				Symbol:     "TF9",
-				Name:       "Prefabricated component yard #2 (beam, column)",
+				Name:       "Prefabricated components yard #2 (beam, column)",
 			},
 			"TF10": Location{
 				Coordinate: Coordinate{X: 108.028665273018, Y: 36.9845037867221},
@@ -636,7 +636,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      10,
 				IsFixed:    false,
 				Symbol:     "TF10",
-				Name:       "Prefabricated component yard #3 (external wall)",
+				Name:       "Prefabricated components yard #3 (external wall)",
 			},
 			"TF11": Location{
 				Coordinate: Coordinate{X: 63.8375790712078, Y: 91.2094786904858},
@@ -765,7 +765,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      6,
 				IsFixed:    false,
 				Symbol:     "TF8",
-				Name:       "Prefabricated component yard #1 (slab, staircase)",
+				Name:       "Prefabricated components yard #1 (slab, staircase)",
 			},
 			"TF9": Location{
 				Coordinate: Coordinate{X: 7.04418109569817, Y: 87.8287852386491},
@@ -774,7 +774,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      12,
 				IsFixed:    false,
 				Symbol:     "TF9",
-				Name:       "Prefabricated component yard #2 (beam, column)",
+				Name:       "Prefabricated components yard #2 (beam, column)",
 			},
 			"TF10": Location{
 				Coordinate: Coordinate{X: 42.2938936308434, Y: 65.2135456501644},
@@ -783,7 +783,7 @@ func CreateInputLocation(feasible bool) map[string]Location {
 				Width:      6,
 				IsFixed:    false,
 				Symbol:     "TF10",
-				Name:       "Prefabricated component yard #3 (external wall)",
+				Name:       "Prefabricated components yard #3 (external wall)",
 			},
 			"TF11": Location{
 				Coordinate: Coordinate{X: 21.9910306881593, Y: 85.0044587159497},

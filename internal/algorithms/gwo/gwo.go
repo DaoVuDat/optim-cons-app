@@ -212,7 +212,7 @@ func (g *GWOAlgorithm) initialization() {
 	g.findBest()
 }
 
-// This algorithm solve only one objective
+// This algorithms solve only one objective
 func (g *GWOAlgorithm) findBest() {
 	for i := range g.Agents {
 		if g.Agents[i].Value[0] < g.Alpha.Value[0] {

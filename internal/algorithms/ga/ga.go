@@ -270,7 +270,7 @@ func gaussianMutation(child, lowerBound, upperBound []float64, mutationRate floa
 	return mutated
 }
 
-// outOfBoundaries ensures that each component of the position is within the allowed bounds.
+// outOfBoundaries ensures that each components of the position is within the allowed bounds.
 func outOfBoundaries(position, lowerBound, upperBound []float64) {
 	for i := range position {
 		if position[i] < lowerBound[i] {
