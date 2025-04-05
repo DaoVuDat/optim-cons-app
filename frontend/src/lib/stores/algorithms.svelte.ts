@@ -1,11 +1,24 @@
 import {objectiveStore} from "$lib/stores/objectives.svelte";
-import type {IGWOConfig, IMOAHAConfig, IAHAConfig, IGAConfig} from "$lib/stores/algorithms";
+import {
+  type IGWOConfig,
+  type IMOAHAConfig,
+  type IAHAConfig,
+  type IGAConfig,
+  moahaConfig, gwoConfig, ahaConfig, gaConfig
+} from "$lib/stores/algorithms";
 
 export enum Algorithms {
   GWO = "GWO",
   AHA = "AHA",
   MOAHA = "MOAHA",
   GA = "GA",
+}
+
+export type AlgorithmConfigMap = {
+  [Algorithms.GA]: IGAConfig;
+  [Algorithms.AHA]: IAHAConfig;
+  [Algorithms.MOAHA]: IMOAHAConfig;
+  [Algorithms.GWO]: IGWOConfig;
 }
 
 export interface AlgorithmWithLabel {
@@ -73,11 +86,24 @@ class AlgorithmStore {
 
   selectedAlgorithm = $state<AlgorithmWithLabel>()
 
-  // configs
-  gwoConfig = $state<IGWOConfig>()
-  ahaConfig = $state<IAHAConfig>()
-  gaConfig = $state<IGAConfig>()
-  moahaConfig = $state<IMOAHAConfig>()
+  getConfig = <T extends Algorithms>(algo: T) : AlgorithmConfigMap[T]=> {
+    switch (algo) {
+      case Algorithms.GA:
+        return gaConfig as AlgorithmConfigMap[T]
+      case Algorithms.AHA:
+        return ahaConfig as AlgorithmConfigMap[T]
+      case Algorithms.MOAHA:
+        return moahaConfig as AlgorithmConfigMap[T]
+      case Algorithms.GWO:
+        return gwoConfig as AlgorithmConfigMap[T]
+    }
+  }
+
+  getValidSelection = () => {
+    return this.selectedAlgorithm && this.validAlgorithmsList.find(
+      a => a.value === this.selectedAlgorithm?.value
+    )
+  }
 }
 
 export const algorithmsStore = new AlgorithmStore()

@@ -16,8 +16,6 @@
     disable = !disable
   }
 
-  $inspect(objectiveStore.objectives, objectiveStore.selectObjectiveOption)
-
   const handleClick = (option: IOptions) => {
     objectiveStore.selectObjectiveOption = option
   }
@@ -32,7 +30,7 @@
 
   <!-- Content -->
   <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
-    <div class="h-96 px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+    <div class="h-[580px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each objectiveStore.objectiveList as s (s.value)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
           s.value === objectiveStore.selectObjectiveOption?.value ? 'bg-[#422AD5] text-white' : ''
@@ -49,14 +47,6 @@
     <div class="card p-4 bg-base-100 shadow-md rounded-lg col-span-8">{
         objectiveStore.selectObjectiveOption?.content
     }</div>
-    <!--    <button class={clsx("btn", {-->
-    <!--  "btn-disabled": disable-->
-    <!--})}-->
-    <!--            onclick={selectFile}-->
-    <!--    >-->
-    <!--      <span class={disable ? "loading loading-ring loading-sm" : ""}></span>-->
-    <!--      Select file-->
-    <!--    </button>-->
   </section>
 
   <!-- Bottom Section -->

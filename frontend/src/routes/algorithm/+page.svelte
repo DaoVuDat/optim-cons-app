@@ -14,27 +14,17 @@
     [Algorithms.GA]: gaConfig,
   }
 
+  const component = $derived.by(() => {
+    if (algorithmsStore.getValidSelection()) {
+      return configComponents[algorithmsStore.selectedAlgorithm!.value]
+    }
+  })
+
   const handleClick = (algo: AlgorithmWithLabel) => {
     algorithmsStore.selectedAlgorithm = algo;
   }
 
-  // Hack + make config "reactive"
-  const notypecheck = (x:any)=>x;
-
-  const config = $derived.by(() => {
-    switch (algorithmsStore.selectedAlgorithm?.value) {
-      case Algorithms.GA:
-        return gaConfig
-      case Algorithms.GWO:
-        return gwoConfig
-      case Algorithms.AHA:
-        return ahaConfig
-      case Algorithms.MOAHA:
-        return moahaConfig
-      default:
-        return undefined
-    }
-  })
+  $inspect(algorithmsStore.selectedAlgorithm)
 
 </script>
 
@@ -48,23 +38,19 @@
   <!-- Content -->
   <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
     <div
-        class="h-96 px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+        class="h-[580px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each algorithmsStore.validAlgorithmsList as algo (algo)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer text-left",
         algorithmsStore.selectedAlgorithm?.value === algo.value ? 'bg-[#422AD5] text-white' : '')}
-        onclick={() => handleClick(algo)}>
+                onclick={() => handleClick(algo)}>
           {algo.label}
         </button>
       {/each}
     </div>
     <div class="card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
-      {#if algorithmsStore.selectedAlgorithm && algorithmsStore.validAlgorithmsList.find(
-        a => a.value === algorithmsStore.selectedAlgorithm?.value
-      )}
-        {@const Component = configComponents[algorithmsStore.selectedAlgorithm.value]}
-        <Component {...notypecheck({
-          config: config
-        })}/>
+      {#if algorithmsStore.getValidSelection()}
+        {@const Component = component}
+        <Component/>
       {:else}
         <p>Please select an algorithm</p>
       {/if}
@@ -74,7 +60,9 @@
   <!-- Bottom Section -->
   <section class="w-full text-end">
     <a class="btn" href="/" onclick={() => stepStore.prevStep()}>Back</a>
-    <a class={clsx('ml-4 btn', 'btn-disabled')}
-       href="/problem">Next</a>
+    <a class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
+       href="/problem"
+       onclick={() => stepStore.nextStep()}
+    >Next</a>
   </section>
 </div>
