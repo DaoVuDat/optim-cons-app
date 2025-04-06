@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives"
 	"math"
 	"slices"
 	"sort"
@@ -19,7 +20,7 @@ const (
 	Phases           = "Phases"
 )
 
-const ConsLayoutName = "Construction-Layout"
+const ContinuousConsLayoutName objectives.ProblemType = "Continuous Construction Layout"
 
 type Coordinate struct {
 	X float64

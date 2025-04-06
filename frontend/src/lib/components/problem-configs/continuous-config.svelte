@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {problemStore, ProblemType} from "$lib/stores/problem.svelte";
+  import {problemStore} from "$lib/stores/problem.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
   import {ContinuousFile, continuousProblemConfig} from "$lib/stores/problems";
-  import {setContext} from "svelte";
+  import {objectives} from "$lib/wailsjs/go/models.js";
 
-  let config = problemStore.getConfig(ProblemType.Continuous)
+  const config = problemStore.getConfig(objectives.ProblemType.ContinuousConstructionLayout)
 
   const selectFile = async (field: ContinuousFile) => {
 
@@ -24,16 +24,16 @@
 
 
 <div class="p-2 w-full h-full flex flex-col justify-between">
-  <div class="grid gap-2 grid-cols-2 grid-rows-2">
-    <fieldset class="fieldset text-lg">
-      <legend class="fieldset-legend">Layout length:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.length} />
+  <div class="grid gap-2 grid-cols-2 grid-rows-2 ">
+    <fieldset class="fieldset w-full flex flex-col">
+      <legend class="fieldset-legend text-lg">Layout length:</legend>
+      <input type="number" class="input input-lg" placeholder="300" bind:value={config.length} />
     </fieldset>
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Layout width:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.width}/>
+    <fieldset class="fieldset flex flex-col">
+      <legend class="fieldset-legend text-lg ">Layout width:</legend>
+      <input type="number" class="input input-lg" placeholder="300" bind:value={config.width}/>
     </fieldset>
-    <fieldset class="fieldset">
+    <fieldset class="fieldset flex flex-col">
       <legend class="fieldset-legend text-lg">Facilities file:</legend>
       <div class="join">
         <div>
@@ -44,7 +44,7 @@
         <button class="btn btn-neutral join-item" onclick={() =>selectFile(config.facilitiesFilePath.label)}>Select file</button>
       </div>
     </fieldset>
-    <fieldset class="fieldset">
+    <fieldset class="fieldset flex flex-col">
       <legend class="fieldset-legend text-lg">Static / Phase / Dynamic file:</legend>
       <div class="join">
         <div>

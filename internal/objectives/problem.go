@@ -5,12 +5,14 @@ import (
 	"golang-moaha-construction/internal/data"
 )
 
+type ProblemType string
+
 var (
 	ErrInvalidConfig             = errors.New("invalid configuration")
 	ErrInvalidNumberOfObjectives = errors.New("mismatch number of objectives")
 )
 
-type Problem[T any] interface {
+type Problem interface {
 	Eval(pos []float64) (values []float64, constraints map[string]float64, penalty map[string]float64)
 	GetUpperBound() []float64
 	GetLowerBound() []float64

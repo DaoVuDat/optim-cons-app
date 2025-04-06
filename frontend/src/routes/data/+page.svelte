@@ -1,30 +1,30 @@
 <script lang="ts">
   import clsx from "clsx";
   import {stepStore} from "$lib/stores/steps.svelte.js";
-  import {problemList, problemStore, ProblemType, type ProblemWithLabel} from "$lib/stores/problem.svelte.js";
+  // import {problemList, problemStore, ProblemType, type ProblemWithLabel} from "$lib/stores/problem.svelte.js";
   import continuousProblemConfigComponent from "$lib/components/problem-configs/continuous-config.svelte";
   import gridProblemConfigComponent from "$lib/components/problem-configs/grid-config.svelte";
-  import predeterminedProblemConfigComponent from "$lib/components/problem-configs/predetermined-config.svelte";
+  import PredeterminatedConfig from "$lib/components/problem-configs/predeterminated-config.svelte";
   import {continuousProblemConfig} from "$lib/stores/problems";
   import {goto} from "$app/navigation";
 
-  const configComponents = {
-    [ProblemType.Continuous]: continuousProblemConfigComponent,
-    [ProblemType.Grid]: gridProblemConfigComponent,
-    [ProblemType.PreLocated]: predeterminedProblemConfigComponent,
-  }
-
-  const component = $derived.by(() => {
-    if (problemStore.getValidSelection()) {
-      return configComponents[problemStore.selectedProblem!.value]
-    }
-  })
-
+  // const configComponents = {
+  //   [ProblemType.Continuous]: continuousProblemConfigComponent,
+  //   [ProblemType.Grid]: gridProblemConfigComponent,
+  //   [ProblemType.PreLocated]: predeterminedProblemConfigComponent,
+  // }
+  //
+  // const component = $derived.by(() => {
+  //   if (problemStore.getValidSelection()) {
+  //     return configComponents[problemStore.selectedProblem!.value]
+  //   }
+  // })
+  //
   let loading = $state<boolean>(false)
-
-  const handleClick = (prob: ProblemWithLabel) => {
-    problemStore.selectedProblem = prob;
-  }
+  //
+  // const handleClick = (prob: ProblemWithLabel) => {
+  //   problemStore.selectedProblem = prob;
+  // }
 
   const handleNext = async () => {
     loading = true
@@ -49,29 +49,29 @@
   <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
     <div
         class="h-[580px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
-      {#each problemList as prob (prob)}
-        <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer text-left",
-        problemStore.selectedProblem?.value === prob.value ? 'bg-[#422AD5] text-white' : '')}
-                onclick={() => handleClick(prob)}>
-          {prob.label}
-        </button>
-      {/each}
+      <!--{#each problemList as prob (prob)}-->
+      <!--  <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer text-left",-->
+      <!--  problemStore.selectedProblem?.value === prob.value ? 'bg-[#422AD5] text-white' : '')}-->
+      <!--          onclick={() => handleClick(prob)}>-->
+      <!--    {prob.label}-->
+      <!--  </button>-->
+      <!--{/each}-->
     </div>
     <div class="h-[580px] overflow-y-auto card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
-      {#if problemStore.getValidSelection()}
-        {@const Component = component}
-        <Component/>
-      {:else}
-        <p>Please select problem</p>
-      {/if}
+      <!--{#if problemStore.getValidSelection()}-->
+      <!--  {@const Component = component}-->
+      <!--  <Component/>-->
+      <!--{:else}-->
+      <!--  <p>Please select problem</p>-->
+      <!--{/if}-->
     </div>
   </section>
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
     <a class="ml-4 btn" href="/problem" onclick={() => stepStore.prevStep()}>Back</a>
-    <button class={clsx('ml-4 btn', problemStore.getValidSelection() ? '' : 'btn-disabled')}
-            onclick={() => handleNext()}
-    >Next</button>
+<!--    <button class={clsx('ml-4 btn', problemStore.getValidSelection() ? '' : 'btn-disabled')}-->
+<!--            onclick={() => handleNext()}-->
+<!--    >Next</button>-->
   </section>
 </div>

@@ -30,7 +30,7 @@ func (s *zdt1) Type() data.TypeProblem {
 	return data.Multi
 }
 
-func CreateZDT1(configs ZDT1Config) (objectives.Problem[MultiResult], error) {
+func CreateZDT1(configs ZDT1Config) (objectives.Problem, error) {
 	//var dimension int
 	//var upperBound []float64
 	//var lowerBound []float64

@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/objectives/multi"
 )
 
 // App struct
 type App struct {
 	ctx            context.Context
 	algorithmName  string
-	problemName    string
+	problemName    objectives.ProblemType
+	problem        multi.MultiProblem
 	objectiveNames []string
 }
 
@@ -59,10 +62,6 @@ func (a *App) CreateAlgorithm(name string, config any) error {
 	return nil
 }
 
-func (a *App) CreateProblem(name string, config any) error {
-	return nil
-}
-
 func (a *App) RunAlgorithm() error {
 	return nil
 }
@@ -72,10 +71,6 @@ func (a *App) ObjectivesInfo() error {
 }
 
 func (a *App) AlgorithmInfo() error {
-	return nil
-}
-
-func (a *App) ProblemInfo() error {
 	return nil
 }
 

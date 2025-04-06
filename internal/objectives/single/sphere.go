@@ -41,7 +41,7 @@ func (s *sphere) Type() data.TypeProblem {
 	return data.Single
 }
 
-func CreateSphere(configs []*data.Config) (objectives.Problem[SingleResult], error) {
+func CreateSphere(configs []*data.Config) (objectives.Problem, error) {
 	var dimension int
 	var upperBound []float64
 	var lowerBound []float64

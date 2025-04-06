@@ -1,11 +1,19 @@
 
-export interface IPredeterminedConfig {
-  predeterminedLocationsFilePath: string;
-  facilitiesFilePath: string;
+export enum PredeteriminatedFile {
+  Predeterminated
+}
+
+export interface IPredeterminatedConfig {
+  predeterminatedLocationsFilePath: {
+    label: PredeteriminatedFile
+    value: string
+  };
 }
 
 
-export const predeterminedProblemConfig = $state<IPredeterminedConfig>({
-  facilitiesFilePath: '',
-  predeterminedLocationsFilePath: '',
+export const predeterminedProblemConfig = $state<IPredeterminatedConfig>({
+  predeterminatedLocationsFilePath: {
+    label: PredeteriminatedFile.Predeterminated,
+    value: ''
+  },
 })

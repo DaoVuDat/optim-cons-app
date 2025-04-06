@@ -28,8 +28,8 @@
   </section>
 
   <!-- Content -->
-  <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
-    <div class="h-[580px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+  <section class="px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
+    <div class="h-[420px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each objectiveStore.objectiveList as s (s.value)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
           s.value === objectiveStore.selectObjectiveOption?.value ? 'bg-[#422AD5] text-white' : ''
@@ -60,7 +60,6 @@
   .custom-checkbox {
       width: 20px;
       height: 20px;
-
       cursor: pointer;
   }
 

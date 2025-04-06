@@ -1,4 +1,3 @@
-
 export enum ContinuousFile {
   Facility,
   Phase,

@@ -27,8 +27,8 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "Construction Optimization",
-		Width:  1600,
-		Height: 900,
+		Width:  1400,
+		Height: 800,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -40,6 +40,9 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+		},
+		EnumBind: []interface{}{
+			AllProblemsType,
 		},
 	})
 
