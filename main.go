@@ -20,7 +20,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main_test() {
+func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -43,6 +43,8 @@ func main_test() {
 		},
 		EnumBind: []interface{}{
 			AllProblemsType,
+			AllObjectivesType,
+			AllConstraintsType,
 		},
 	})
 
@@ -51,7 +53,7 @@ func main_test() {
 	}
 }
 
-func main() {
+func main_test() {
 	constructionOptimization()
 }
 

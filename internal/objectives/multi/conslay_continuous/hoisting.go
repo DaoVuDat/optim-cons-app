@@ -2,12 +2,14 @@ package conslay_continuous
 
 import (
 	"github.com/xuri/excelize/v2"
+	"golang-moaha-construction/internal/objectives"
 	"math"
 	"strconv"
 )
 
+const HoistingObjectiveType objectives.ObjectiveType = "Hoisting Objective"
+
 const (
-	HoistingObjectiveType  = "Hoisting Objective"
 	HoistingTimeData       = "HoistingTimeData"
 	PrefabricatedLocations = "PrefabricatedLocations"
 	NumberOfFloors         = "Number of Floors"

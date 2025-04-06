@@ -10,12 +10,12 @@ export function CreateAlgorithm(arg1, arg2) {
   return window['go']['main']['App']['CreateAlgorithm'](arg1, arg2);
 }
 
-export function CreateObjectives(arg1, arg2) {
-  return window['go']['main']['App']['CreateObjectives'](arg1, arg2);
+export function CreateObjectives(arg1) {
+  return window['go']['main']['App']['CreateObjectives'](arg1);
 }
 
-export function CreateProblem(arg1, arg2, arg3, arg4, arg5) {
-  return window['go']['main']['App']['CreateProblem'](arg1, arg2, arg3, arg4, arg5);
+export function CreateProblem(arg1) {
+  return window['go']['main']['App']['CreateProblem'](arg1);
 }
 
 export function ObjectivesInfo() {

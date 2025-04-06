@@ -3,13 +3,15 @@ package conslay_continuous
 import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
+	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/util"
 	"log"
 	"strconv"
 )
 
+const RiskObjectiveType objectives.ObjectiveType = "Risk Objective"
+
 const (
-	RiskObjectiveType       = "Risk Objective"
 	HazardInteractionMatrix = "Hazard Interaction Matrix"
 	Delta                   = "Delta"
 	AlphaRiskPenalty        = "AlphaPenalty"

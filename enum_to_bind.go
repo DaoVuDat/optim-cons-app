@@ -22,3 +22,43 @@ var AllProblemsType = []struct {
 		TSName: "PredeterminedConstructionLayout",
 	},
 }
+
+var AllObjectivesType = []struct {
+	Value  objectives.ObjectiveType
+	TSName string // typescript enum name
+}{
+	{
+		Value:  continuousconslay.SafetyObjectiveType,
+		TSName: "SafetyObjective",
+	},
+	{
+		Value:  continuousconslay.HoistingObjectiveType,
+		TSName: "HoistingObjective",
+	},
+	{
+		Value:  continuousconslay.RiskObjectiveType,
+		TSName: "RiskObjective",
+	},
+}
+
+var AllConstraintsType = []struct {
+	Value  objectives.ConstraintType
+	TSName string // typescript enum name
+}{
+	{
+		Value:  continuousconslay.ConstraintOverlap,
+		TSName: "Overlap",
+	},
+	{
+		Value:  continuousconslay.ConstraintOutOfBound,
+		TSName: "OutOfBound",
+	},
+	{
+		Value:  continuousconslay.ConstraintsCoverInCraneRadius,
+		TSName: "CoverInCraneRadius",
+	},
+	{
+		Value:  continuousconslay.ConstraintInclusiveZone,
+		TSName: "InclusiveZone",
+	},
+}

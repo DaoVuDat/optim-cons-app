@@ -7,7 +7,8 @@
     import PredeterminatedConfig from "$lib/components/problem-configs/predeterminated-config.svelte";
     import {goto} from "$app/navigation";
     import {CreateProblem} from "$lib/wailsjs/go/main/App";
-    import {objectives} from "$lib/wailsjs/go/models";
+    import {main, objectives} from "$lib/wailsjs/go/models";
+
 
     const configComponents = {
         [objectives.ProblemType.ContinuousConstructionLayout]: continuousProblemConfigComponent,
@@ -35,11 +36,14 @@
                 case objectives.ProblemType.ContinuousConstructionLayout :
                     const config = problemStore.getConfig(problemStore.selectedProblem!.value)
 
-                    await CreateProblem(problemStore.selectedProblem!.value,
-                        config.length,
-                        config.width,
-                        config.facilitiesFilePath.value,
-                        config.phasesFilePath.value)
+                    const problemInput: main.ProblemInput = {
+                        problemName: problemStore.selectedProblem!.value,
+                        layoutLength: config.length,
+                        layoutWidth: config.width,
+                        facilitiesFilePath: config.facilitiesFilePath.value,
+                        phasesFilePath: config.phasesFilePath.value
+                    }
+                    await CreateProblem(problemInput)
                     break
                 case objectives.ProblemType.GridConstructionLayout :
                     break

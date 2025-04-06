@@ -6,25 +6,33 @@ import (
 	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
 )
 
+type ProblemInput struct {
+	ProblemName      objectives.ProblemType `json:"problemName"`
+	LayoutLength     *float64               `json:"layoutLength"`
+	LayoutWidth      *float64               `json:"layoutWidth"`
+	FacilitiesFile   *string                `json:"facilitiesFilePath"`
+	PhasesFile       *string                `json:"phasesFilePath"`
+	GridSize         *string                `json:"gridSize"`
+	PredeterminedLoc *string                `json:"predeterminedLoc"`
+}
+
 func (a *App) CreateProblem(
-	problemName objectives.ProblemType,
-	layoutLength, layoutWidth float64,
-	facilitiesLocationFilePath, phaseFilePath string,
+	problemInput ProblemInput,
 ) error {
 
-	a.problemName = problemName
+	a.problemName = problemInput.ProblemName
 
 	// TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
-	switch problemName {
+	switch problemInput.ProblemName {
 	case conslay.ContinuousConsLayoutName:
 		// Create conslay_continuous problem and add objectives
 		consLayoutConfigs := conslay.ConsLayConfigs{
-			ConsLayoutLength: layoutLength,
-			ConsLayoutWidth:  layoutWidth,
+			ConsLayoutLength: *problemInput.LayoutLength,
+			ConsLayoutWidth:  *problemInput.LayoutWidth,
 		}
 
 		// LOAD LOCATIONS
-		locations, fixedLocations, nonFixedLocations, err := conslay.ReadLocationsFromFile(facilitiesLocationFilePath)
+		locations, fixedLocations, nonFixedLocations, err := conslay.ReadLocationsFromFile(*problemInput.FacilitiesFile)
 		if err != nil {
 			return err
 		}
@@ -34,7 +42,7 @@ func (a *App) CreateProblem(
 		consLayoutConfigs.FixedLocations = fixedLocations
 
 		// LOAD PHASES
-		phases, err := conslay.ReadPhasesFromFile(phaseFilePath)
+		phases, err := conslay.ReadPhasesFromFile(*problemInput.PhasesFile)
 
 		if err != nil {
 			return err

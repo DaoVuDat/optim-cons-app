@@ -2,17 +2,20 @@ package conslay_continuous
 
 import "golang-moaha-construction/internal/objectives"
 
+const SafetyObjectiveType objectives.ObjectiveType = "Safety Objective"
+
 const (
-	SafetyObjectiveType objectives.ObjectiveType = "Safety Objective"
-	SafetyProximity                              = "The presumed value of the safety proximity relationship "
+	SafetyProximity = "The presumed value of the safety proximity relationship "
 )
 
 type SafetyConfigs struct {
-	SafetyProximity [][]float64
+	SafetyProximity    [][]float64
+	AlphaSafetyPenalty float64
 }
 
 type SafetyObjective struct {
-	SafetyProximity [][]float64
+	SafetyProximity    [][]float64
+	AlphaSafetyPenalty float64
 }
 
 func CreateSafetyObjective() (*SafetyObjective, error) {
@@ -21,11 +24,16 @@ func CreateSafetyObjective() (*SafetyObjective, error) {
 
 func CreateSafetyObjectiveFromConfig(safetyConfigs SafetyConfigs) (*SafetyObjective, error) {
 	safetyObj := &SafetyObjective{
-		SafetyProximity: safetyConfigs.SafetyProximity,
+		SafetyProximity:    safetyConfigs.SafetyProximity,
+		AlphaSafetyPenalty: safetyConfigs.AlphaSafetyPenalty,
 	}
 	return safetyObj, nil
 }
 
-func (obj *SafetyObjective) Eval() float64 {
+func (obj *SafetyObjective) Eval(locations map[string]Location) float64 {
 	return 0
+}
+
+func (obj *SafetyObjective) GetAlphaPenalty() float64 {
+	return obj.AlphaSafetyPenalty
 }
