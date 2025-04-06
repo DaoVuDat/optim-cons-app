@@ -1,8 +1,10 @@
 package conslay_continuous
 
+import "golang-moaha-construction/internal/objectives"
+
 const (
-	SafetyObjectiveType = "Safety Objective"
-	SafetyProximity     = "The presumed value of the safety proximity relationship "
+	SafetyObjectiveType objectives.ObjectiveType = "Safety Objective"
+	SafetyProximity                              = "The presumed value of the safety proximity relationship "
 )
 
 type SafetyConfigs struct {

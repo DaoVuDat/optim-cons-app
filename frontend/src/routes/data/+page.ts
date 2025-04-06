@@ -8,6 +8,8 @@ export const load: PageLoad = async ({ params }) => {
 
   console.log(data)
 
+  // get the list of locations if it is not predetermined problem
+
   return {
 
   };

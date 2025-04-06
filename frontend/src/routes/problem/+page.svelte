@@ -29,6 +29,7 @@
 
     const handleNext = async () => {
         loading = true
+        // TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
         if (problemStore.selectedProblem) {
             switch (problemStore.selectedProblem!.value) {
                 case objectives.ProblemType.ContinuousConstructionLayout :
@@ -46,7 +47,6 @@
                     break
             }
         }
-
 
         loading = false
         await goto('/data')

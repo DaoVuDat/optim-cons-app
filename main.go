@@ -20,7 +20,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main() {
+func main_test() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -49,6 +49,10 @@ func main() {
 	if err != nil {
 		println("Error:", err.Error())
 	}
+}
+
+func main() {
+	constructionOptimization()
 }
 
 func constructionOptimization() {

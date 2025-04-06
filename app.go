@@ -52,21 +52,12 @@ func (a *App) SelectFile() (string, error) {
 	return selection, nil
 }
 
-func (a *App) CreateObjectives(name []string, config []any) error {
-
-	return nil
-}
-
 func (a *App) CreateAlgorithm(name string, config any) error {
 
 	return nil
 }
 
 func (a *App) RunAlgorithm() error {
-	return nil
-}
-
-func (a *App) ObjectivesInfo() error {
 	return nil
 }
 

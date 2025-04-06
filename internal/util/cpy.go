@@ -1,5 +1,7 @@
 package util
 
+import "golang-moaha-construction/internal/objectives"
+
 func CopyArray[T int | float64](src []T) []T {
 	dst := make([]T, len(src))
 	copy(dst, src)
@@ -15,8 +17,8 @@ func CopySliceOfSlice[T int | float64](src [][]T) [][]T {
 	return dst
 }
 
-func CopyMap[T int | float64](src map[string]T) map[string]T {
-	dst := make(map[string]T, len(src))
+func CopyMap[T int | float64, K string | objectives.ConstraintType](src map[K]T) map[K]T {
+	dst := make(map[K]T, len(src))
 
 	for k, v := range src {
 		dst[k] = v

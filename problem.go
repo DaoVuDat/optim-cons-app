@@ -14,7 +14,7 @@ func (a *App) CreateProblem(
 
 	a.problemName = problemName
 
-	// TODO: add GRID problem and PREDETERMINED LOCATIONS problem
+	// TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
 	switch problemName {
 	case conslay.ContinuousConsLayoutName:
 		// Create conslay_continuous problem and add objectives
@@ -58,7 +58,7 @@ func (a *App) CreateProblem(
 func (a *App) ProblemInfo() (any, error) {
 
 	// type casting to concrete problem
-	// TODO: add GRID problem and PREDETERMINED LOCATIONS problem
+	// TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
 	switch a.problemName {
 	case conslay.ContinuousConsLayoutName:
 

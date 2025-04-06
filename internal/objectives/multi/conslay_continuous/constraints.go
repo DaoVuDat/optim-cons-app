@@ -1,16 +1,17 @@
 package conslay_continuous
 
 import (
+	"golang-moaha-construction/internal/objectives"
 	"math"
 )
 
 // list constraints
 
 const (
-	ConstraintOverlap             = "Overlap"
-	ConstraintOutOfBound          = "OutOfBound"
-	ConstraintsCoverInCraneRadius = "CoverInCraneRadius"
-	ConstraintInclusiveZone       = "InclusiveZone"
+	ConstraintOverlap             objectives.ConstraintType = "Overlap"
+	ConstraintOutOfBound          objectives.ConstraintType = "OutOfBound"
+	ConstraintsCoverInCraneRadius objectives.ConstraintType = "CoverInCraneRadius"
+	ConstraintInclusiveZone       objectives.ConstraintType = "InclusiveZone"
 )
 
 type Constrainter interface {
@@ -25,7 +26,7 @@ type Constrainter interface {
 type CoverRangeCraneConstraint struct {
 	Cranes                 []Crane
 	Phases                 [][]string
-	Name                   string
+	Name                   objectives.ConstraintType
 	AlphaCoverRangePenalty float64
 	PowerCoverRangePenalty float64
 }
@@ -45,7 +46,7 @@ func CreateCoverRangeCraneConstraint(
 }
 
 func (c CoverRangeCraneConstraint) GetName() string {
-	return c.Name
+	return string(c.Name)
 }
 
 func (c CoverRangeCraneConstraint) GetAlphaPenalty() float64 {
@@ -124,7 +125,7 @@ func IsCoverRangeOfCrane(crane Crane, buildings []Location) (bool, float64) {
 
 type OverlapConstraint struct {
 	Phases              [][]string
-	Name                string
+	Name                objectives.ConstraintType
 	AlphaOverlapPenalty float64
 	PowerOverlapPenalty float64
 }
@@ -143,7 +144,7 @@ func CreateOverlapConstraint(
 }
 
 func (c OverlapConstraint) GetName() string {
-	return c.Name
+	return string(c.Name)
 }
 
 func (c OverlapConstraint) GetAlphaPenalty() float64 {
@@ -194,7 +195,7 @@ type OutOfBoundsConstraint struct {
 	MinLength               float64
 	MaxLength               float64
 	Phases                  [][]string // Out of bounds the construction layout => No need to calculate each phase
-	Name                    string
+	Name                    objectives.ConstraintType
 	AlphaOutOfBoundsPenalty float64
 	PowerOutOfBoundsPenalty float64
 }
@@ -218,7 +219,7 @@ func CreateOutOfBoundsConstraint(minWidth, maxWidth, minLength, maxLength float6
 }
 
 func (c OutOfBoundsConstraint) GetName() string {
-	return c.Name
+	return string(c.Name)
 }
 
 func (c OutOfBoundsConstraint) GetAlphaPenalty() float64 {
@@ -266,7 +267,7 @@ type Zone struct {
 type InclusiveZoneConstraint struct {
 	Zones                     []Zone
 	Phases                    [][]string // Building is fixed => No need to calculate each phase
-	Name                      string
+	Name                      objectives.ConstraintType
 	AlphaInclusiveZonePenalty float64
 	PowerInclusiveZonePenalty float64
 }
@@ -287,7 +288,7 @@ func CreateInclusiveZoneConstraint(
 }
 
 func (c InclusiveZoneConstraint) GetName() string {
-	return c.Name
+	return string(c.Name)
 }
 
 func (c InclusiveZoneConstraint) GetAlphaPenalty() float64 {

@@ -3,6 +3,7 @@ package single
 import (
 	"fmt"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/util"
 	"strings"
 )
@@ -11,8 +12,8 @@ type SingleResult struct {
 	Idx         int
 	Position    []float64
 	Value       []float64
-	Constraints map[string]float64
-	Penalty     map[string]float64
+	Constraints map[objectives.ConstraintType]float64
+	Penalty     map[objectives.ConstraintType]float64
 }
 
 type SingleProblem interface {

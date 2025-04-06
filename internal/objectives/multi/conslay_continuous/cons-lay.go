@@ -64,8 +64,8 @@ type ConsLay struct {
 	FixedLocations    []Location
 	NonFixedLocations []Location
 	Locations         map[string]Location
-	Objectives        map[string]Objectiver
-	Constraints       map[string]Constrainter
+	Objectives        map[objectives.ObjectiveType]Objectiver
+	Constraints       map[objectives.ConstraintType]Constrainter
 	Phases            [][]string
 	Rounding          bool
 }
@@ -93,8 +93,8 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		FixedLocations:    consLayConfigs.FixedLocations,
 		NonFixedLocations: consLayConfigs.NonFixedLocations,
 		Phases:            consLayConfigs.Phases,
-		Objectives:        make(map[string]Objectiver),
-		Constraints:       make(map[string]Constrainter),
+		Objectives:        make(map[objectives.ObjectiveType]Objectiver),
+		Constraints:       make(map[objectives.ConstraintType]Constrainter),
 	}
 
 	// Find the x, y, r of Non-fixed Locations
@@ -121,7 +121,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[string]float64, penalty map[string]float64) {
+func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[objectives.ConstraintType]float64, penalty map[objectives.ConstraintType]float64) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]Location, len(s.Locations))
@@ -171,14 +171,14 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[strin
 	}
 
 	// checking constraints
-	penalty = make(map[string]float64)
+	penalty = make(map[objectives.ConstraintType]float64)
 	for k, v := range s.Constraints {
 		penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
 	}
 
 	// calculate objectives and add penalty to them
 	values = make([]float64, len(s.Objectives))
-	valuesName := make([]string, len(s.Objectives))
+	valuesName := make([]objectives.ObjectiveType, len(s.Objectives))
 
 	i := 0
 	for k := range s.Objectives {
@@ -207,7 +207,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[strin
 		values[idx] = val
 	}
 
-	return values, map[string]float64{}, penalty
+	return values, map[objectives.ConstraintType]float64{}, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
@@ -230,18 +230,18 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
-func (s *ConsLay) AddObjective(name string, objective Objectiver) error {
+func (s *ConsLay) AddObjective(name objectives.ObjectiveType, objective Objectiver) error {
 	if _, ok := s.Objectives[name]; ok {
-		return errors.New("the objective has been existed: " + name)
+		return errors.New("the objective has been existed: " + string(name))
 	}
 
 	s.Objectives[name] = objective
 	return nil
 }
 
-func (s *ConsLay) AddConstraint(name string, constraint Constrainter) error {
+func (s *ConsLay) AddConstraint(name objectives.ConstraintType, constraint Constrainter) error {
 	if _, ok := s.Constraints[name]; ok {
-		return errors.New("the constraint has been existed: " + name)
+		return errors.New("the constraint has been existed: " + string(name))
 	}
 
 	s.Constraints[name] = constraint

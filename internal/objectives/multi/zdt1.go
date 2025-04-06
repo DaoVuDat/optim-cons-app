@@ -108,7 +108,7 @@ func CreateZDT1(configs ZDT1Config) (objectives.Problem, error) {
 
 }
 
-func (s *zdt1) Eval(x []float64) (values []float64, constraints map[string]float64, penalty map[string]float64) {
+func (s *zdt1) Eval(x []float64) (values []float64, constraints map[objectives.ConstraintType]float64, penalty map[objectives.ConstraintType]float64) {
 	//time.Sleep(time.Second * 1)
 
 	values = make([]float64, 2)
@@ -124,7 +124,7 @@ func (s *zdt1) Eval(x []float64) (values []float64, constraints map[string]float
 	values[0] = x[0]
 	values[1] = g * (1 - math.Sqrt(x[0]/g))
 
-	return values, map[string]float64{}, map[string]float64{}
+	return values, map[objectives.ConstraintType]float64{}, map[objectives.ConstraintType]float64{}
 
 }
 
