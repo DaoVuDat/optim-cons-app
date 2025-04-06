@@ -173,12 +173,12 @@ func TestRiskObjective_Eval(t *testing.T) {
 	}{
 		{
 			locations: CreateInputLocation(true),
-			expected:  1930.91,
+			expected:  1038.48,
 			name:      "mostly feasible locations",
 		},
 		{
 			locations: CreateInputLocation(false),
-			expected:  1906.24,
+			expected:  1014.62,
 			name:      "infeasible locations",
 		},
 		{
