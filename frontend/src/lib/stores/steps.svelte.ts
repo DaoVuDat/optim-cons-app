@@ -1,4 +1,3 @@
-import {objectiveStore} from "$lib/stores/objectives.svelte";
 
 class StepStore {
   step = $state<number>(1)
@@ -10,20 +9,28 @@ class StepStore {
     },
     {
       number: 2,
-      name: 'Algorithm'
-    },
-    {
-      number: 3,
       name: 'Problem'
     },
     {
+      number: 3,
+      name: 'Configuration'
+    },
+    {
       number: 4,
+      name: 'Constraints'
+    },
+    {
+      number: 5,
+      name: 'Algorithm'
+    },
+    {
+      number: 6,
       name: 'Optimize'
     }
   ]
 
   nextStep = () => {
-    if (this.step >= 4) {
+    if (this.step >= this.stepsList.length) {
       return
     }
     this.step++

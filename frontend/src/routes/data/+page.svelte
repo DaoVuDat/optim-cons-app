@@ -6,7 +6,6 @@
   import gridProblemConfigComponent from "$lib/components/problem-configs/grid-config.svelte";
   import predeterminedProblemConfigComponent from "$lib/components/problem-configs/predetermined-config.svelte";
   import {continuousProblemConfig} from "$lib/stores/problems";
-  import {setContext} from "svelte";
   import {goto} from "$app/navigation";
 
   const configComponents = {
@@ -27,13 +26,12 @@
     problemStore.selectedProblem = prob;
   }
 
-  $inspect(continuousProblemConfig)
-
   const handleNext = async () => {
     loading = true
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise(() => setTimeout(() => {console.log("process data")}, 2000))
     loading = false
+
     await goto('/data')
     stepStore.nextStep()
   }
@@ -43,7 +41,7 @@
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
   <section class="mt-8 text-black">
-    <h1 class="text-5xl font-bold">Select problem</h1>
+    <h1 class="text-5xl font-bold">Data configuration</h1>
   </section>
 
 
@@ -59,8 +57,7 @@
         </button>
       {/each}
     </div>
-    <div
-        class="h-[580px] overflow-y-auto card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
+    <div class="h-[580px] overflow-y-auto card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
       {#if problemStore.getValidSelection()}
         {@const Component = component}
         <Component/>
@@ -68,22 +65,13 @@
         <p>Please select problem</p>
       {/if}
     </div>
-
-    {#if loading}
-      <div class="toast toast-center toast-middle">
-        <div class="alert alert-info">
-          <span>Loading data...</span>
-        </div>
-      </div>
-    {/if}
   </section>
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="ml-4 btn" href="/" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="ml-4 btn" href="/problem" onclick={() => stepStore.prevStep()}>Back</a>
     <button class={clsx('ml-4 btn', problemStore.getValidSelection() ? '' : 'btn-disabled')}
             onclick={() => handleNext()}
-    >Next
-    </button>
+    >Next</button>
   </section>
 </div>

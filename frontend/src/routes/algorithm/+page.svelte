@@ -1,9 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
-  import moahaConfig from '$lib/components/moaha-config.svelte'
-  import gaConfig from '$lib/components/ga-config.svelte'
-  import ahaConfig from '$lib/components/aha-config.svelte'
-  import gwoConfig from '$lib/components/gwo-config.svelte'
+  import moahaConfig from '$lib/components/algo-configs/moaha-config.svelte'
+  import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
+  import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
+  import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
   import {stepStore} from "$lib/stores/steps.svelte.js";
   import {Algorithms, algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
 
@@ -59,9 +59,9 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="btn" href="/" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="btn" href="/constraint" onclick={() => stepStore.prevStep()}>Back</a>
     <a class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
-       href="/problem"
+       href="/optimize"
        onclick={() => stepStore.nextStep()}
     >Next</a>
   </section>

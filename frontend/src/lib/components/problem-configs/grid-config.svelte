@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {Algorithms, algorithmsStore} from "$lib/stores/algorithms.svelte";
+  import {Algorithms, algorithmsStore} from "$lib/stores/algorithms.svelte.js";
 
-  let config = algorithmsStore.getConfig(Algorithms.GWO)
+  let config = algorithmsStore.getConfig(Algorithms.AHA)
 </script>
 
 
 <div class="p-2 w-full h-full">
   <h2 class="text-2xl text-center font-bold">
-    Grey Wolf Algorithm
+    Artificial Hummingbird Algorithm
   </h2>
   <div class="grid gap-2 grid-cols-1 grid-rows-3">
     <fieldset class="fieldset text-lg">

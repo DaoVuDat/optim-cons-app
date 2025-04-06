@@ -63,24 +63,6 @@ class ObjectiveStore {
     }
   }
 
-  addObjective(name: ObjectiveType) {
-    switch (name) {
-      case ObjectiveType.Hoisting:
-        // Add Hoisting config
-
-        break
-
-      case ObjectiveType.Risk:
-        // Add Risk config
-
-        break
-
-      default:
-        return
-    }
-
-  }
-
 }
 
 export const objectiveStore = new ObjectiveStore();

@@ -27,7 +27,6 @@
     <h1 class="text-5xl font-bold">Select objectives</h1>
   </section>
 
-
   <!-- Content -->
   <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
     <div class="h-[580px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
@@ -52,7 +51,7 @@
   <!-- Bottom Section -->
   <section class="w-full text-end">
     <a class={clsx('btn', objectiveStore.objectives.selectedObjectives.length === 0 ? 'btn-disabled': '')}
-       href="/algorithm" onclick={() => stepStore.nextStep()}>Next</a>
+       href="/problem" onclick={() => stepStore.nextStep()}>Next</a>
   </section>
 </div>
 

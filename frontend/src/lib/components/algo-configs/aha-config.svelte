@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {Algorithms, algorithmsStore} from "$lib/stores/algorithms.svelte";
+  import {Algorithms, algorithmsStore} from "$lib/stores/algorithms.svelte.js";
 
   let config = algorithmsStore.getConfig(Algorithms.AHA)
 </script>
