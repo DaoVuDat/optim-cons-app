@@ -1,3 +1,3 @@
-export * from './hoisting.svelte.js'
-export * from './risk.svelte.js'
-export * from './safety.svelte.js'
+export * from './hoisting.svelte'
+export * from './risk.svelte'
+export * from './safety.svelte'

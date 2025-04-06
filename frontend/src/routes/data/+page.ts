@@ -6,11 +6,10 @@ export const load: PageLoad = async ({ params }) => {
 
   const data = await ProblemInfo()
 
-  console.log(data)
 
   // get the list of locations if it is not predetermined problem
 
   return {
-
+    problemInfo: data
   };
 };

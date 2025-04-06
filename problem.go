@@ -72,14 +72,15 @@ func (a *App) ProblemInfo() (any, error) {
 
 		problemInfo := a.problem.(*conslay.ConsLay)
 		return struct {
-			LayoutLength      float64
-			LayoutWidth       float64
-			LowerBound        []float64
-			UpperBound        []float64
-			Dimensions        int
-			Locations         map[string]conslay.Location
-			FixedLocations    []conslay.Location
-			NonFixedLocations []conslay.Location
+			LayoutLength      float64                     `json:"layoutLength"`
+			LayoutWidth       float64                     `json:"layoutWidth"`
+			LowerBound        []float64                   `json:"lowerBound"`
+			UpperBound        []float64                   `json:"upperBound"`
+			Dimensions        int                         `json:"dimensions"`
+			Locations         map[string]conslay.Location `json:"locations"`
+			FixedLocations    []conslay.Location          `json:"fixedLocations"`
+			NonFixedLocations []conslay.Location          `json:"nonFixedLocations"`
+			Name              objectives.ProblemType      `json:"problemName"`
 		}{
 			LayoutLength:      problemInfo.LayoutLength,
 			LayoutWidth:       problemInfo.LayoutWidth,
@@ -89,6 +90,7 @@ func (a *App) ProblemInfo() (any, error) {
 			Locations:         problemInfo.Locations,
 			FixedLocations:    problemInfo.FixedLocations,
 			NonFixedLocations: problemInfo.NonFixedLocations,
+			Name:              a.problemName,
 		}, nil
 	default:
 		return nil, errors.New("not implemented")

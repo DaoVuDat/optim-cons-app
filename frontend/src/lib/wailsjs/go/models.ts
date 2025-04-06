@@ -43,11 +43,6 @@ export namespace main {
 
 export namespace objectives {
 	
-	export enum ObjectiveType {
-	    SafetyObjective = "Safety Objective",
-	    HoistingObjective = "Hoisting Objective",
-	    RiskObjective = "Risk Objective",
-	}
 	export enum ConstraintType {
 	    Overlap = "Overlap",
 	    OutOfBound = "OutOfBound",
@@ -58,6 +53,11 @@ export namespace objectives {
 	    ContinuousConstructionLayout = "Continuous Construction Layout",
 	    GridConstructionLayout = "Grid Construction Layout",
 	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
+	}
+	export enum ObjectiveType {
+	    SafetyObjective = "Safety Objective",
+	    HoistingObjective = "Hoisting Objective",
+	    RiskObjective = "Risk Objective",
 	}
 
 }
