@@ -11,7 +11,7 @@
 
     const {facilities}: Props = $props()
 
-    let cranes = $state<ISelectedCraneWithId[]>([])
+    let cranes = $state<ISelectedCraneWithId[]>(hoistingConfig.CraneLocations)
 
     const config = hoistingConfig
 

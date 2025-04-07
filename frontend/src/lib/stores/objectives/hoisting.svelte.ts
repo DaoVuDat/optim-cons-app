@@ -11,7 +11,7 @@ export interface ISelectedCraneWithId extends ISelectedCrane {
 }
 
 export interface IHoistingConfig {
-    CraneLocations: ISelectedCrane[];
+    CraneLocations: ISelectedCraneWithId[];
     NumberOfFloors: number;
     FloorHeight: number;
     ZM: number;
