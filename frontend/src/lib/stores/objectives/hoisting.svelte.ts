@@ -1,17 +1,18 @@
 
 export interface ISelectedCrane {
     Name: string;
-    BuildingNames: string[];
+    BuildingNames: string;
     Radius: number;
+    HoistingTimeFilePath: string;
+}
+
+export interface ISelectedCraneWithId extends ISelectedCrane {
+    Id: string
 }
 
 export interface IHoistingConfig {
     CraneLocations: ISelectedCrane[];
     NumberOfFloors: number;
-    HoistingTime: {
-        CraneName: string;
-        FilePath: string;
-    }[];
     FloorHeight: number;
     ZM: number;
     Vuvg: number;
@@ -28,7 +29,6 @@ export interface IHoistingConfig {
 export const hoistingConfig = $state<IHoistingConfig>({
     CraneLocations: [],
     NumberOfFloors: 10,
-    HoistingTime: [],
     FloorHeight: 3.2,
     ZM: 2,
     Vuvg: 37.5,
