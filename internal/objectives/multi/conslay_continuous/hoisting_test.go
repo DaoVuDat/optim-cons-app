@@ -61,6 +61,7 @@ func TestHoistingObjective_Eval(t *testing.T) {
 			Location:     test.locations["TF14"],
 			BuildingName: []string{"TF8", "TF9", "TF10"},
 			Radius:       40,
+			CraneSymbol:  "TF14",
 		})
 
 		hoistingObj.CraneLocations = craneLocations

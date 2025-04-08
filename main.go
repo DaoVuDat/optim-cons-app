@@ -76,9 +76,9 @@ func constructionOptimization() {
 	consLayoutConfigs.FixedLocations = fixedLocations
 
 	// LOAD PHASES
-	phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
+	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
-	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
+	phases, err := conslay.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,11 +138,12 @@ func constructionOptimization() {
 
 	craneLocations := make([]conslay.Crane, 0)
 	for _, loc := range selectedCrane {
-		if craneLoc, ok := consLayObj.Locations[loc.Name]; ok {
+		if _, ok := consLayObj.Locations[loc.Name]; ok {
 			craneLocations = append(craneLocations, conslay.Crane{
-				Location:     craneLoc,
+				//Location:     craneLoc,
 				BuildingName: loc.BuildingNames,
 				Radius:       loc.Radius,
+				CraneSymbol:  loc.Name,
 			})
 		}
 	}

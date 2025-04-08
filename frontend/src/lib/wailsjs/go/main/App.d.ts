@@ -10,7 +10,7 @@ export function CreateObjectives(arg1:Array<main.ObjectiveInput>):Promise<void>;
 
 export function CreateProblem(arg1:main.ProblemInput):Promise<void>;
 
-export function ObjectivesInfo():Promise<Array<any>>;
+export function ObjectivesInfo():Promise<main.ObjectiveConfigResponse>;
 
 export function ProblemInfo():Promise<any>;
 

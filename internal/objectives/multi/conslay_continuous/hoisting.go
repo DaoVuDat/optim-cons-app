@@ -47,13 +47,14 @@ type Crane struct {
 	Location
 	BuildingName []string
 	Radius       float64
+	CraneSymbol  string
 }
 
 type HoistingTime struct {
 	Coordinate     Coordinate
 	HoistingNumber int
 	Name           string
-	BuildingName   string
+	FacilitySymbol string
 }
 
 type HoistingObjective struct {
@@ -101,8 +102,25 @@ func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
 
 	result := 0.0
 
+	cranes := make([]Crane, len(obj.CraneLocations))
+	for i, location := range obj.CraneLocations {
+		if loc, ok := locations[location.CraneSymbol]; ok {
+			cranes[i].CraneSymbol = location.Symbol
+			cranes[i].Radius = location.Radius
+			cranes[i].BuildingName = location.BuildingName
+			cranes[i].Coordinate.X = loc.Coordinate.X
+			cranes[i].Coordinate.Y = loc.Coordinate.Y
+			cranes[i].IsFixed = loc.IsFixed
+			cranes[i].Length = loc.Length
+			cranes[i].Width = loc.Width
+			cranes[i].Rotation = loc.Rotation
+			cranes[i].Symbol = loc.Symbol
+			cranes[i].Name = loc.Name
+		}
+	}
+
 	// calculate Hdjg = distance(crane, prefabricated)
-	for _, crane := range obj.CraneLocations {
+	for _, crane := range cranes {
 		TB := 0.0
 		HDjg := make(map[string]float64, len(crane.BuildingName))
 		for _, prefabricatedName := range crane.BuildingName {
@@ -115,11 +133,11 @@ func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
 			HDkg := Distance2D(hoisting.Coordinate, crane.Coordinate)
 
 			// calculate distance between demand and prefabricated
-			Djk := Distance2D(locations[hoisting.BuildingName].Coordinate, hoisting.Coordinate)
+			Djk := Distance2D(locations[hoisting.FacilitySymbol].Coordinate, hoisting.Coordinate)
 
-			Tag := 2 * (math.Abs(HDjg[hoisting.BuildingName]-HDkg) / obj.Vag)
-			Twg := 2 * (1 / obj.Vwg) * math.Acos((HDjg[hoisting.BuildingName]*HDjg[hoisting.BuildingName]+HDkg*HDkg-Djk*Djk)/
-				(2*HDjg[hoisting.BuildingName]*HDkg))
+			Tag := 2 * (math.Abs(HDjg[hoisting.FacilitySymbol]-HDkg) / obj.Vag)
+			Twg := 2 * (1 / obj.Vwg) * math.Acos((HDjg[hoisting.FacilitySymbol]*HDjg[hoisting.FacilitySymbol]+HDkg*HDkg-Djk*Djk)/
+				(2*HDjg[hoisting.FacilitySymbol]*HDkg))
 
 			Thg := max(Tag, Twg) + obj.AlphaHoisting*min(Tag, Twg)
 
@@ -161,7 +179,7 @@ func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 			continue
 		}
 		var name string
-		var buildingName string
+		var facilitySymbol string
 		var x float64
 		var y float64
 		var hoistingNumber int
@@ -170,7 +188,7 @@ func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 			case 0:
 				name = cell
 			case 1:
-				buildingName = cell
+				facilitySymbol = cell
 			case 2:
 				val, err := strconv.ParseFloat(cell, 64)
 				if err != nil {
@@ -199,7 +217,7 @@ func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 			},
 			HoistingNumber: hoistingNumber,
 			Name:           name,
-			BuildingName:   buildingName,
+			FacilitySymbol: facilitySymbol,
 		})
 	}
 	return hoistingTime, nil

@@ -230,6 +230,10 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
+func (s *ConsLay) GetObjectives() map[objectives.ObjectiveType]Objectiver {
+	return s.Objectives
+}
+
 func (s *ConsLay) AddObjective(name objectives.ObjectiveType, objective Objectiver) error {
 	if _, ok := s.Objectives[name]; ok {
 		return errors.New("the objective has been existed: " + string(name))

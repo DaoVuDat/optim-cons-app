@@ -56,7 +56,6 @@ func (a *App) CreateProblem(
 		}
 
 		a.problem = consLayObj
-
 		return nil
 	default:
 		return errors.New("not implemented")

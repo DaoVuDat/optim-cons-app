@@ -1,5 +1,21 @@
 export namespace main {
 	
+	export class ObjectiveConfigResponse {
+	    risk?: any;
+	    hoisting?: any;
+	    safety?: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new ObjectiveConfigResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.risk = source["risk"];
+	        this.hoisting = source["hoisting"];
+	        this.safety = source["safety"];
+	    }
+	}
 	export class ObjectiveInput {
 	    objectiveName: objectives.ObjectiveType;
 	    objectiveConfig: any;
@@ -43,12 +59,6 @@ export namespace main {
 
 export namespace objectives {
 	
-	export enum ConstraintType {
-	    Overlap = "Overlap",
-	    OutOfBound = "OutOfBound",
-	    CoverInCraneRadius = "CoverInCraneRadius",
-	    InclusiveZone = "InclusiveZone",
-	}
 	export enum ProblemType {
 	    ContinuousConstructionLayout = "Continuous Construction Layout",
 	    GridConstructionLayout = "Grid Construction Layout",
@@ -58,6 +68,12 @@ export namespace objectives {
 	    SafetyObjective = "Safety Objective",
 	    HoistingObjective = "Hoisting Objective",
 	    RiskObjective = "Risk Objective",
+	}
+	export enum ConstraintType {
+	    Overlap = "Overlap",
+	    OutOfBound = "OutOfBound",
+	    CoverInCraneRadius = "CoverInCraneRadius",
+	    InclusiveZone = "InclusiveZone",
 	}
 
 }

@@ -8,7 +8,6 @@
         facilities: Facility[]
     }
 
-
     const {facilities}: Props = $props()
 
     let cranes = $state<ISelectedCraneWithId[]>(hoistingConfig.CraneLocations)
@@ -20,8 +19,6 @@
     const selectFile = async (idx: string) => {
         cranes.find(crane => crane.Id === idx)!.HoistingTimeFilePath = await SelectFile()
     }
-
-    $inspect(cranes)
 
     const addCrane = () => {
         cranes.push({
@@ -133,7 +130,7 @@
                       <div class="flex items-center">
                         <fieldset class="fieldset flex flex-col">
                           <legend class="fieldset-legend text-base">Facilities in the crane:</legend>
-                          <input type="text" class="input input-sm" placeholder="TF1, TF2"
+                          <input type="text" class="input input-sm" placeholder="TF1 TF2"
                                  bind:value={crane.BuildingNames}/>
                         </fieldset>
                       </div>
