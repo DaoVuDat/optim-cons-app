@@ -26,7 +26,10 @@
     }
 
     const removeZone = (idx: string) => {
-      zones = zones.filter(crane => crane.Id !== idx)
+      const indexToRemove = zones.findIndex(zone => zone.Id === idx);
+      if (indexToRemove !== -1) {
+        zones.splice(indexToRemove, 1);
+      }
     }
 
 </script>

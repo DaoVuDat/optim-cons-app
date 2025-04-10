@@ -94,7 +94,10 @@ var AllAlgorithmType = []struct {
 
 type EventType string
 
-const ProgressEvent EventType = "ProgressEvent"
+const (
+	ProgressEvent EventType = "ProgressEvent"
+	ResultEvent   EventType = "ResultEvent"
+)
 
 var AllEvent = []struct {
 	Value  EventType
@@ -103,5 +106,9 @@ var AllEvent = []struct {
 	{
 		Value:  ProgressEvent,
 		TSName: "ProgressEvent",
+	},
+	{
+		Value:  ResultEvent,
+		TSName: "ResultEvent",
 	},
 }

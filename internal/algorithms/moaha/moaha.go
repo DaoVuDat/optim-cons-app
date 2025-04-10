@@ -557,6 +557,26 @@ func (a *MOAHAAlgorithm) outOfBoundaries(pos []float64) {
 	}
 }
 
+func (a *MOAHAAlgorithm) GetResults() []algorithms.AlgorithmResult {
+	results := make([]algorithms.AlgorithmResult, len(a.Archive))
+
+	for i := range a.Archive {
+		res := a.Archive[i]
+		mapLoc, err := a.ObjectiveFunction.GetLocationResult(res.Position)
+		if err != nil {
+			return nil
+		}
+
+		results[i] = algorithms.AlgorithmResult{
+			MapLocations: mapLoc,
+			Value:        res.Value,
+			Penalty:      res.Penalty,
+		}
+	}
+
+	return results
+}
+
 func initializeNMMatrix(n, m int) [][]float64 {
 	matrix := make([][]float64, n)
 	for i := 0; i < n; i++ {

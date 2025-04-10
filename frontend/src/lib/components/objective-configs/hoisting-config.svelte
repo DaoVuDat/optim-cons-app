@@ -31,8 +31,12 @@
     }
 
     const removeCrane = (idx: string) => {
-        cranes = cranes.filter(crane => crane.Id !== idx)
+      const indexToRemove = cranes.findIndex(crane => crane.Id === idx);
+      if (indexToRemove !== -1) {
+        cranes.splice(indexToRemove, 1);
+      }
     }
+
 
 </script>
 

@@ -216,6 +216,58 @@ func (s *ConsLay) AddConstraint(name data.ConstraintType, constraint data.Constr
 	return nil
 }
 
+func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, error) {
+	// add x, y, r to non-fixed locations
+	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
+	mapLocations := make(map[string]data.Location, len(s.Locations))
+
+	for i := 0; i < len(nonFixedLocations); i++ {
+		loc := s.NonFixedLocations[i]
+		idx := i * 3
+		x := input[idx]
+		y := input[idx+1]
+		r := input[idx+2]
+
+		width := loc.Width
+		length := loc.Length
+		rotation := false
+
+		if math.Round(r) > 0 {
+			rotation = true
+			width = loc.Length
+			length = loc.Width
+		}
+
+		if s.Rounding {
+			x = math.Round(x)
+			y = math.Round(y)
+		}
+
+		location := data.Location{
+			Coordinate: data.Coordinate{
+				X: x,
+				Y: y,
+			}, // update x, y
+			Rotation: rotation, // update r
+			Length:   length,   // change length and width if rotation is true
+			Width:    width,
+			IsFixed:  false,
+			Symbol:   loc.Symbol,
+			Name:     loc.Name,
+		}
+
+		nonFixedLocations[i] = location
+		mapLocations[loc.Symbol] = location
+	}
+
+	// add fixed location to mapLocations
+	for i := 0; i < len(s.FixedLocations); i++ {
+		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
+	}
+
+	return mapLocations, nil
+}
+
 // Constraints Utility Functions
 
 // Readers Utility Functions

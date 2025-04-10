@@ -22,4 +22,5 @@ type Problem interface {
 	GetConstraints() map[data.ConstraintType]data.Constrainter
 	AddObjective(name data.ObjectiveType, objective data.Objectiver) error
 	AddConstraint(name data.ConstraintType, constraint data.Constrainter) error
+	GetLocationResult(input []float64) (map[string]data.Location, error)
 }

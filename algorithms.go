@@ -135,8 +135,9 @@ func (a *App) AlgorithmInfo() (any, error) {
 func (a *App) RunAlgorithm() error {
 
 	progressChan := make(chan any)
-	doneChan := make(chan struct{})
 	errorChan := make(chan error)
+	doneChan := make(chan struct{})
+	resultChan := make(chan any, 1)
 
 	go func(doneChan chan<- struct{}, channel chan<- any, errChan chan error) {
 		err := a.algorithm.RunWithChannel(doneChan, channel)
@@ -144,12 +145,19 @@ func (a *App) RunAlgorithm() error {
 		if err != nil {
 			errChan <- err
 		}
+
+		// send results to resultChan
+		// TODO: transform result of this
+		resultChan <- a.algorithm.GetResults()
+
 	}(doneChan, progressChan, errorChan)
 
 	// TODO: improve this if it has error
 	for progressData := range progressChan {
 		runtime.EventsEmit(a.ctx, string(ProgressEvent), progressData)
 	}
+
+	runtime.EventsEmit(a.ctx, string(ResultEvent), <-resultChan)
 
 	return nil
 }

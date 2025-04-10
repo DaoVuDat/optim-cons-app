@@ -224,7 +224,7 @@ func constructionOptimization() {
 
 	// MOAHA
 	moahaConfigs := moaha.Configs{
-		NumAgents:     200,
+		NumAgents:     300,
 		NumIterations: 400,
 		ArchiveSize:   100,
 	}

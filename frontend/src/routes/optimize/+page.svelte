@@ -1,9 +1,12 @@
 <script lang="ts">
   import {stepStore} from "$lib/stores/steps.svelte";
   import {AlgorithmInfo, RunAlgorithm} from "$lib/wailsjs/go/main/App";
-  import {onMount} from "svelte";
-  import {EventsOn} from "$lib/wailsjs/runtime";
+  import {onDestroy, onMount} from "svelte";
+  import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
   import {main} from "$lib/wailsjs/go/models";
+  import {algorithmsStore} from "$lib/stores/algorithms.svelte";
+  import clsx from "clsx";
+  import type {Coordinate, Facility} from "$lib/stores/problems/problem";
 
   let progress = $state<number>(0)
   let progressInfo = $state<string>("")
@@ -40,20 +43,62 @@
     // Listen for the 'backendEvent' emitted from Go
     EventsOn(main.EventType.ProgressEvent, (data: MultiObjective | SingleObjective) => {
       if (data) {
-        console.log('Received event from backend:', data);
-        progress = roundNDecimal(data.progress, 2)
         // check the type of problem ( single or multiple )
         if (data.type === 'multi') {
           isMulti = true;
+          progress = Math.round(data.progress)
           progressInfo = `${data.numberOfAgentsInArchive}`
-        } else {
+        } else if (data.type === 'single') {
           isMulti = false;
+          progress = Math.round(data.progress)
           progressInfo = `${roundNDecimal(data.bestFitness, 4)}`
         }
       }
     });
+
+    EventsOn(main.EventType.ResultEvent, (data: ResultLocation[]) => {
+      if (data) {
+        results.push(...data.map(r => ({
+          ...r,
+          Id: Math.random()
+        })))
+
+        console.log(results.length)
+      }
+    });
   })
 
+  onDestroy(() => {
+    EventsOff(main.EventType.ProgressEvent)
+    EventsOff(main.EventType.ResultEvent)
+  })
+
+  interface Penalty {
+    [k: string]: number
+  }
+
+  interface MapLocation {
+    [k: string]: Facility
+  }
+
+  interface ResultLocation {
+    MapLocations: MapLocation
+    Value: number[]
+    Penalty: Penalty
+  }
+
+  interface ResultLocationWithId extends ResultLocation {
+    Id: number
+  }
+
+  let results = $state<ResultLocationWithId[]>([])
+  let selectedResult = $state<ResultLocationWithId|undefined>(undefined)
+
+  const handleSelectedResult = (result: ResultLocationWithId) => {
+    selectedResult = result
+  }
+
+  $inspect(selectedResult, results)
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
@@ -87,11 +132,17 @@
     </div>
     <div
         class="px-2 py-4 col-start-5 row-start-1 col-span-8 row-span-3 card bg-base-100 shadow-md rounded-lg flex flex-col justify-center items-center">
-      Graph
+
     </div>
     <div
-        class="px-2 py-4 col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col justify-center items-center">
-      <h3>Result list</h3>
+        class="px-2 py-4 max-h-full col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">
+      {#each results as res, idx (res.Id + idx)}
+        <button class={clsx("p-4 rounded h-18 flex justify-between items-center cursor-pointer text-left",
+      selectedResult?.Id === res.Id ? 'bg-[#422AD5] text-white' : '')}
+                onclick={() => handleSelectedResult(res)}>
+          Result #{idx+1} ({Object.values(res.Penalty).reduce((prev, cur) => prev+cur, 0) !== 0 ?  "Infeasible" : "Feasible"})
+        </button>
+      {/each}
     </div>
   </section>
 

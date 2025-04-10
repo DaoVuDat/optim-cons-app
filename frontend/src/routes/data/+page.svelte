@@ -10,6 +10,7 @@
   import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
   import type {Facility} from "$lib/stores/problems/problem";
   import {CreateObjectives} from "$lib/wailsjs/go/main/App";
+  import {hoistingConfig} from "$lib/stores/objectives";
 
   const configComponents = {
     [dataType.ObjectiveType.HoistingObjective]: hoistingConfigComponent,
@@ -68,7 +69,6 @@
     } else
       return {}
   };
-
 
 </script>
 

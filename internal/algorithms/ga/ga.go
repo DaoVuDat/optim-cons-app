@@ -241,6 +241,23 @@ func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
 	return sorted
 }
 
+func (ga *GAAlgorithm) GetResults() []algorithms.AlgorithmResult {
+	results := make([]algorithms.AlgorithmResult, 1)
+
+	mapLoc, err := ga.ObjectiveFunction.GetLocationResult(ga.Best.Position)
+
+	if err != nil {
+		return nil
+	}
+	results[0] = algorithms.AlgorithmResult{
+		MapLocations: mapLoc,
+		Value:        ga.Best.Value,
+		Penalty:      ga.Best.Penalty,
+	}
+
+	return results
+}
+
 // tournamentSelection selects the best individual among a random sample.
 func tournamentSelection(pop []*objectives.Result, tournamentSize int) *objectives.Result {
 	popSize := len(pop)
