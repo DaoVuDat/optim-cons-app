@@ -224,11 +224,8 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 					randNum = rand.Intn(dimensions)
 				}
 
-				//test := []int{19, 28, 27, 7, 29, 20, 9, 4, 12, 15, 21, 6, 13, 25, 2, 23, 8, 26, 30, 1, 5, 14, 17, 24, 16, 10, 18, 22, 11, 3}
-
 				for i := 0; i < randNum; i++ {
 					idx := randDim[i]
-					//idx = test[i] - 1 // test
 
 					directVector[agentIdx][idx] = 1
 				}
@@ -244,7 +241,6 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 			}
 
 			r = rand.Float64()
-			//fmt.Println()
 			if r < 0.5 {
 				// guided foraging
 				a.guidedForaging(visitTable, directVector, agentIdx, paretoFront, newPop)
@@ -303,11 +299,13 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 		}
 
 		channel <- struct {
-			Iteration               int `json:"iteration"`
-			NumberOfAgentsInArchive int `json:"numberOfAgentsInArchive"`
+			Progress                float64 `json:"progress"`
+			NumberOfAgentsInArchive int     `json:"numberOfAgentsInArchive"`
+			Type                    string  `json:"type"`
 		}{
-			Iteration:               l,
+			Progress:                (float64(l+1) / float64(a.NumberOfIter)) * 100,
 			NumberOfAgentsInArchive: len(a.Archive),
+			Type:                    "multi",
 		}
 
 		l++
@@ -479,7 +477,6 @@ func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector 
 	}
 
 	newR := rand.Float64()
-	//fmt.Println()
 	if dominatedFlag == 1 || (dominatedFlag == 0 && newR > 0.5) {
 		tPop = append(tPop, a.Agents[agentIdx].CopyAgent())
 

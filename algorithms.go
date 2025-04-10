@@ -148,7 +148,7 @@ func (a *App) RunAlgorithm() error {
 
 	// TODO: improve this if it has error
 	for progressData := range progressChan {
-		runtime.EventsEmit(a.ctx, "ProgressEvent", progressData)
+		runtime.EventsEmit(a.ctx, string(ProgressEvent), progressData)
 	}
 
 	return nil

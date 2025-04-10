@@ -11,6 +11,11 @@ export namespace algorithms {
 
 export namespace data {
 	
+	export enum ProblemName {
+	    ContinuousConstructionLayout = "Continuous Construction Layout",
+	    GridConstructionLayout = "Grid Construction Layout",
+	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
+	}
 	export enum ObjectiveType {
 	    SafetyObjective = "Safety Objective",
 	    HoistingObjective = "Hoisting Objective",
@@ -21,11 +26,6 @@ export namespace data {
 	    OutOfBound = "OutOfBound",
 	    CoverInCraneRadius = "CoverInCraneRadius",
 	    InclusiveZone = "InclusiveZone",
-	}
-	export enum ProblemName {
-	    ContinuousConstructionLayout = "Continuous Construction Layout",
-	    GridConstructionLayout = "Grid Construction Layout",
-	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
 	}
 
 }
