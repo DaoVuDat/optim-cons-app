@@ -8,7 +8,7 @@
   import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
   import {algorithms, main} from "$lib/wailsjs/go/models";
   import {goto} from "$app/navigation";
-  import {ConstraintsInfo, ProblemInfo} from "$lib/wailsjs/go/main/App";
+  import {ConstraintsInfo, CreateAlgorithm, ProblemInfo} from "$lib/wailsjs/go/main/App";
 
   const configComponents = {
     [algorithms.AlgorithmType.MOAHA]: moahaConfig,
@@ -31,14 +31,15 @@
 
   const handleNext = async () => {
     loading = true
-
-    const problemInfo = await ProblemInfo()
-    const constraintsInfo = await ConstraintsInfo()
-    console.log(problemInfo)
-    console.log(constraintsInfo)
-
+    
     // Create Algo
-    // await AddConstraints(constraintsInput)
+    if (algorithmsStore.selectedAlgorithm) {
+
+      await CreateAlgorithm({
+        algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
+        algorithmName: algorithmsStore.selectedAlgorithm.value,
+      })
+    }
 
     loading = false
 

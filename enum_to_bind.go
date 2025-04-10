@@ -91,3 +91,17 @@ var AllAlgorithmType = []struct {
 		TSName: "GWO",
 	},
 }
+
+type EventType string
+
+const ProgressEvent EventType = "ProgressEvent"
+
+var AllEvent = []struct {
+	Value  EventType
+	TSName string // typescript enum name
+}{
+	{
+		Value:  ProgressEvent,
+		TSName: "ProgressEvent",
+	},
+}

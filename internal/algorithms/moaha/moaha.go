@@ -186,6 +186,137 @@ func (a *MOAHAAlgorithm) Run() error {
 	return nil
 }
 
+func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
+	dimensions := a.ObjectiveFunction.GetDimension()
+
+	// initialization
+	a.initialization()
+
+	a.Agents = objectives.DetermineDomination(a.Agents)
+	a.Archive = objectives.GetNonDominatedAgents(a.Agents)
+
+	l := 0
+
+	visitTable := initializeNMMatrix(a.NumberOfAgents, a.NumberOfAgents)
+
+	for l < a.NumberOfIter {
+		newPop := make([]*objectives.Result, 0)
+		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
+
+		a.Agents = agents
+
+		// direct vector
+		directVector := initializeNMMatrix(a.NumberOfAgents, dimensions)
+
+		//wg.Add(a.NumberOfAgents)
+		for agentIdx := range a.Agents {
+
+			r := rand.Float64()
+
+			//fmt.Println("")
+			if r < 1.0/3.0 {
+				// diagonal flight
+				randDim := util.RandN(dimensions)
+				randNum := 0
+				if dimensions > 3 {
+					randNum = rand.Intn(dimensions - 1)
+				} else {
+					randNum = rand.Intn(dimensions)
+				}
+
+				//test := []int{19, 28, 27, 7, 29, 20, 9, 4, 12, 15, 21, 6, 13, 25, 2, 23, 8, 26, 30, 1, 5, 14, 17, 24, 16, 10, 18, 22, 11, 3}
+
+				for i := 0; i < randNum; i++ {
+					idx := randDim[i]
+					//idx = test[i] - 1 // test
+
+					directVector[agentIdx][idx] = 1
+				}
+			} else if r > 2.0/3.0 {
+				// omnidirectional flight
+				for i := 0; i < dimensions; i++ {
+					directVector[agentIdx][i] = 1
+				}
+			} else {
+				// axial flight
+				randNum := rand.Intn(dimensions)
+				directVector[agentIdx][randNum] = 1
+			}
+
+			r = rand.Float64()
+			//fmt.Println()
+			if r < 0.5 {
+				// guided foraging
+				a.guidedForaging(visitTable, directVector, agentIdx, paretoFront, newPop)
+			} else {
+				// territory foraging
+				a.territoryForaging(visitTable, directVector, agentIdx, paretoFront, newPop)
+			}
+
+		}
+
+		// migration foraging
+		if l%(a.NumberOfAgents*2) == 0 {
+			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
+
+			for _, idx := range paretoFront[len(paretoFront)-1] {
+
+				for i := range a.Agents[idx].Position {
+					a.Agents[idx].Position[i] =
+						a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
+							(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
+				}
+				// evaluate
+				value, constraints, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
+
+				a.Agents[idx].Value = value
+				a.Agents[idx].Constraints = constraints
+				a.Agents[idx].Penalty = penalty
+
+				for i := range visitTable[idx] {
+					visitTable[idx][i] += 1
+				}
+
+				maxVals := maxRowMatrix(visitTable)
+				for i := range visitTable[idx] {
+					if i == idx {
+						continue
+					}
+					visitTable[i][idx] = maxVals[i] + 1
+				}
+			}
+
+		}
+
+		// Determine Domination with a.Agents and newPop
+		newSolutions := objectives.DetermineDomination(objectives.MergeAgents(a.Agents, newPop))
+		// Get Non-Dominated -> newNonDominatedPop
+		newNonDominatedPop := objectives.GetNonDominatedAgents(newSolutions)
+
+		// Determine Domination with newDominatedPop and a.Archive
+		newSolutions = objectives.DetermineDomination(objectives.MergeAgents(newNonDominatedPop, a.Archive))
+		// Get Non-Dominated -> a.Archive
+		a.Archive = objectives.GetNonDominatedAgents(newSolutions)
+
+		if len(a.Archive) > a.ArchiveSize {
+			a.Archive = objectives.DECD(a.Archive, len(a.Archive)-a.ArchiveSize)
+		}
+
+		channel <- struct {
+			Iteration               int `json:"iteration"`
+			NumberOfAgentsInArchive int `json:"numberOfAgentsInArchive"`
+		}{
+			Iteration:               l,
+			NumberOfAgentsInArchive: len(a.Archive),
+		}
+
+		l++
+	}
+	close(channel)
+
+	return nil
+}
+
 func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*objectives.Result) {
 	nonDominatedMUT := make([]*objectives.Result, 0)
 

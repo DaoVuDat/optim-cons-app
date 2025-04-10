@@ -39,8 +39,6 @@
   const handleNext = async () => {
     loading = true
 
-    console.log($state.snapshot(constraintsStore.constraints))
-
     // Do loading data objective configs
     if (constraintsStore.constraints.selectedConstraints.length > 0) {
       const constraintsInput = constraintsStore.constraints.selectedConstraints.map<main.ConstraintInput>(con => {

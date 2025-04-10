@@ -11,6 +11,11 @@ export namespace algorithms {
 
 export namespace data {
 	
+	export enum ObjectiveType {
+	    SafetyObjective = "Safety Objective",
+	    HoistingObjective = "Hoisting Objective",
+	    RiskObjective = "Risk Objective",
+	}
 	export enum ConstraintType {
 	    Overlap = "Overlap",
 	    OutOfBound = "OutOfBound",
@@ -22,16 +27,14 @@ export namespace data {
 	    GridConstructionLayout = "Grid Construction Layout",
 	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
 	}
-	export enum ObjectiveType {
-	    SafetyObjective = "Safety Objective",
-	    HoistingObjective = "Hoisting Objective",
-	    RiskObjective = "Risk Objective",
-	}
 
 }
 
 export namespace main {
 	
+	export enum EventType {
+	    ProgressEvent = "ProgressEvent",
+	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;
 	    algorithmConfig: any;

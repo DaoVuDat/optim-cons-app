@@ -126,6 +126,73 @@ func (ga *GAAlgorithm) Run() error {
 	return nil
 }
 
+func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
+	ga.initialization()
+
+	bar := progressbar.Default(int64(ga.MaxIterations))
+	var wg sync.WaitGroup
+
+	dim := ga.ObjectiveFunction.GetDimension()
+	lowerBound := ga.ObjectiveFunction.GetLowerBound()
+	upperBound := ga.ObjectiveFunction.GetUpperBound()
+
+	// Main GA loop (each iteration represents a generation)
+	for iter := 0; iter < ga.MaxIterations; iter++ {
+		newPopulation := make([]*objectives.Result, ga.PopulationSize)
+
+		// Elitism: preserve the best individuals.
+		sortedPop := ga.sortPopulationByFitness()
+		for i := 0; i < ga.ElitismCount; i++ {
+			newPopulation[i] = sortedPop[i].CopyAgent()
+		}
+
+		// Generate offspring for the rest of the population.
+		wg.Add(ga.PopulationSize - ga.ElitismCount)
+		for i := ga.ElitismCount; i < ga.PopulationSize; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				// Tournament selection (tournament size = 3)
+				parent1 := tournamentSelection(ga.Population, 3)
+				parent2 := tournamentSelection(ga.Population, 3)
+
+				var childPos []float64
+				// Crossover (using blend crossover with alpha = 0.3)
+				if rand.Float64() < ga.CrossoverRate {
+					childPos = blendCrossover(parent1.Position, parent2.Position, lowerBound, upperBound, 0.3)
+				} else {
+					// If no crossover, copy parent1
+					childPos = make([]float64, dim)
+					copy(childPos, parent1.Position)
+				}
+
+				// Mutation (Gaussian mutation with 10% of the range as sigma)
+				childPos = gaussianMutation(childPos, lowerBound, upperBound, ga.MutationRate)
+				// Ensure the child is within boundaries.
+				outOfBoundaries(childPos, lowerBound, upperBound)
+				// Evaluate the child solution.
+
+				child := &objectives.Result{
+					Idx:      idx,
+					Position: childPos,
+				}
+				value, _, _ := ga.ObjectiveFunction.Eval(childPos)
+				child.Value = value
+				newPopulation[idx] = child
+			}(i)
+		}
+		wg.Wait()
+
+		ga.Population = newPopulation
+		ga.findBest()
+
+		ga.Convergence[iter] = ga.Best.Value[0]
+		bar.Describe(fmt.Sprintf("Iter %d: %e", iter+1, ga.Best.Value[0]))
+		bar.Add(1)
+	}
+
+	return nil
+}
+
 func (ga *GAAlgorithm) initialization() {
 	dim := ga.ObjectiveFunction.GetDimension()
 	lowerBound := ga.ObjectiveFunction.GetLowerBound()

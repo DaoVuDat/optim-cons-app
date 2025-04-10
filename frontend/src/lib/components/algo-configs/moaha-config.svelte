@@ -12,15 +12,15 @@
   <div class="grid gap-2 grid-cols-1 grid-rows-3">
     <fieldset class="fieldset text-lg">
       <legend class="fieldset-legend">Iterations:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.iterations} />
+      <input type="number" class="input input-lg" placeholder="300" bind:value={config.iterations} />
     </fieldset>
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-lg">Populations:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.population}/>
+      <input type="number" class="input input-lg" placeholder="300" bind:value={config.population}/>
     </fieldset>
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-lg">Archive Size:</legend>
-      <input type="text" class="input input-lg" placeholder="100" bind:value={config.archiveSize.value}/>
+      <input type="number" class="input input-lg" placeholder="100" bind:value={config.archiveSize}/>
     </fieldset>
   </div>
 </div>

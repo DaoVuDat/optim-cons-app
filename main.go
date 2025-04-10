@@ -48,6 +48,7 @@ func main() {
 			AllObjectivesType,
 			AllConstraintsType,
 			AllAlgorithmType,
+			AllEvent,
 		},
 	})
 

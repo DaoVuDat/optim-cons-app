@@ -164,6 +164,113 @@ func (a *AHAAlgorithm) Run() error {
 	return nil
 }
 
+func (a *AHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
+	dimensions := a.ObjectiveFunction.GetDimension()
+
+	// initialization
+	a.initialization()
+	l := 0
+
+	bar := progressbar.Default(int64(a.NumberOfIter))
+	//var wg sync.WaitGroup
+
+	visitTable := initializeNMMatrix(a.NumberOfAgents, a.NumberOfAgents)
+
+	for l < a.NumberOfIter {
+		// direct vector
+		directVector := initializeNMMatrix(a.NumberOfAgents, dimensions)
+
+		//wg.Add(a.NumberOfAgents)
+		for agentIdx := range a.Agents {
+
+			r := rand.Float64()
+
+			if r < 1.0/3.0 {
+				// diagonal flight
+				randDim := util.RandN(dimensions)
+				randNum := 0
+				if dimensions > 3 {
+					randNum = rand.Intn(dimensions - 1)
+				} else {
+					randNum = rand.Intn(dimensions)
+				}
+				for i := 0; i < randNum; i++ {
+					idx := randDim[i]
+					directVector[agentIdx][idx] = 1
+				}
+			} else if r > 2.0/3.0 {
+				// omnidirectional flight
+				for i := 0; i < dimensions; i++ {
+					directVector[agentIdx][i] = 1
+				}
+			} else {
+				// axial flight
+				randNum := rand.Intn(dimensions)
+				for i := 0; i < randNum; i++ {
+					directVector[agentIdx][i] = 1
+				}
+			}
+
+			r = rand.Float64()
+
+			if r < 0.5 {
+				// guided foraging
+				a.guidedForaging(visitTable, directVector, agentIdx)
+			} else {
+				// territory foraging
+				a.territoryForaging(visitTable, directVector, agentIdx)
+			}
+
+		}
+
+		//wg.Wait()
+
+		// migration foraging
+		if l%(a.NumberOfAgents*2) == 0 {
+			maxVal := -math.MaxFloat64
+			maxIdx := 0
+			for i := range a.Agents {
+				if a.Agents[i].Value[0] > maxVal {
+					maxVal = a.Agents[i].Value[0]
+					maxIdx = i
+				}
+			}
+
+			for i := range a.Agents[maxIdx].Position {
+				a.Agents[maxIdx].Position[i] =
+					a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
+						(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
+			}
+
+			// evaluate
+			value, _, _ := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
+			a.Agents[maxIdx].Value = value
+
+			for i := range visitTable[maxIdx] {
+				visitTable[maxIdx][i] += 1
+			}
+
+			maxVals := maxRowMatrix(visitTable)
+			for i := range visitTable[maxIdx] {
+				if i == maxIdx {
+					continue
+				}
+				visitTable[i][maxIdx] = maxVals[i] + 1
+			}
+		}
+
+		a.findBest()
+
+		a.Convergence[l] = a.BestResult.Value[0]
+		bar.Describe(fmt.Sprintf("Iter %d: %e", l+1, a.BestResult.Value[0]))
+		bar.Add(1)
+
+		l++
+	}
+
+	return nil
+}
+
 func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int) {
 	vals := visitTable[agentIdx]
 	maxVal := -math.MaxFloat64

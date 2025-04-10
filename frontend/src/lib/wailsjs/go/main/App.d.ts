@@ -4,7 +4,7 @@ import {main} from '../models';
 
 export function AddConstraints(arg1:Array<main.ConstraintInput>):Promise<void>;
 
-export function AlgorithmInfo():Promise<void>;
+export function AlgorithmInfo():Promise<any>;
 
 export function ConstraintsInfo():Promise<main.ConstraintsConfigResponse>;
 
