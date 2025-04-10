@@ -1,16 +1,20 @@
-package multi
+package objectives
 
 import (
+	"fmt"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"sort"
+	"strings"
 )
 
-type MultiResult struct {
-	single.SingleResult
+type Result struct {
+	Idx              int
+	Position         []float64
+	Value            []float64
+	Constraints      map[data.ConstraintType]float64
+	Penalty          map[data.ConstraintType]float64
 	CrowdingDistance float64
 	Dominated        bool
 	Rank             int
@@ -18,25 +22,28 @@ type MultiResult struct {
 	DominatedCount   int
 }
 
-type MultiProblem interface {
-	Eval(pos []float64) (values []float64, constraints map[objectives.ConstraintType]float64, penalty map[objectives.ConstraintType]float64)
-	GetUpperBound() []float64
-	GetLowerBound() []float64
-	GetDimension() int
-	FindMin() bool
-	NumberOfObjectives() int
-	Type() data.TypeProblem
+func (agent *Result) PositionString() string {
+	var sb strings.Builder
+	sb.WriteString("[ ")
+
+	for i, v := range agent.Position {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(fmt.Sprintf("%g", v))
+	}
+
+	sb.WriteString(" ]")
+	return sb.String()
 }
 
-func (agent *MultiResult) CopyAgent() *MultiResult {
-	return &MultiResult{
-		SingleResult: single.SingleResult{
-			Idx:         agent.Idx,
-			Position:    util.CopyArray(agent.Position),
-			Value:       util.CopyArray(agent.Value),
-			Constraints: util.CopyMap(agent.Constraints),
-			Penalty:     util.CopyMap(agent.Penalty),
-		},
+func (agent *Result) CopyAgent() *Result {
+	return &Result{
+		Idx:              agent.Idx,
+		Position:         util.CopyArray(agent.Position),
+		Value:            util.CopyArray(agent.Value),
+		Constraints:      util.CopyMap(agent.Constraints),
+		Penalty:          util.CopyMap(agent.Penalty),
 		CrowdingDistance: agent.CrowdingDistance,
 		Dominated:        agent.Dominated,
 		Rank:             agent.Rank,
@@ -45,7 +52,7 @@ func (agent *MultiResult) CopyAgent() *MultiResult {
 	}
 }
 
-func (agent *MultiResult) Dominates(other *MultiResult) bool {
+func (agent *Result) Dominates(other *Result) bool {
 	numberOfObjs := len(agent.Value)
 	anyConstraint := false
 	for i := 0; i < numberOfObjs; i++ {
@@ -61,8 +68,8 @@ func (agent *MultiResult) Dominates(other *MultiResult) bool {
 	return anyConstraint
 }
 
-func MergeAgents(a []*MultiResult, b []*MultiResult) []*MultiResult {
-	res := make([]*MultiResult, len(a)+len(b))
+func MergeAgents(a []*Result, b []*Result) []*Result {
+	res := make([]*Result, len(a)+len(b))
 	for i := 0; i < len(a); i++ {
 		res[i] = a[i]
 	}
@@ -73,7 +80,7 @@ func MergeAgents(a []*MultiResult, b []*MultiResult) []*MultiResult {
 
 	return res
 }
-func DetermineDomination(agents []*MultiResult) []*MultiResult {
+func DetermineDomination(agents []*Result) []*Result {
 	// clear the dominated
 	for i := range agents {
 		agents[i].Dominated = false
@@ -108,8 +115,8 @@ func DetermineDomination(agents []*MultiResult) []*MultiResult {
 	return agents
 }
 
-func GetNonDominatedAgents(agents []*MultiResult) []*MultiResult {
-	res := make([]*MultiResult, 0)
+func GetNonDominatedAgents(agents []*Result) []*Result {
+	res := make([]*Result, 0)
 	for _, agent := range agents {
 		if !agent.Dominated {
 			res = append(res, agent.CopyAgent())
@@ -119,7 +126,7 @@ func GetNonDominatedAgents(agents []*MultiResult) []*MultiResult {
 	return res
 }
 
-func NonDominatedSort(agents []*MultiResult) ([]*MultiResult, [][]int) {
+func NonDominatedSort(agents []*Result) ([]*Result, [][]int) {
 	// clear domination set and domination count
 	for i := range agents {
 		agents[i].DominationSet = make([]int, 0)
@@ -195,7 +202,7 @@ type SortedValue struct {
 }
 
 // DECD Dynamic Elimination-based Crowding Distance
-func DECD(agents []*MultiResult, excess int) []*MultiResult {
+func DECD(agents []*Result, excess int) []*Result {
 	numberOfAgents := len(agents)
 	numberOfObjs := len(agents[0].Value)
 

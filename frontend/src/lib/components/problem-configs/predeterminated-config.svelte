@@ -1,10 +1,8 @@
 <script lang="ts">
-  import {problemStore} from "$lib/stores/problem.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
-  import {objectives} from "$lib/wailsjs/go/models.js";
-  import {PredeteriminatedFile} from "$lib/stores/problems";
+  import {PredeteriminatedFile, predeterminedProblemConfig} from "$lib/stores/problems";
 
-  const config = problemStore.getConfig(objectives.ProblemType.PredeterminedConstructionLayout)
+  const config = predeterminedProblemConfig
 
   const selectFile = async (field: PredeteriminatedFile) => {
 

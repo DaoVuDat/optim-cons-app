@@ -3,16 +3,18 @@ package main
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"golang-moaha-construction/internal/algorithms"
+	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/objectives/multi"
 )
 
 // App struct
 type App struct {
 	ctx            context.Context
-	algorithmName  string
-	problemName    objectives.ProblemType
-	problem        multi.MultiProblem
+	problemName    data.ProblemName
+	problem        objectives.Problem
+	algorithmName  algorithms.AlgorithmType
+	algorithm      algorithms.Algorithm
 	objectiveNames []string
 }
 
@@ -52,19 +54,16 @@ func (a *App) SelectFile() (string, error) {
 	return selection, nil
 }
 
-func (a *App) CreateAlgorithm(name string, config any) error {
+func (a *App) ShowAllInfo() error {
 
-	return nil
-}
+	// TODO
+	// show all objectives
 
-func (a *App) RunAlgorithm() error {
-	return nil
-}
+	// show all constraints
 
-func (a *App) AlgorithmInfo() error {
-	return nil
-}
+	// show problem
 
-func (a *App) Result() error {
+	// show algorithm
+
 	return nil
 }

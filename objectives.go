@@ -3,8 +3,9 @@ package main
 import (
 	"errors"
 	"github.com/bytedance/sonic"
-	"golang-moaha-construction/internal/objectives"
-	continuousconslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
+	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/conslay_continuous"
+	"golang-moaha-construction/internal/objectives/objectives"
 	"strings"
 )
 
@@ -12,16 +13,16 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 	// TODO: add Config for each objective
 	switch a.problemName {
-	case continuousconslay.ContinuousConsLayoutName:
-		problem := a.problem.(*continuousconslay.ConsLay)
+	case conslay_continuous.ContinuousConsLayoutName:
+		problem := a.problem.(*conslay_continuous.ConsLay)
 
 		// remove old objective first
-		problem.Objectives = make(map[objectives.ObjectiveType]continuousconslay.Objectiver)
+		problem.Objectives = make(map[data.ObjectiveType]data.Objectiver)
 
 		for _, obj := range objs {
 			switch obj.ObjectiveName {
-			case continuousconslay.SafetyObjectiveType:
-				safetyObj, err := continuousconslay.CreateSafetyObjectiveFromConfig(continuousconslay.SafetyConfigs{})
+			case objectives.SafetyObjectiveType:
+				safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{})
 				if err != nil {
 					return err
 				}
@@ -29,7 +30,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				if err != nil {
 					return err
 				}
-			case continuousconslay.HoistingObjectiveType:
+			case objectives.HoistingObjectiveType:
 
 				configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
 				if err != nil {
@@ -42,11 +43,11 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					return err
 				}
 
-				hoistingTime := make(map[string][]continuousconslay.HoistingTime, len(hoistingCfg.CraneLocations))
-				cranesLocation := make([]continuousconslay.Crane, len(hoistingCfg.CraneLocations))
+				hoistingTime := make(map[string][]objectives.HoistingTime, len(hoistingCfg.CraneLocations))
+				cranesLocation := make([]objectives.Crane, len(hoistingCfg.CraneLocations))
 
 				for i, craneLocation := range hoistingCfg.CraneLocations {
-					hoistingTimeForCrane, err := continuousconslay.ReadHoistingTimeDataFromFile(craneLocation.HoistingTimeFilePath)
+					hoistingTimeForCrane, err := objectives.ReadHoistingTimeDataFromFile(craneLocation.HoistingTimeFilePath)
 					if err != nil {
 						return err
 					}
@@ -55,7 +56,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 					facilitiesName := strings.Split(craneLocation.BuildingNames, " ")
 
-					cranesLocation[i] = continuousconslay.Crane{
+					cranesLocation[i] = objectives.Crane{
 						CraneSymbol:  craneLocation.Name,
 						BuildingName: facilitiesName,
 						Radius:       craneLocation.Radius,
@@ -63,7 +64,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				}
 
 				// setup Cranes Locations and Hoisting Time
-				hoistingObj, err := continuousconslay.CreateHoistingObjectiveFromConfig(continuousconslay.HoistingConfigs{
+				hoistingObj, err := objectives.CreateHoistingObjectiveFromConfig(objectives.HoistingConfigs{
 					NumberOfFloors:       hoistingCfg.NumberOfFloors,
 					HoistingTime:         hoistingTime,
 					FloorHeight:          hoistingCfg.FloorHeight,
@@ -87,7 +88,9 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				if err != nil {
 					return err
 				}
-			case continuousconslay.RiskObjectiveType:
+				problem.CraneLocations = cranesLocation
+
+			case objectives.RiskObjectiveType:
 				configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
 				if err != nil {
 					return err
@@ -99,13 +102,13 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					return err
 				}
 
-				hazardInteractionMatrix, err := continuousconslay.ReadRiskHazardInteractionDataFromFile(riskCfg.HazardInteractionMatrixFilePath)
+				hazardInteractionMatrix, err := objectives.ReadRiskHazardInteractionDataFromFile(riskCfg.HazardInteractionMatrixFilePath)
 
 				if err != nil {
 					return err
 				}
 
-				riskObj, err := continuousconslay.CreateRiskObjectiveFromConfig(continuousconslay.RiskConfigs{
+				riskObj, err := objectives.CreateRiskObjectiveFromConfig(objectives.RiskConfigs{
 					HazardInteractionMatrix: hazardInteractionMatrix,
 					Delta:                   riskCfg.Delta,
 					AlphaRiskPenalty:        riskCfg.AlphaRiskPenalty,
@@ -138,16 +141,16 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 	res := &ObjectiveConfigResponse{}
 
 	switch a.problemName {
-	case continuousconslay.ContinuousConsLayoutName:
+	case conslay_continuous.ContinuousConsLayoutName:
 
-		problemInfo := a.problem.(*continuousconslay.ConsLay)
+		problemInfo := a.problem.(*conslay_continuous.ConsLay)
 
 		objs := problemInfo.GetObjectives()
 
 		for k, obj := range objs {
 			switch k {
-			case continuousconslay.RiskObjectiveType:
-				risk := obj.(*continuousconslay.RiskObjective)
+			case objectives.RiskObjectiveType:
+				risk := obj.(*objectives.RiskObjective)
 
 				res.Risk = struct {
 					HazardInteractionMatrix [][]float64 `json:"hazardInteractionMatrix"`
@@ -160,23 +163,23 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					AlphaRiskPenalty:        risk.AlphaRiskPenalty,
 					Phases:                  risk.Phases,
 				}
-			case continuousconslay.HoistingObjectiveType:
-				hoisting := obj.(*continuousconslay.HoistingObjective)
+			case objectives.HoistingObjectiveType:
+				hoisting := obj.(*objectives.HoistingObjective)
 				res.Hoisting = struct {
-					NumberOfFloors       int                                         `json:"numberOfFloors"`
-					HoistingTime         map[string][]continuousconslay.HoistingTime `json:"hoistingTime"`
-					FloorHeight          float64                                     `json:"floorHeight"`
-					CraneLocations       []continuousconslay.Crane                   `json:"craneLocations"`
-					ZM                   float64                                     `json:"zm"`
-					Vuvg                 float64                                     `json:"vuvg"`
-					Vlvg                 float64                                     `json:"vlvg"`
-					Vag                  float64                                     `json:"vag"`
-					Vwg                  float64                                     `json:"vwg"`
-					AlphaHoistingPenalty float64                                     `json:"alphaHoistingPenalty"`
-					AlphaHoisting        float64                                     `json:"alphaHoisting"`
-					BetaHoisting         float64                                     `json:"betaHoisting"`
-					NHoisting            float64                                     `json:"NHoisting"`
-					Phases               [][]string                                  `json:"phases"`
+					NumberOfFloors       int                                  `json:"numberOfFloors"`
+					HoistingTime         map[string][]objectives.HoistingTime `json:"hoistingTime"`
+					FloorHeight          float64                              `json:"floorHeight"`
+					CraneLocations       []objectives.Crane                   `json:"craneLocations"`
+					ZM                   float64                              `json:"zm"`
+					Vuvg                 float64                              `json:"vuvg"`
+					Vlvg                 float64                              `json:"vlvg"`
+					Vag                  float64                              `json:"vag"`
+					Vwg                  float64                              `json:"vwg"`
+					AlphaHoistingPenalty float64                              `json:"alphaHoistingPenalty"`
+					AlphaHoisting        float64                              `json:"alphaHoisting"`
+					BetaHoisting         float64                              `json:"betaHoisting"`
+					NHoisting            float64                              `json:"NHoisting"`
+					Phases               [][]string                           `json:"phases"`
 				}{
 					NumberOfFloors:       hoisting.NumberOfFloors,
 					HoistingTime:         hoisting.HoistingTime,
@@ -193,7 +196,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					NHoisting:            hoisting.NHoisting,
 					Phases:               hoisting.Phases,
 				}
-			case continuousconslay.SafetyObjectiveType:
+			case objectives.SafetyObjectiveType:
 
 			}
 		}
@@ -205,8 +208,8 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 }
 
 type ObjectiveInput struct {
-	ObjectiveName   objectives.ObjectiveType `json:"objectiveName"`
-	ObjectiveConfig any                      `json:"objectiveConfig"`
+	ObjectiveName   data.ObjectiveType `json:"objectiveName"`
+	ObjectiveConfig any                `json:"objectiveConfig"`
 }
 
 type hoistingConfig struct {

@@ -1,10 +1,8 @@
 <script lang="ts">
-  import {problemStore} from "$lib/stores/problem.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
-  import {objectives} from "$lib/wailsjs/go/models.js";
-  import {GridFile} from "$lib/stores/problems";
+  import {GridFile, gridProblemConfig} from "$lib/stores/problems";
 
-  const config = problemStore.getConfig(objectives.ProblemType.GridConstructionLayout)
+  const config = gridProblemConfig
 
   const selectFile = async (field: GridFile) => {
 

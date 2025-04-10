@@ -1,5 +1,10 @@
 package data
 
+import (
+	"strconv"
+	"strings"
+)
+
 type TypeProblem int
 
 const (
@@ -7,15 +12,46 @@ const (
 	Multi
 )
 
-type Item struct {
-	title, desc string
+type Coordinate struct {
+	X float64
+	Y float64
 }
 
-func NewItem(title, desc string) Item {
-	return Item{title: title, desc: desc}
+type Location struct {
+	Coordinate Coordinate
+	Rotation   bool
+	Length     float64
+	Width      float64
+	IsFixed    bool
+	Symbol     string
+	Name       string
 }
 
-func (i Item) Title() string       { return i.title }
-func (i Item) Description() string { return i.desc }
+func (loc Location) ConvertToIdx() (int, error) {
+	// strip "TF" and convert to int
+	idxStr := strings.Trim(loc.Symbol, "TF")
 
-func (i Item) FilterValue() string { return i.title }
+	idx, err := strconv.Atoi(idxStr)
+	if err != nil {
+		return 0, err
+	}
+
+	// convert back to 0 index-based
+	return idx - 1, nil
+}
+
+type ProblemName string
+type ObjectiveType string
+type ConstraintType string
+
+type Objectiver interface {
+	Eval(mapLocations map[string]Location) float64
+	GetAlphaPenalty() float64
+}
+
+type Constrainter interface {
+	Eval(map[string]Location) float64
+	GetName() string
+	GetAlphaPenalty() float64
+	GetPowerPenalty() float64
+}

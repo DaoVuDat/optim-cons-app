@@ -1,7 +1,6 @@
 // simulate enum
 
-import {objectives} from "$lib/wailsjs/go/models";
-import ObjectiveType = objectives.ObjectiveType;
+import {data} from "$lib/wailsjs/go/models";
 import {
     hoistingConfig,
     type IHoistingConfig,
@@ -14,22 +13,22 @@ type IConfigType = IHoistingConfig | IRiskConfig | ISafetyConfig
 
 interface IObjectives {
     selectedObjectives: {
-        objectiveType: ObjectiveType,
+        objectiveType: data.ObjectiveType,
         config?: IConfigType
     }[];
 }
 
 export interface IOptions {
     label: string;
-    value: ObjectiveType;
+    value: data.ObjectiveType;
     isChecked: boolean;
     content: string;
 }
 
 export type ObjectiveConfigMap = {
-    [objectives.ObjectiveType.HoistingObjective]: IHoistingConfig;
-    [objectives.ObjectiveType.RiskObjective]: IRiskConfig;
-    [objectives.ObjectiveType.SafetyObjective]: ISafetyConfig;
+    [data.ObjectiveType.HoistingObjective]: IHoistingConfig;
+    [data.ObjectiveType.RiskObjective]: IRiskConfig;
+    [data.ObjectiveType.SafetyObjective]: ISafetyConfig;
 }
 
 class ObjectiveStore {
@@ -41,19 +40,19 @@ class ObjectiveStore {
     objectiveList = $state<IOptions[]>([
         {
             label: 'Risk',
-            value: objectives.ObjectiveType.RiskObjective,
+            value: data.ObjectiveType.RiskObjective,
             isChecked: false,
             content: "What is Risk Objective and How to calculate it?"
         },
         {
             label: 'Hoisting',
-            value: objectives.ObjectiveType.HoistingObjective,
+            value: data.ObjectiveType.HoistingObjective,
             isChecked: false,
             content: "What is Hoisting and How to calculate it?"
         },
         {
             label: 'Safety',
-            value: objectives.ObjectiveType.SafetyObjective,
+            value: data.ObjectiveType.SafetyObjective,
             isChecked: false,
             content: "What is Safety Objective and How to calculate it?"
         }
@@ -75,13 +74,13 @@ class ObjectiveStore {
     }
 
 
-    getConfig = <T extends objectives.ObjectiveType>(type: T): ObjectiveConfigMap[T] => {
+    getConfig = <T extends data.ObjectiveType>(type: T): ObjectiveConfigMap[T] => {
         switch (type) {
-            case objectives.ObjectiveType.SafetyObjective:
+            case data.ObjectiveType.SafetyObjective:
                 return safetyConfig as ObjectiveConfigMap[T]
-            case objectives.ObjectiveType.HoistingObjective:
+            case data.ObjectiveType.HoistingObjective:
                 return hoistingConfig as ObjectiveConfigMap[T]
-            case objectives.ObjectiveType.RiskObjective:
+            case data.ObjectiveType.RiskObjective:
                 return riskConfig as ObjectiveConfigMap[T]
         }
     }

@@ -32,7 +32,7 @@
     </fieldset>
     <fieldset class="fieldset flex flex-col">
       <legend class="fieldset-legend text-lg ">Alpha (for Penalty):</legend>
-      <input type="number" class="input input-lg" placeholder="18.75" bind:value={config.AlphaRiskPenalty}/>
+      <input type="number" class="input input-lg" placeholder="100" bind:value={config.AlphaRiskPenalty}/>
     </fieldset>
 
   </div>

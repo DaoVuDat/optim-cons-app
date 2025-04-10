@@ -5,13 +5,15 @@
   interface Props {
     isModalOpen: boolean
     content: Snippet
-    moreButtons: Snippet
+    moreButtons?: Snippet
     buttonText?: string
   }
 
-  let {isModalOpen = $bindable(),
+  let {
+    isModalOpen = $bindable(),
     content, moreButtons,
-    buttonText }: Props = $props();
+    buttonText
+  }: Props = $props();
 
 </script>
 
@@ -20,7 +22,9 @@
     {@render content()}
     <div class="modal-action">
       <!-- 🔵 set false on click -->
-      {@render moreButtons()}
+      {#if moreButtons}
+        {@render moreButtons()}
+      {/if}
       <button class="btn" onclick={()=>isModalOpen = false}>{buttonText ?? 'OK'}</button>
     </div>
   </div>

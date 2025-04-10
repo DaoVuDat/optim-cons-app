@@ -1,4 +1,4 @@
-package conslay_continuous
+package data
 
 import (
 	"math"

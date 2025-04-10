@@ -2,27 +2,17 @@ package ga
 
 import (
 	"fmt"
-	"golang-moaha-construction/internal/objectives/single"
+	"github.com/schollz/progressbar/v3"
+	"golang-moaha-construction/internal/algorithms"
+	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives"
 	"math"
 	"math/rand"
 	"sort"
-	"strconv"
-	"strings"
 	"sync"
-
-	"github.com/schollz/progressbar/v3"
-	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/util"
 )
 
-const (
-	PopulationSizeParam = "Population Size"
-	MaxIterationsParam  = "Number of Iterations"
-	CrossoverRateParam  = "Crossover Rate"
-	MutationRateParam   = "Mutation Rate"
-	ElitismCountParam   = "Elitism Count"
-)
+const NameType algorithms.AlgorithmType = "GA"
 
 type GAAlgorithm struct {
 	PopulationSize    int
@@ -30,57 +20,23 @@ type GAAlgorithm struct {
 	CrossoverRate     float64
 	MutationRate      float64
 	ElitismCount      int
-	Population        []*single.SingleResult
+	Population        []*objectives.Result
 	Convergence       []float64
-	ObjectiveFunction single.SingleProblem
-	Best              *single.SingleResult
+	ObjectiveFunction objectives.Problem
+	Best              *objectives.Result
 }
 
-var Configs = []data.Config{
-	{
-		Name:               PopulationSizeParam,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               MaxIterationsParam,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               CrossoverRateParam,
-		ValidationFunction: util.IsValidFloat,
-	},
-	{
-		Name:               MutationRateParam,
-		ValidationFunction: util.IsValidFloat,
-	},
-	{
-		Name:               ElitismCountParam,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
+type Config struct {
+	Chromosome    int
+	Generation    int
+	CrossoverRate float64
+	MutationRate  float64
+	ElitismCount  int
 }
 
-func Create(problem single.SingleProblem, configs []*data.Config) (*GAAlgorithm, error) {
-	var popSize, maxIters, elitismCount int
-	var crossoverRate, mutationRate float64
-
-	for _, config := range configs {
-		val := strings.Trim(config.Value, " ")
-		switch config.Name {
-		case PopulationSizeParam:
-			popSize, _ = strconv.Atoi(val)
-		case MaxIterationsParam:
-			maxIters, _ = strconv.Atoi(val)
-		case CrossoverRateParam:
-			crossoverRate, _ = strconv.ParseFloat(val, 64)
-		case MutationRateParam:
-			mutationRate, _ = strconv.ParseFloat(val, 64)
-		case ElitismCountParam:
-			elitismCount, _ = strconv.Atoi(val)
-		}
-	}
-
-	convergence := make([]float64, maxIters)
-	population := make([]*single.SingleResult, popSize)
+func Create(problem objectives.Problem, configs Config) (*GAAlgorithm, error) {
+	convergence := make([]float64, configs.Generation)
+	population := make([]*objectives.Result, configs.Chromosome)
 
 	// This implementation supports only one objective.
 	if problem.NumberOfObjectives() != 1 {
@@ -88,11 +44,11 @@ func Create(problem single.SingleProblem, configs []*data.Config) (*GAAlgorithm,
 	}
 
 	return &GAAlgorithm{
-		PopulationSize:    popSize,
-		MaxIterations:     maxIters,
-		CrossoverRate:     crossoverRate,
-		MutationRate:      mutationRate,
-		ElitismCount:      elitismCount,
+		PopulationSize:    configs.Chromosome,
+		MaxIterations:     configs.Generation,
+		CrossoverRate:     configs.CrossoverRate,
+		MutationRate:      configs.MutationRate,
+		ElitismCount:      configs.ElitismCount,
 		Convergence:       convergence,
 		ObjectiveFunction: problem,
 		Population:        population,
@@ -115,7 +71,7 @@ func (ga *GAAlgorithm) Run() error {
 
 	// Main GA loop (each iteration represents a generation)
 	for iter := 0; iter < ga.MaxIterations; iter++ {
-		newPopulation := make([]*single.SingleResult, ga.PopulationSize)
+		newPopulation := make([]*objectives.Result, ga.PopulationSize)
 
 		// Elitism: preserve the best individuals.
 		sortedPop := ga.sortPopulationByFitness()
@@ -148,7 +104,7 @@ func (ga *GAAlgorithm) Run() error {
 				outOfBoundaries(childPos, lowerBound, upperBound)
 				// Evaluate the child solution.
 
-				child := &single.SingleResult{
+				child := &objectives.Result{
 					Idx:      idx,
 					Position: childPos,
 				}
@@ -184,7 +140,7 @@ func (ga *GAAlgorithm) initialization() {
 				pos[d] = lowerBound[d] + rand.Float64()*(upperBound[d]-lowerBound[d])
 			}
 
-			newGene := &single.SingleResult{
+			newGene := &objectives.Result{
 				Idx:      idx,
 				Position: pos,
 			}
@@ -209,8 +165,8 @@ func (ga *GAAlgorithm) findBest() {
 	ga.Best = best.CopyAgent()
 }
 
-func (ga *GAAlgorithm) sortPopulationByFitness() []*single.SingleResult {
-	sorted := make([]*single.SingleResult, len(ga.Population))
+func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
+	sorted := make([]*objectives.Result, len(ga.Population))
 	copy(sorted, ga.Population)
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i].Value[0] < sorted[j].Value[0]
@@ -219,7 +175,7 @@ func (ga *GAAlgorithm) sortPopulationByFitness() []*single.SingleResult {
 }
 
 // tournamentSelection selects the best individual among a random sample.
-func tournamentSelection(pop []*single.SingleResult, tournamentSize int) *single.SingleResult {
+func tournamentSelection(pop []*objectives.Result, tournamentSize int) *objectives.Result {
 	popSize := len(pop)
 	best := pop[rand.Intn(popSize)]
 	for i := 1; i < tournamentSize; i++ {

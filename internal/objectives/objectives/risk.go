@@ -1,15 +1,15 @@
-package conslay_continuous
+package objectives
 
 import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
-	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/util"
 	"log"
 	"strconv"
 )
 
-const RiskObjectiveType objectives.ObjectiveType = "Risk Objective"
+const RiskObjectiveType data.ObjectiveType = "Risk Objective"
 
 const (
 	HazardInteractionMatrix = "Hazard Interaction Matrix"
@@ -45,7 +45,7 @@ func CreateRiskObjectiveFromConfig(riskConfigs RiskConfigs) (*RiskObjective, err
 	return riskObj, nil
 }
 
-func (obj *RiskObjective) Eval(locations map[string]Location) float64 {
+func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 	mapFacility := make(map[string]struct {
 		Count int
 		Value float64
@@ -77,7 +77,7 @@ func (obj *RiskObjective) Eval(locations map[string]Location) float64 {
 
 				computed := hio
 				if i != j {
-					computed = hio - obj.Delta*Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
+					computed = hio - obj.Delta*data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
 				}
 
 				hijComputed := max(0, computed)

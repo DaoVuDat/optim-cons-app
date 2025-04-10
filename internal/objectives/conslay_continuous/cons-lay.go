@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/objectives/objectives"
 	"math"
 	"slices"
 	"sort"
@@ -12,48 +12,7 @@ import (
 	"strings"
 )
 
-const (
-	ConsLayoutLength = "Construction Layout Length"
-	ConsLayoutWidth  = "Construction Layout Width"
-	DynamicLocations = "NonFixedLocations"
-	StaticLocations  = "FixedLocations"
-	Phases           = "Phases"
-)
-
-const ContinuousConsLayoutName objectives.ProblemType = "Continuous Construction Layout"
-
-type Coordinate struct {
-	X float64
-	Y float64
-}
-
-type Location struct {
-	Coordinate Coordinate
-	Rotation   bool
-	Length     float64
-	Width      float64
-	IsFixed    bool
-	Symbol     string
-	Name       string
-}
-
-func (loc Location) ConvertToIdx() (int, error) {
-	// strip "TF" and convert to int
-	idxStr := strings.Trim(loc.Symbol, "TF")
-
-	idx, err := strconv.Atoi(idxStr)
-	if err != nil {
-		return 0, err
-	}
-
-	// convert back to 0 index-based
-	return idx - 1, nil
-}
-
-type Objectiver interface {
-	Eval(mapLocations map[string]Location) float64
-	GetAlphaPenalty() float64
-}
+const ContinuousConsLayoutName data.ProblemName = "Continuous Construction Layout"
 
 type ConsLay struct {
 	Dimensions        int
@@ -61,21 +20,22 @@ type ConsLay struct {
 	LayoutWidth       float64
 	UpperBound        []float64
 	LowerBound        []float64
-	FixedLocations    []Location
-	NonFixedLocations []Location
-	Locations         map[string]Location
-	Objectives        map[objectives.ObjectiveType]Objectiver
-	Constraints       map[objectives.ConstraintType]Constrainter
+	FixedLocations    []data.Location
+	NonFixedLocations []data.Location
+	Locations         map[string]data.Location
+	Objectives        map[data.ObjectiveType]data.Objectiver
+	Constraints       map[data.ConstraintType]data.Constrainter
 	Phases            [][]string
 	Rounding          bool
+	CraneLocations    []objectives.Crane
 }
 
 type ConsLayConfigs struct {
 	ConsLayoutLength  float64
 	ConsLayoutWidth   float64
-	Locations         map[string]Location
-	NonFixedLocations []Location
-	FixedLocations    []Location
+	Locations         map[string]data.Location
+	NonFixedLocations []data.Location
+	FixedLocations    []data.Location
 	Phases            [][]string
 	Rounding          bool
 }
@@ -93,8 +53,8 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		FixedLocations:    consLayConfigs.FixedLocations,
 		NonFixedLocations: consLayConfigs.NonFixedLocations,
 		Phases:            consLayConfigs.Phases,
-		Objectives:        make(map[objectives.ObjectiveType]Objectiver),
-		Constraints:       make(map[objectives.ConstraintType]Constrainter),
+		Objectives:        make(map[data.ObjectiveType]data.Objectiver),
+		Constraints:       make(map[data.ConstraintType]data.Constrainter),
 	}
 
 	// Find the x, y, r of Non-fixed Locations
@@ -121,10 +81,10 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[objectives.ConstraintType]float64, penalty map[objectives.ConstraintType]float64) {
+func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[data.ConstraintType]float64, penalty map[data.ConstraintType]float64) {
 	// add x, y, r to non-fixed locations
-	nonFixedLocations := make([]Location, len(s.NonFixedLocations))
-	mapLocations := make(map[string]Location, len(s.Locations))
+	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
+	mapLocations := make(map[string]data.Location, len(s.Locations))
 
 	for i := 0; i < len(nonFixedLocations); i++ {
 		loc := s.NonFixedLocations[i]
@@ -148,8 +108,8 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[objec
 			y = math.Round(y)
 		}
 
-		location := Location{
-			Coordinate: Coordinate{
+		location := data.Location{
+			Coordinate: data.Coordinate{
 				X: x,
 				Y: y,
 			}, // update x, y
@@ -171,14 +131,14 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[objec
 	}
 
 	// checking constraints
-	penalty = make(map[objectives.ConstraintType]float64)
+	penalty = make(map[data.ConstraintType]float64)
 	for k, v := range s.Constraints {
 		penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
 	}
 
 	// calculate objectives and add penalty to them
 	values = make([]float64, len(s.Objectives))
-	valuesName := make([]objectives.ObjectiveType, len(s.Objectives))
+	valuesName := make([]data.ObjectiveType, len(s.Objectives))
 
 	i := 0
 	for k := range s.Objectives {
@@ -207,7 +167,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[objec
 		values[idx] = val
 	}
 
-	return values, map[objectives.ConstraintType]float64{}, penalty
+	return values, map[data.ConstraintType]float64{}, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
@@ -230,11 +190,15 @@ func (s *ConsLay) NumberOfObjectives() int {
 	return len(s.Objectives)
 }
 
-func (s *ConsLay) GetObjectives() map[objectives.ObjectiveType]Objectiver {
+func (s *ConsLay) GetObjectives() map[data.ObjectiveType]data.Objectiver {
 	return s.Objectives
 }
 
-func (s *ConsLay) AddObjective(name objectives.ObjectiveType, objective Objectiver) error {
+func (s *ConsLay) GetConstraints() map[data.ConstraintType]data.Constrainter {
+	return s.Constraints
+}
+
+func (s *ConsLay) AddObjective(name data.ObjectiveType, objective data.Objectiver) error {
 	if _, ok := s.Objectives[name]; ok {
 		return errors.New("the objective has been existed: " + string(name))
 	}
@@ -243,7 +207,7 @@ func (s *ConsLay) AddObjective(name objectives.ObjectiveType, objective Objectiv
 	return nil
 }
 
-func (s *ConsLay) AddConstraint(name objectives.ConstraintType, constraint Constrainter) error {
+func (s *ConsLay) AddConstraint(name data.ConstraintType, constraint data.Constrainter) error {
 	if _, ok := s.Constraints[name]; ok {
 		return errors.New("the constraint has been existed: " + string(name))
 	}
@@ -256,7 +220,7 @@ func (s *ConsLay) AddConstraint(name objectives.ConstraintType, constraint Const
 
 // Readers Utility Functions
 
-func ReadLocationsFromFile(filePath string) (locations map[string]Location, fixedLocations, nonFixedLocations []Location, err error) {
+func ReadLocationsFromFile(filePath string) (locations map[string]data.Location, fixedLocations, nonFixedLocations []data.Location, err error) {
 
 	// load data from file
 	file, err := excelize.OpenFile(filePath)
@@ -269,9 +233,9 @@ func ReadLocationsFromFile(filePath string) (locations map[string]Location, fixe
 		return nil, nil, nil, err
 	}
 
-	locations = make(map[string]Location)
-	fixedLocations = make([]Location, 0)
-	nonFixedLocations = make([]Location, 0)
+	locations = make(map[string]data.Location)
+	fixedLocations = make([]data.Location, 0)
+	nonFixedLocations = make([]data.Location, 0)
 
 	for rowIdx, row := range rows {
 		if rowIdx == 0 {
@@ -325,12 +289,12 @@ func ReadLocationsFromFile(filePath string) (locations map[string]Location, fixe
 			}
 		}
 
-		newLocation := Location{
+		newLocation := data.Location{
 			Name:   name,
 			Symbol: symbol,
 			Length: length,
 			Width:  width,
-			Coordinate: Coordinate{
+			Coordinate: data.Coordinate{
 				X: x,
 				Y: y,
 			},

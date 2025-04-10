@@ -1,8 +1,10 @@
-package conslay_continuous
+package objectives
 
-import "golang-moaha-construction/internal/objectives"
+import (
+	"golang-moaha-construction/internal/data"
+)
 
-const SafetyObjectiveType objectives.ObjectiveType = "Safety Objective"
+const SafetyObjectiveType data.ObjectiveType = "Safety Objective"
 
 const (
 	SafetyProximity = "The presumed value of the safety proximity relationship "
@@ -30,7 +32,7 @@ func CreateSafetyObjectiveFromConfig(safetyConfigs SafetyConfigs) (*SafetyObject
 	return safetyObj, nil
 }
 
-func (obj *SafetyObjective) Eval(locations map[string]Location) float64 {
+func (obj *SafetyObjective) Eval(locations map[string]data.Location) float64 {
 	return 0
 }
 

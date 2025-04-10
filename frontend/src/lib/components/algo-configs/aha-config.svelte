@@ -1,7 +1,8 @@
 <script lang="ts">
-  import {Algorithms, algorithmsStore} from "$lib/stores/algorithms.svelte.js";
 
-  let config = algorithmsStore.getConfig(Algorithms.AHA)
+  import {ahaConfig} from "$lib/stores/algorithms";
+
+  let config = ahaConfig
 </script>
 
 
@@ -12,11 +13,11 @@
   <div class="grid gap-2 grid-cols-1 grid-rows-3">
     <fieldset class="fieldset text-lg">
       <legend class="fieldset-legend">Iterations:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.iterations.value} />
+      <input type="text" class="input input-lg" placeholder="300" bind:value={config.iterations} />
     </fieldset>
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-lg">Populations:</legend>
-      <input type="text" class="input input-lg" placeholder="300" bind:value={config.population.value}/>
+      <input type="text" class="input input-lg" placeholder="300" bind:value={config.population}/>
     </fieldset>
   </div>
 </div>

@@ -6,69 +6,51 @@ import {
   type IGAConfig,
   moahaConfig, gwoConfig, ahaConfig, gaConfig
 } from "$lib/stores/algorithms";
-
-export enum Algorithms {
-  GWO = "GWO",
-  AHA = "AHA",
-  MOAHA = "MOAHA",
-  GA = "GA",
-}
+import {algorithms} from "$lib/wailsjs/go/models";
 
 export type AlgorithmConfigMap = {
-  [Algorithms.GA]: IGAConfig;
-  [Algorithms.AHA]: IAHAConfig;
-  [Algorithms.MOAHA]: IMOAHAConfig;
-  [Algorithms.GWO]: IGWOConfig;
+  [algorithms.AlgorithmType.GeneticAlgorithm]: IGAConfig;
+  [algorithms.AlgorithmType.AHA]: IAHAConfig;
+  [algorithms.AlgorithmType.MOAHA]: IMOAHAConfig;
+  [algorithms.AlgorithmType.GWO]: IGWOConfig;
 }
 
 export interface AlgorithmWithLabel {
   label: string
-  value: Algorithms
+  value: algorithms.AlgorithmType
 }
 
 const SingleList: AlgorithmWithLabel[] = [
   {
     label: 'Genetic Algorithm',
-    value: Algorithms.GA,
+    value: algorithms.AlgorithmType.GeneticAlgorithm,
   },
   {
     label: "Artificial Hummingbird Algorithm",
-    value: Algorithms.AHA,
+    value: algorithms.AlgorithmType.AHA,
   },
   {
     label: 'Grey Wolf Algorithm',
-    value: Algorithms.GWO,
+    value: algorithms.AlgorithmType.GWO,
   },
 ]
 
 const MultiList: AlgorithmWithLabel[] = [
   {
     label: 'Multi-Objective Artificial Hummingbird Algorithm',
-    value: Algorithms.MOAHA,
+    value: algorithms.AlgorithmType.MOAHA,
   }
 ]
 
 export interface IAlgorithmSwarmConfigBase {
-  iterations: {
-    label: "Iterations",
-    value: number
-  }
-  population: {
-    label: "Population",
-    value: number
-  },
+  iterations: number
+  population: number,
   type: 'Swarm'
 }
 
 export interface IAlgorithmBiologyConfigBase {
-  generation: {
-    label: "Generation",
-    value: number
-  }
-  chromosome: {
-    label: "Chromosome",
-    value: number
-  },
+  generation: number
+  chromosome: number,
   type: 'Biology'
 }
 
@@ -86,15 +68,15 @@ class AlgorithmStore {
 
   selectedAlgorithm = $state<AlgorithmWithLabel>()
 
-  getConfig = <T extends Algorithms>(algo: T) : AlgorithmConfigMap[T]=> {
+  getConfig = <T extends algorithms.AlgorithmType>(algo: T) : AlgorithmConfigMap[T]=> {
     switch (algo) {
-      case Algorithms.GA:
+      case algorithms.AlgorithmType.GeneticAlgorithm:
         return gaConfig as AlgorithmConfigMap[T]
-      case Algorithms.AHA:
+      case algorithms.AlgorithmType.AHA:
         return ahaConfig as AlgorithmConfigMap[T]
-      case Algorithms.MOAHA:
+      case algorithms.AlgorithmType.MOAHA:
         return moahaConfig as AlgorithmConfigMap[T]
-      case Algorithms.GWO:
+      case algorithms.AlgorithmType.GWO:
         return gwoConfig as AlgorithmConfigMap[T]
     }
   }

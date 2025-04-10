@@ -9,7 +9,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"golang-moaha-construction/internal/algorithms/moaha"
-	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
+	"golang-moaha-construction/internal/constraints"
+	"golang-moaha-construction/internal/objectives/conslay_continuous"
+	"golang-moaha-construction/internal/objectives/objectives"
 	"log"
 	"slices"
 	"strings"
@@ -45,6 +47,7 @@ func main() {
 			AllProblemsType,
 			AllObjectivesType,
 			AllConstraintsType,
+			AllAlgorithmType,
 		},
 	})
 
@@ -60,13 +63,13 @@ func main_test() {
 func constructionOptimization() {
 	// Create conslay_continuous problem and add objectives
 
-	consLayoutConfigs := conslay.ConsLayConfigs{
+	consLayoutConfigs := conslay_continuous.ConsLayConfigs{
 		ConsLayoutLength: 120,
 		ConsLayoutWidth:  95,
 	}
 
 	// LOAD LOCATIONS
-	locations, fixedLocations, nonFixedLocations, err := conslay.ReadLocationsFromFile("./data/conslay/locations.xlsx")
+	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/locations.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,28 +81,28 @@ func constructionOptimization() {
 	// LOAD PHASES
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
-	phases, err := conslay.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
+	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	consLayoutConfigs.Phases = phases
 
-	consLayObj, err := conslay.CreateConsLayFromConfig(consLayoutConfigs)
+	consLayObj, err := conslay_continuous.CreateConsLayFromConfig(consLayoutConfigs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	hoistingTime, err := conslay.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
+	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Hoisting Objective Configs
-	hoistingConfigs := conslay.HoistingConfigs{
+	hoistingConfigs := objectives.HoistingConfigs{
 		NumberOfFloors: 10,
-		HoistingTime: map[string][]conslay.HoistingTime{
+		HoistingTime: map[string][]objectives.HoistingTime{
 			"TF14": hoistingTime,
 		},
 		FloorHeight:          3.2,
@@ -115,7 +118,7 @@ func constructionOptimization() {
 		NHoisting:            1,
 	}
 
-	hoistingObj, err := conslay.CreateHoistingObjectiveFromConfig(hoistingConfigs)
+	hoistingObj, err := objectives.CreateHoistingObjectiveFromConfig(hoistingConfigs)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,10 +139,10 @@ func constructionOptimization() {
 		},
 	}
 
-	craneLocations := make([]conslay.Crane, 0)
+	craneLocations := make([]objectives.Crane, 0)
 	for _, loc := range selectedCrane {
 		if _, ok := consLayObj.Locations[loc.Name]; ok {
-			craneLocations = append(craneLocations, conslay.Crane{
+			craneLocations = append(craneLocations, objectives.Crane{
 				//Location:     craneLoc,
 				BuildingName: loc.BuildingNames,
 				Radius:       loc.Radius,
@@ -151,29 +154,29 @@ func constructionOptimization() {
 	hoistingObj.CraneLocations = craneLocations
 
 	// RISK
-	hazardInteraction, err := conslay.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
+	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
 
 	// Hoisting Objective Configs
-	riskConfigs := conslay.RiskConfigs{
+	riskConfigs := objectives.RiskConfigs{
 		HazardInteractionMatrix: hazardInteraction,
 		Delta:                   0.01,
 		AlphaRiskPenalty:        100,
 		Phases:                  phases,
 	}
-	riskObj, err := conslay.CreateRiskObjectiveFromConfig(riskConfigs)
+	riskObj, err := objectives.CreateRiskObjectiveFromConfig(riskConfigs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Add objectives to conslay_continuous problem
-	err = consLayObj.AddObjective(conslay.HoistingObjectiveType, hoistingObj)
-	err = consLayObj.AddObjective(conslay.RiskObjectiveType, riskObj)
+	err = consLayObj.AddObjective(objectives.HoistingObjectiveType, hoistingObj)
+	err = consLayObj.AddObjective(objectives.RiskObjectiveType, riskObj)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Add constraints
-	outOfBoundsConstraint := conslay.CreateOutOfBoundsConstraint(
+	outOfBoundsConstraint := constraints.CreateOutOfBoundsConstraint(
 		0,
 		95,
 		0,
@@ -183,21 +186,21 @@ func constructionOptimization() {
 		1,
 	)
 
-	overlapConstraint := conslay.CreateOverlapConstraint(
+	overlapConstraint := constraints.CreateOverlapConstraint(
 		phases,
 		20000,
 		1,
 	)
 
-	coverRangeConstraint := conslay.CreateCoverRangeCraneConstraint(
+	coverRangeConstraint := constraints.CreateCoverRangeCraneConstraint(
 		craneLocations,
 		phases,
 		20000,
 		1,
 	)
 
-	zoneConstraint := conslay.CreateInclusiveZoneConstraint(
-		[]conslay.Zone{
+	zoneConstraint := constraints.CreateInclusiveZoneConstraint(
+		[]constraints.Zone{
 			{
 				Location:      locations["TF13"],
 				BuildingNames: []string{"TF7"},
@@ -213,10 +216,10 @@ func constructionOptimization() {
 		20000,
 		1,
 	)
-	err = consLayObj.AddConstraint(conslay.ConstraintOutOfBound, outOfBoundsConstraint)
-	err = consLayObj.AddConstraint(conslay.ConstraintOverlap, overlapConstraint)
-	err = consLayObj.AddConstraint(conslay.ConstraintInclusiveZone, zoneConstraint)
-	err = consLayObj.AddConstraint(conslay.ConstraintsCoverInCraneRadius, coverRangeConstraint)
+	err = consLayObj.AddConstraint(constraints.ConstraintOutOfBound, outOfBoundsConstraint)
+	err = consLayObj.AddConstraint(constraints.ConstraintOverlap, overlapConstraint)
+	err = consLayObj.AddConstraint(constraints.ConstraintInclusiveZone, zoneConstraint)
+	err = consLayObj.AddConstraint(constraints.ConstraintsCoverInCraneRadius, coverRangeConstraint)
 
 	// MOAHA
 	moahaConfigs := moaha.Configs{

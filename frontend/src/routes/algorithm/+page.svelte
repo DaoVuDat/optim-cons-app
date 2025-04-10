@@ -5,13 +5,16 @@
   import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
   import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
   import {stepStore} from "$lib/stores/steps.svelte.js";
-  import {Algorithms, algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
+  import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
+  import {algorithms, main} from "$lib/wailsjs/go/models";
+  import {goto} from "$app/navigation";
+  import {ConstraintsInfo, ProblemInfo} from "$lib/wailsjs/go/main/App";
 
   const configComponents = {
-    [Algorithms.MOAHA]: moahaConfig,
-    [Algorithms.AHA]: ahaConfig,
-    [Algorithms.GWO]: gwoConfig,
-    [Algorithms.GA]: gaConfig,
+    [algorithms.AlgorithmType.MOAHA]: moahaConfig,
+    [algorithms.AlgorithmType.AHA]: ahaConfig,
+    [algorithms.AlgorithmType.GWO]: gwoConfig,
+    [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
   }
 
   const component = $derived.by(() => {
@@ -24,7 +27,25 @@
     algorithmsStore.selectedAlgorithm = algo;
   }
 
-  $inspect(algorithmsStore.selectedAlgorithm)
+  let loading = $state<boolean>(false)
+
+  const handleNext = async () => {
+    loading = true
+
+    const problemInfo = await ProblemInfo()
+    const constraintsInfo = await ConstraintsInfo()
+    console.log(problemInfo)
+    console.log(constraintsInfo)
+
+    // Create Algo
+    // await AddConstraints(constraintsInput)
+
+    loading = false
+
+    await goto('/optimize')
+
+    stepStore.nextStep()
+  }
 
 </script>
 
@@ -36,11 +57,11 @@
 
 
   <!-- Content -->
-  <section class="px-24 grid grid-cols-12 gap-4 w-[1600px] auto-rows-min">
+  <section class="px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
     <div
         class="h-[420px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each algorithmsStore.validAlgorithmsList as algo (algo)}
-        <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer text-left",
+        <button class={clsx("p-4 rounded h-18 flex justify-between items-center cursor-pointer text-left",
         algorithmsStore.selectedAlgorithm?.value === algo.value ? 'bg-[#422AD5] text-white' : '')}
                 onclick={() => handleClick(algo)}>
           {algo.label}
@@ -55,14 +76,21 @@
         <p>Please select an algorithm</p>
       {/if}
     </div>
+
+    {#if loading}
+      <div class="toast toast-center toast-middle">
+        <div class="alert alert-info">
+          <span>Setting up algorithm...</span>
+        </div>
+      </div>
+    {/if}
   </section>
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
     <a class="btn" href="/constraint" onclick={() => stepStore.prevStep()}>Back</a>
-    <a class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
-       href="/optimize"
-       onclick={() => stepStore.nextStep()}
-    >Next</a>
+    <button class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
+       onclick={handleNext}
+    >Next</button>
   </section>
 </div>

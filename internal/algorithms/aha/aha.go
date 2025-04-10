@@ -3,72 +3,50 @@ package aha
 import (
 	"fmt"
 	"github.com/schollz/progressbar/v3"
+	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/objectives/single"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
-	"strconv"
-	"strings"
 	"sync"
 )
 
+const NameType algorithms.AlgorithmType = "AHA"
+
 const (
 	numberOfObjective = 1
-	Name              = "AHA"
-	NUM_AGENTS        = "Number of Agents"
-	NUM_ITERS         = "Number of Iteration"
 )
 
 type AHAAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
-	Agents            []*single.SingleResult
-	BestResult        *single.SingleResult
+	Agents            []*objectives.Result
+	BestResult        *objectives.Result
 	Convergence       []float64
-	ObjectiveFunction single.SingleProblem
+	ObjectiveFunction objectives.Problem
 }
 
-var Configs = []data.Config{
-	{
-		Name:               NUM_AGENTS,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               NUM_ITERS,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
+type Config struct {
+	NumberOfAgents int
+	NumberOfIter   int
 }
 
 func Create(
-	problem single.SingleProblem,
-	configs []*data.Config,
+	problem objectives.Problem,
+	configs Config,
 ) (*AHAAlgorithm, error) {
 
-	var numsIters, numAgents int
-
-	for _, config := range configs {
-		// sanity check
-		val := strings.Trim(config.Value, " ")
-		switch config.Name {
-		case NUM_AGENTS:
-			numAgents, _ = strconv.Atoi(val)
-		case NUM_ITERS:
-			numsIters, _ = strconv.Atoi(val)
-		}
-	}
-
-	convergence := make([]float64, numsIters)
-	agents := make([]*single.SingleResult, numAgents)
+	convergence := make([]float64, configs.NumberOfIter)
+	agents := make([]*objectives.Result, configs.NumberOfAgents)
 
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
 	}
 
 	return &AHAAlgorithm{
-		NumberOfAgents:    numAgents,
-		NumberOfIter:      numsIters,
+		NumberOfAgents:    configs.NumberOfAgents,
+		NumberOfIter:      configs.NumberOfIter,
 		Convergence:       convergence,
 		ObjectiveFunction: problem,
 		Agents:            agents,
@@ -310,7 +288,7 @@ func (a *AHAAlgorithm) initialization() {
 		}
 	}
 
-	a.BestResult = &single.SingleResult{
+	a.BestResult = &objectives.Result{
 		Value: vals,
 	}
 
@@ -326,7 +304,7 @@ func (a *AHAAlgorithm) initialization() {
 			}
 
 			// evaluate
-			newAgent := &single.SingleResult{
+			newAgent := &objectives.Result{
 				Idx:      agentIdx,
 				Position: positions,
 			}

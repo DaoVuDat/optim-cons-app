@@ -1,6 +1,8 @@
-package conslay_continuous
+package data
 
-import "math"
+import (
+	"math"
+)
 
 func Distance2D(a, b Coordinate) float64 {
 	x := a.X - b.X

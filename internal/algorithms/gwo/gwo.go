@@ -3,84 +3,54 @@ package gwo
 import (
 	"fmt"
 	"github.com/schollz/progressbar/v3"
+	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
-	"golang-moaha-construction/internal/objectives/single"
-	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
-	"strconv"
-	"strings"
 	"sync"
 )
 
+const NameType algorithms.AlgorithmType = "GWO"
+
 const (
 	numberOfObjective = 1
-	Name              = "GWO"
-	NUM_AGENTS        = "Number of Agents"
-	NUM_ITERS         = "Number of Iteration"
-	PARAM_A           = "Parameter a"
 )
 
 type GWOAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
-	Agents            []*single.SingleResult
+	Agents            []*objectives.Result
 	AParam            float64
-	Alpha             *single.SingleResult
-	Beta              *single.SingleResult
-	Gamma             *single.SingleResult
+	Alpha             *objectives.Result
+	Beta              *objectives.Result
+	Gamma             *objectives.Result
 	Convergence       []float64
-	ObjectiveFunction single.SingleProblem
+	ObjectiveFunction objectives.Problem
 }
 
-var Configs = []data.Config{
-	{
-		Name:               NUM_AGENTS,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               NUM_ITERS,
-		ValidationFunction: util.IsValidPositiveInteger,
-	},
-	{
-		Name:               PARAM_A,
-		ValidationFunction: util.IsValidFloat,
-	},
+type Config struct {
+	NumberOfAgents int
+	NumberOfIter   int
+	AParam         float64
 }
 
 func Create(
-	problem single.SingleProblem,
-	configs []*data.Config,
+	problem objectives.Problem,
+	configs Config,
 ) (*GWOAlgorithm, error) {
 
-	var numsIters, numAgents int
-	var aParams float64
-
-	for _, config := range configs {
-		// sanity check
-		val := strings.Trim(config.Value, " ")
-		switch config.Name {
-		case NUM_AGENTS:
-			numAgents, _ = strconv.Atoi(val)
-		case NUM_ITERS:
-			numsIters, _ = strconv.Atoi(val)
-		case PARAM_A:
-			aParams, _ = strconv.ParseFloat(val, 64)
-		}
-	}
-
-	convergence := make([]float64, numsIters)
-	agents := make([]*single.SingleResult, numAgents)
+	convergence := make([]float64, configs.NumberOfIter)
+	agents := make([]*objectives.Result, configs.NumberOfAgents)
 
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
 	}
 
 	return &GWOAlgorithm{
-		NumberOfAgents:    numAgents,
-		NumberOfIter:      numsIters,
-		AParam:            aParams,
+		NumberOfAgents:    configs.NumberOfAgents,
+		NumberOfIter:      configs.NumberOfIter,
+		AParam:            configs.AParam,
 		Convergence:       convergence,
 		ObjectiveFunction: problem,
 		Agents:            agents,
@@ -172,15 +142,15 @@ func (g *GWOAlgorithm) initialization() {
 		}
 	}
 
-	g.Alpha = &single.SingleResult{
+	g.Alpha = &objectives.Result{
 		Value: vals,
 	}
 
-	g.Beta = &single.SingleResult{
+	g.Beta = &objectives.Result{
 		Value: vals,
 	}
 
-	g.Gamma = &single.SingleResult{
+	g.Gamma = &objectives.Result{
 		Value: vals,
 	}
 
@@ -196,7 +166,7 @@ func (g *GWOAlgorithm) initialization() {
 			}
 
 			// evaluate
-			newAgent := &single.SingleResult{
+			newAgent := &objectives.Result{
 				Idx:      agentIdx,
 				Position: positions,
 			}

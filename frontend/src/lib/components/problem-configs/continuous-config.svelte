@@ -1,10 +1,8 @@
 <script lang="ts">
-  import {problemStore} from "$lib/stores/problem.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
   import {ContinuousFile, continuousProblemConfig} from "$lib/stores/problems";
-  import {objectives} from "$lib/wailsjs/go/models.js";
 
-  const config = problemStore.getConfig(objectives.ProblemType.ContinuousConstructionLayout)
+  const config = continuousProblemConfig
 
   const selectFile = async (field: ContinuousFile) => {
 

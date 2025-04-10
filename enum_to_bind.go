@@ -1,16 +1,23 @@
 package main
 
 import (
-	"golang-moaha-construction/internal/objectives"
-	continuousconslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
+	"golang-moaha-construction/internal/algorithms"
+	"golang-moaha-construction/internal/algorithms/aha"
+	"golang-moaha-construction/internal/algorithms/ga"
+	"golang-moaha-construction/internal/algorithms/gwo"
+	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/constraints"
+	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/conslay_continuous"
+	"golang-moaha-construction/internal/objectives/objectives"
 )
 
 var AllProblemsType = []struct {
-	Value  objectives.ProblemType
+	Value  data.ProblemName
 	TSName string // typescript enum name
 }{
 	{
-		Value:  continuousconslay.ContinuousConsLayoutName,
+		Value:  conslay_continuous.ContinuousConsLayoutName,
 		TSName: "ContinuousConstructionLayout",
 	},
 	{
@@ -24,41 +31,63 @@ var AllProblemsType = []struct {
 }
 
 var AllObjectivesType = []struct {
-	Value  objectives.ObjectiveType
+	Value  data.ObjectiveType
 	TSName string // typescript enum name
 }{
 	{
-		Value:  continuousconslay.SafetyObjectiveType,
+		Value:  objectives.SafetyObjectiveType,
 		TSName: "SafetyObjective",
 	},
 	{
-		Value:  continuousconslay.HoistingObjectiveType,
+		Value:  objectives.HoistingObjectiveType,
 		TSName: "HoistingObjective",
 	},
 	{
-		Value:  continuousconslay.RiskObjectiveType,
+		Value:  objectives.RiskObjectiveType,
 		TSName: "RiskObjective",
 	},
 }
 
 var AllConstraintsType = []struct {
-	Value  objectives.ConstraintType
+	Value  data.ConstraintType
 	TSName string // typescript enum name
 }{
 	{
-		Value:  continuousconslay.ConstraintOverlap,
+		Value:  constraints.ConstraintOverlap,
 		TSName: "Overlap",
 	},
 	{
-		Value:  continuousconslay.ConstraintOutOfBound,
+		Value:  constraints.ConstraintOutOfBound,
 		TSName: "OutOfBound",
 	},
 	{
-		Value:  continuousconslay.ConstraintsCoverInCraneRadius,
+		Value:  constraints.ConstraintsCoverInCraneRadius,
 		TSName: "CoverInCraneRadius",
 	},
 	{
-		Value:  continuousconslay.ConstraintInclusiveZone,
+		Value:  constraints.ConstraintInclusiveZone,
 		TSName: "InclusiveZone",
+	},
+}
+
+var AllAlgorithmType = []struct {
+	Value  algorithms.AlgorithmType
+	TSName string // typescript enum name
+}{
+	{
+		Value:  ga.NameType,
+		TSName: "GeneticAlgorithm",
+	},
+	{
+		Value:  aha.NameType,
+		TSName: "AHA",
+	},
+	{
+		Value:  moaha.NameType,
+		TSName: "MOAHA",
+	},
+	{
+		Value:  gwo.NameType,
+		TSName: "GWO",
 	},
 }

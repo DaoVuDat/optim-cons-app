@@ -1,5 +1,83 @@
+export namespace algorithms {
+	
+	export enum AlgorithmType {
+	    GeneticAlgorithm = "GA",
+	    AHA = "AHA",
+	    MOAHA = "MOAHA",
+	    GWO = "GWO",
+	}
+
+}
+
+export namespace data {
+	
+	export enum ConstraintType {
+	    Overlap = "Overlap",
+	    OutOfBound = "OutOfBound",
+	    CoverInCraneRadius = "CoverInCraneRadius",
+	    InclusiveZone = "InclusiveZone",
+	}
+	export enum ProblemName {
+	    ContinuousConstructionLayout = "Continuous Construction Layout",
+	    GridConstructionLayout = "Grid Construction Layout",
+	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
+	}
+	export enum ObjectiveType {
+	    SafetyObjective = "Safety Objective",
+	    HoistingObjective = "Hoisting Objective",
+	    RiskObjective = "Risk Objective",
+	}
+
+}
+
 export namespace main {
 	
+	export class AlgorithmInput {
+	    algorithmName: algorithms.AlgorithmType;
+	    algorithmConfig: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new AlgorithmInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.algorithmName = source["algorithmName"];
+	        this.algorithmConfig = source["algorithmConfig"];
+	    }
+	}
+	export class ConstraintInput {
+	    constraintName: data.ConstraintType;
+	    constraintConfig: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new ConstraintInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.constraintName = source["constraintName"];
+	        this.constraintConfig = source["constraintConfig"];
+	    }
+	}
+	export class ConstraintsConfigResponse {
+	    outOfBoundary?: any;
+	    overlap?: any;
+	    coverInCraneRadius?: any;
+	    inclusiveZone?: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new ConstraintsConfigResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.outOfBoundary = source["outOfBoundary"];
+	        this.overlap = source["overlap"];
+	        this.coverInCraneRadius = source["coverInCraneRadius"];
+	        this.inclusiveZone = source["inclusiveZone"];
+	    }
+	}
 	export class ObjectiveConfigResponse {
 	    risk?: any;
 	    hoisting?: any;
@@ -17,7 +95,7 @@ export namespace main {
 	    }
 	}
 	export class ObjectiveInput {
-	    objectiveName: objectives.ObjectiveType;
+	    objectiveName: data.ObjectiveType;
 	    objectiveConfig: any;
 	
 	    static createFrom(source: any = {}) {
@@ -31,7 +109,7 @@ export namespace main {
 	    }
 	}
 	export class ProblemInput {
-	    problemName: objectives.ProblemType;
+	    problemName: data.ProblemName;
 	    layoutLength?: number;
 	    layoutWidth?: number;
 	    facilitiesFilePath?: string;
@@ -53,27 +131,6 @@ export namespace main {
 	        this.gridSize = source["gridSize"];
 	        this.predeterminedLoc = source["predeterminedLoc"];
 	    }
-	}
-
-}
-
-export namespace objectives {
-	
-	export enum ProblemType {
-	    ContinuousConstructionLayout = "Continuous Construction Layout",
-	    GridConstructionLayout = "Grid Construction Layout",
-	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
-	}
-	export enum ObjectiveType {
-	    SafetyObjective = "Safety Objective",
-	    HoistingObjective = "Hoisting Objective",
-	    RiskObjective = "Risk Objective",
-	}
-	export enum ConstraintType {
-	    Overlap = "Overlap",
-	    OutOfBound = "OutOfBound",
-	    CoverInCraneRadius = "CoverInCraneRadius",
-	    InclusiveZone = "InclusiveZone",
 	}
 
 }

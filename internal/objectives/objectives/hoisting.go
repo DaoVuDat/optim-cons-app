@@ -1,30 +1,13 @@
-package conslay_continuous
+package objectives
 
 import (
 	"github.com/xuri/excelize/v2"
-	"golang-moaha-construction/internal/objectives"
+	"golang-moaha-construction/internal/data"
 	"math"
 	"strconv"
 )
 
-const HoistingObjectiveType objectives.ObjectiveType = "Hoisting Objective"
-
-const (
-	HoistingTimeData       = "HoistingTimeData"
-	PrefabricatedLocations = "PrefabricatedLocations"
-	NumberOfFloors         = "Number of Floors"
-	FloorHeight            = "Floor Height"
-	CraneLocations         = "Crane Locations"
-	ZM                     = "ZM"
-	Vuvg                   = "Vuvg"
-	Vlvg                   = "Vlvg"
-	Vag                    = "Vag"
-	Vwg                    = "Vwg"
-	AlphaHoistingPenalty   = "AlphaHoistingPenalty"
-	AlphaHoisting          = "AlphaHoisting"
-	BetaHoisting           = "BetaHoisting"
-	NHoisting              = "NHoisting"
-)
+const HoistingObjectiveType data.ObjectiveType = "Hoisting Objective"
 
 type HoistingConfigs struct {
 	NumberOfFloors       int
@@ -44,14 +27,14 @@ type HoistingConfigs struct {
 }
 
 type Crane struct {
-	Location
+	data.Location
 	BuildingName []string
 	Radius       float64
 	CraneSymbol  string
 }
 
 type HoistingTime struct {
-	Coordinate     Coordinate
+	Coordinate     data.Coordinate
 	HoistingNumber int
 	Name           string
 	FacilitySymbol string
@@ -98,7 +81,7 @@ func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*Hoisti
 	return hoistingObj, nil
 }
 
-func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
+func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 
 	result := 0.0
 
@@ -124,16 +107,16 @@ func (obj *HoistingObjective) Eval(locations map[string]Location) float64 {
 		TB := 0.0
 		HDjg := make(map[string]float64, len(crane.BuildingName))
 		for _, prefabricatedName := range crane.BuildingName {
-			HDjg[prefabricatedName] = Distance2D(crane.Coordinate, locations[prefabricatedName].Coordinate)
+			HDjg[prefabricatedName] = data.Distance2D(crane.Coordinate, locations[prefabricatedName].Coordinate)
 		}
 
 		hoistingTime := obj.HoistingTime[crane.Symbol]
 		for _, hoisting := range hoistingTime {
 			// calculate distance between hoisting and prefabricated
-			HDkg := Distance2D(hoisting.Coordinate, crane.Coordinate)
+			HDkg := data.Distance2D(hoisting.Coordinate, crane.Coordinate)
 
 			// calculate distance between demand and prefabricated
-			Djk := Distance2D(locations[hoisting.FacilitySymbol].Coordinate, hoisting.Coordinate)
+			Djk := data.Distance2D(locations[hoisting.FacilitySymbol].Coordinate, hoisting.Coordinate)
 
 			Tag := 2 * (math.Abs(HDjg[hoisting.FacilitySymbol]-HDkg) / obj.Vag)
 			Twg := 2 * (1 / obj.Vwg) * math.Acos((HDjg[hoisting.FacilitySymbol]*HDjg[hoisting.FacilitySymbol]+HDkg*HDkg-Djk*Djk)/
@@ -211,7 +194,7 @@ func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 
 		}
 		hoistingTime = append(hoistingTime, HoistingTime{
-			Coordinate: Coordinate{
+			Coordinate: data.Coordinate{
 				X: x,
 				Y: y,
 			},

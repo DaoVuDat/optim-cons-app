@@ -1,24 +1,12 @@
 import type {IAlgorithmSwarmConfigBase} from "$lib/stores/algorithms.svelte";
 
 export interface IMOAHAConfig extends IAlgorithmSwarmConfigBase{
-  archiveSize: {
-    label: 'Archive Size',
-    value: number,
-  };
+  archiveSize: number,
 }
 
 export const moahaConfig = $state<IMOAHAConfig>({
-  iterations: {
-    label: 'Iterations',
-    value: 300,
-  },
-  population: {
-    label: 'Population',
-    value: 100,
-  },
-  archiveSize: {
-    label: "Archive Size",
-    value: 100,
-  },
+  iterations: 300,
+  population: 100,
+  archiveSize: 100,
   type: 'Swarm',
 })

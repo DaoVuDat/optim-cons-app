@@ -4,44 +4,44 @@ import {
   type IGridConfig,
   type IPredeterminatedConfig, predeterminedProblemConfig
 } from "$lib/stores/problems";
-import {objectives} from "$lib/wailsjs/go/models";
+import {data} from "$lib/wailsjs/go/models";
 
 export interface ProblemWithLabel {
   label: string
-  value: objectives.ProblemType
+  value: data.ProblemName
 }
 
 export const problemList: ProblemWithLabel[] = [
   {
     label: "Continuous",
-    value: objectives.ProblemType.ContinuousConstructionLayout,
+    value: data.ProblemName.ContinuousConstructionLayout,
   },
   {
     label: "Grid",
-    value: objectives.ProblemType.GridConstructionLayout,
+    value: data.ProblemName.GridConstructionLayout,
   },
   {
     label: "Pre-determinated locations",
-    value: objectives.ProblemType.PredeterminedConstructionLayout
+    value: data.ProblemName.PredeterminedConstructionLayout
   }
 ]
 
 export type ProblemConfigMap = {
-  [objectives.ProblemType.ContinuousConstructionLayout]: IContinuousConfig;
-  [objectives.ProblemType.GridConstructionLayout]: IGridConfig;
-  [objectives.ProblemType.PredeterminedConstructionLayout]: IPredeterminatedConfig;
+  [data.ProblemName.ContinuousConstructionLayout]: IContinuousConfig;
+  [data.ProblemName.GridConstructionLayout]: IGridConfig;
+  [data.ProblemName.PredeterminedConstructionLayout]: IPredeterminatedConfig;
 }
 
 class ProblemStore {
   selectedProblem = $state<ProblemWithLabel>()
 
-  getConfig = <T extends objectives.ProblemType>(prob: T) : ProblemConfigMap[T]=> {
+  getConfig = <T extends data.ProblemName>(prob: T) : ProblemConfigMap[T]=> {
     switch (prob) {
-      case objectives.ProblemType.ContinuousConstructionLayout:
+      case data.ProblemName.ContinuousConstructionLayout:
         return continuousProblemConfig as ProblemConfigMap[T]
-      case objectives.ProblemType.GridConstructionLayout:
+      case data.ProblemName.GridConstructionLayout:
         return gridProblemConfig as ProblemConfigMap[T]
-      case objectives.ProblemType.PredeterminedConstructionLayout:
+      case data.ProblemName.PredeterminedConstructionLayout:
         return predeterminedProblemConfig as ProblemConfigMap[T]
     }
   }

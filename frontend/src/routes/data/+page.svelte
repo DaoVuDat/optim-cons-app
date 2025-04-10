@@ -6,19 +6,18 @@
   import hoistingConfigComponent from "$lib/components/objective-configs/hoisting-config.svelte";
   import safetyConfigComponent from "$lib/components/objective-configs/safety-config.svelte";
   import {goto} from "$app/navigation";
-  import {main, objectives} from "$lib/wailsjs/go/models";
+  import {main, data as dataType} from "$lib/wailsjs/go/models";
   import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
   import type {Facility} from "$lib/stores/problems/problem";
-  import {problemStore} from "$lib/stores/problem.svelte";
-  import {CreateObjectives, CreateProblem, ObjectivesInfo} from "$lib/wailsjs/go/main/App";
+  import {CreateObjectives} from "$lib/wailsjs/go/main/App";
 
   const configComponents = {
-    [objectives.ObjectiveType.HoistingObjective]: hoistingConfigComponent,
-    [objectives.ObjectiveType.RiskObjective]: riskConfigComponent,
-    [objectives.ObjectiveType.SafetyObjective]: safetyConfigComponent,
+    [dataType.ObjectiveType.HoistingObjective]: hoistingConfigComponent,
+    [dataType.ObjectiveType.RiskObjective]: riskConfigComponent,
+    [dataType.ObjectiveType.SafetyObjective]: safetyConfigComponent,
   }
 
-  let selectedObjective = $state<objectives.ObjectiveType>()
+  let selectedObjective = $state<dataType.ObjectiveType>()
 
   const component = $derived.by(() => {
     if (selectedObjective) {
@@ -28,16 +27,12 @@
 
   let loading = $state<boolean>(false)
 
-  const handleClick = (obj: objectives.ObjectiveType) => {
+  const handleClick = (obj: dataType.ObjectiveType) => {
     selectedObjective = obj;
   }
 
   const handleNext = async () => {
     loading = true
-
-
-    console.log($state.snapshot(objectiveStore.objectives))
-
 
     // Do loading data objective configs
     if (objectiveStore.objectives.selectedObjectives.length > 0) {
@@ -50,25 +45,18 @@
 
       await CreateObjectives(objectivesInput)
     }
-
-    const data = await ObjectivesInfo()
-
-    console.log(data)
-
     loading = false
 
-
-
-    // await goto('/constraint')
-    // stepStore.nextStep()
+    await goto('/constraint')
+    stepStore.nextStep()
   }
 
   let {data}: PageProps = $props();
 
   let facilities = $state<Facility[] | undefined>(undefined)
 
-  if (data.problemInfo.problemName === objectives.ProblemType.ContinuousConstructionLayout ||
-    data.problemInfo.problemName === objectives.ProblemType.GridConstructionLayout) {
+  if (data.problemInfo.problemName === dataType.ProblemName.ContinuousConstructionLayout ||
+    data.problemInfo.problemName === dataType.ProblemName.GridConstructionLayout) {
     // convert map to array
     facilities = Object.values(data.problemInfo.locations)
   }

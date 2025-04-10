@@ -2,18 +2,18 @@ package main
 
 import (
 	"errors"
-	"golang-moaha-construction/internal/objectives"
-	conslay "golang-moaha-construction/internal/objectives/multi/conslay_continuous"
+	"golang-moaha-construction/internal/data"
+	conslay "golang-moaha-construction/internal/objectives/conslay_continuous"
 )
 
 type ProblemInput struct {
-	ProblemName      objectives.ProblemType `json:"problemName"`
-	LayoutLength     *float64               `json:"layoutLength"`
-	LayoutWidth      *float64               `json:"layoutWidth"`
-	FacilitiesFile   *string                `json:"facilitiesFilePath"`
-	PhasesFile       *string                `json:"phasesFilePath"`
-	GridSize         *string                `json:"gridSize"`
-	PredeterminedLoc *string                `json:"predeterminedLoc"`
+	ProblemName      data.ProblemName `json:"problemName"`
+	LayoutLength     *float64         `json:"layoutLength"`
+	LayoutWidth      *float64         `json:"layoutWidth"`
+	FacilitiesFile   *string          `json:"facilitiesFilePath"`
+	PhasesFile       *string          `json:"phasesFilePath"`
+	GridSize         *string          `json:"gridSize"`
+	PredeterminedLoc *string          `json:"predeterminedLoc"`
 }
 
 func (a *App) CreateProblem(
@@ -71,15 +71,15 @@ func (a *App) ProblemInfo() (any, error) {
 
 		problemInfo := a.problem.(*conslay.ConsLay)
 		return struct {
-			LayoutLength      float64                     `json:"layoutLength"`
-			LayoutWidth       float64                     `json:"layoutWidth"`
-			LowerBound        []float64                   `json:"lowerBound"`
-			UpperBound        []float64                   `json:"upperBound"`
-			Dimensions        int                         `json:"dimensions"`
-			Locations         map[string]conslay.Location `json:"locations"`
-			FixedLocations    []conslay.Location          `json:"fixedLocations"`
-			NonFixedLocations []conslay.Location          `json:"nonFixedLocations"`
-			Name              objectives.ProblemType      `json:"problemName"`
+			LayoutLength      float64                  `json:"layoutLength"`
+			LayoutWidth       float64                  `json:"layoutWidth"`
+			LowerBound        []float64                `json:"lowerBound"`
+			UpperBound        []float64                `json:"upperBound"`
+			Dimensions        int                      `json:"dimensions"`
+			Locations         map[string]data.Location `json:"locations"`
+			FixedLocations    []data.Location          `json:"fixedLocations"`
+			NonFixedLocations []data.Location          `json:"nonFixedLocations"`
+			Name              data.ProblemName         `json:"problemName"`
 		}{
 			LayoutLength:      problemInfo.LayoutLength,
 			LayoutWidth:       problemInfo.LayoutWidth,

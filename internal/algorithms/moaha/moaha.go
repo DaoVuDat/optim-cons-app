@@ -2,9 +2,9 @@ package moaha
 
 import (
 	"github.com/schollz/progressbar/v3"
+	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/multi"
-	"golang-moaha-construction/internal/objectives/single"
+	"golang-moaha-construction/internal/objectives"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"math/rand"
@@ -12,23 +12,17 @@ import (
 	"sync"
 )
 
-const (
-	numberOfObjective = 1
-	Name              = "MOAHA"
-	NumAgents         = "Number of Agents"
-	NumIters          = "Number of Iteration"
-	ArchiveSize       = "Archive Size"
-)
+const NameType algorithms.AlgorithmType = "MOAHA"
 
 type MOAHAAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
-	Agents            []*multi.MultiResult
-	BestResult        *multi.MultiResult
+	Agents            []*objectives.Result
+	BestResult        *objectives.Result
 	Convergence       []float64
-	ObjectiveFunction multi.MultiProblem
+	ObjectiveFunction objectives.Problem
 	ArchiveSize       int
-	Archive           []*multi.MultiResult
+	Archive           []*objectives.Result
 }
 
 type Configs struct {
@@ -38,14 +32,14 @@ type Configs struct {
 }
 
 func Create(
-	problem multi.MultiProblem,
+	problem objectives.Problem,
 	configs Configs,
 ) (*MOAHAAlgorithm, error) {
 
 	convergence := make([]float64, configs.NumIterations)
-	agents := make([]*multi.MultiResult, configs.NumAgents)
+	agents := make([]*objectives.Result, configs.NumAgents)
 
-	archive := make([]*multi.MultiResult, 0, configs.ArchiveSize)
+	archive := make([]*objectives.Result, 0, configs.ArchiveSize)
 
 	return &MOAHAAlgorithm{
 		NumberOfAgents:    configs.NumAgents,
@@ -68,8 +62,8 @@ func (a *MOAHAAlgorithm) Run() error {
 	// initialization
 	a.initialization()
 
-	a.Agents = multi.DetermineDomination(a.Agents)
-	a.Archive = multi.GetNonDominatedAgents(a.Agents)
+	a.Agents = objectives.DetermineDomination(a.Agents)
+	a.Archive = objectives.GetNonDominatedAgents(a.Agents)
 
 	l := 0
 
@@ -79,8 +73,8 @@ func (a *MOAHAAlgorithm) Run() error {
 	visitTable := initializeNMMatrix(a.NumberOfAgents, a.NumberOfAgents)
 
 	for l < a.NumberOfIter {
-		newPop := make([]*multi.MultiResult, 0)
-		agents, paretoFront := multi.NonDominatedSort(a.Agents)
+		newPop := make([]*objectives.Result, 0)
+		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
 
 		a.Agents = agents
 
@@ -138,7 +132,7 @@ func (a *MOAHAAlgorithm) Run() error {
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			a.Agents, paretoFront = multi.NonDominatedSort(a.Agents)
+			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
 
 			for _, idx := range paretoFront[len(paretoFront)-1] {
 
@@ -170,17 +164,17 @@ func (a *MOAHAAlgorithm) Run() error {
 		}
 
 		// Determine Domination with a.Agents and newPop
-		newSolutions := multi.DetermineDomination(multi.MergeAgents(a.Agents, newPop))
+		newSolutions := objectives.DetermineDomination(objectives.MergeAgents(a.Agents, newPop))
 		// Get Non-Dominated -> newNonDominatedPop
-		newNonDominatedPop := multi.GetNonDominatedAgents(newSolutions)
+		newNonDominatedPop := objectives.GetNonDominatedAgents(newSolutions)
 
 		// Determine Domination with newDominatedPop and a.Archive
-		newSolutions = multi.DetermineDomination(multi.MergeAgents(newNonDominatedPop, a.Archive))
+		newSolutions = objectives.DetermineDomination(objectives.MergeAgents(newNonDominatedPop, a.Archive))
 		// Get Non-Dominated -> a.Archive
-		a.Archive = multi.GetNonDominatedAgents(newSolutions)
+		a.Archive = objectives.GetNonDominatedAgents(newSolutions)
 
 		if len(a.Archive) > a.ArchiveSize {
-			a.Archive = multi.DECD(a.Archive, len(a.Archive)-a.ArchiveSize)
+			a.Archive = objectives.DECD(a.Archive, len(a.Archive)-a.ArchiveSize)
 		}
 
 		//bar.Describe(fmt.Sprintf("Iter %d: %e", l+1, a.BestResult.Value[0]))
@@ -192,8 +186,8 @@ func (a *MOAHAAlgorithm) Run() error {
 	return nil
 }
 
-func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*multi.MultiResult) {
-	nonDominatedMUT := make([]*multi.MultiResult, 0)
+func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*objectives.Result) {
+	nonDominatedMUT := make([]*objectives.Result, 0)
 
 	vals := visitTable[agentIdx]
 	maxVal := -math.MaxFloat64
@@ -214,12 +208,12 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 	targetFoodIdx := 0
 	if len(maxValIdxs) >= 2 {
 
-		candidates := make([]*multi.MultiResult, 0)
+		candidates := make([]*objectives.Result, 0)
 		for _, idx := range maxValIdxs {
 			candidates = append(candidates, a.Agents[idx])
 		}
 
-		candidates = multi.DetermineDomination(candidates)
+		candidates = objectives.DetermineDomination(candidates)
 		for _, candidate := range candidates {
 			if !candidate.Dominated {
 				nonDominatedMUT = append(nonDominatedMUT, candidate)
@@ -306,7 +300,7 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 	}
 }
 
-func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*multi.MultiResult) {
+func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector [][]float64, agentIdx int, paretoFront [][]int, tPop []*objectives.Result) {
 	r1 := rand.Float64()
 	r2 := rand.NormFloat64()
 	newPos := make([]float64, a.ObjectiveFunction.GetDimension())
@@ -392,10 +386,8 @@ func (a *MOAHAAlgorithm) initialization() {
 		}
 	}
 
-	a.BestResult = &multi.MultiResult{
-		SingleResult: single.SingleResult{
-			Value: vals,
-		},
+	a.BestResult = &objectives.Result{
+		Value: vals,
 	}
 
 	var wg sync.WaitGroup
@@ -411,11 +403,9 @@ func (a *MOAHAAlgorithm) initialization() {
 			}
 
 			// evaluate
-			newAgent := &multi.MultiResult{
-				SingleResult: single.SingleResult{
-					Idx:      agentIdx,
-					Position: positions,
-				},
+			newAgent := &objectives.Result{
+				Idx:      agentIdx,
+				Position: positions,
 			}
 
 			value, constraints, penalty := a.ObjectiveFunction.Eval(positions)

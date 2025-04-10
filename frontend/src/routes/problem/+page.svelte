@@ -7,13 +7,13 @@
     import PredeterminatedConfig from "$lib/components/problem-configs/predeterminated-config.svelte";
     import {goto} from "$app/navigation";
     import {CreateProblem} from "$lib/wailsjs/go/main/App";
-    import {main, objectives} from "$lib/wailsjs/go/models";
+    import {main, data as dataType} from "$lib/wailsjs/go/models";
 
 
     const configComponents = {
-        [objectives.ProblemType.ContinuousConstructionLayout]: continuousProblemConfigComponent,
-        [objectives.ProblemType.GridConstructionLayout]: gridProblemConfigComponent,
-        [objectives.ProblemType.PredeterminedConstructionLayout]: PredeterminatedConfig,
+        [dataType.ProblemName.ContinuousConstructionLayout]: continuousProblemConfigComponent,
+        [dataType.ProblemName.GridConstructionLayout]: gridProblemConfigComponent,
+        [dataType.ProblemName.PredeterminedConstructionLayout]: PredeterminatedConfig,
     }
 
     const component = $derived.by(() => {
@@ -33,8 +33,8 @@
         // TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
         if (problemStore.selectedProblem) {
             switch (problemStore.selectedProblem!.value) {
-                case objectives.ProblemType.ContinuousConstructionLayout :
-                    const config = problemStore.getConfig(problemStore.selectedProblem!.value)
+                case dataType.ProblemName.ContinuousConstructionLayout :
+                    const config = problemStore.getConfig(problemStore.selectedProblem.value)
 
                     const problemInput: main.ProblemInput = {
                         problemName: problemStore.selectedProblem!.value,
@@ -45,9 +45,9 @@
                     }
                     await CreateProblem(problemInput)
                     break
-                case objectives.ProblemType.GridConstructionLayout :
+                case dataType.ProblemName.GridConstructionLayout :
                     break
-                case objectives.ProblemType.PredeterminedConstructionLayout :
+                case dataType.ProblemName.PredeterminedConstructionLayout :
                     break
             }
         }
@@ -91,7 +91,7 @@
         {#if loading}
             <div class="toast toast-center toast-middle">
                 <div class="alert alert-info">
-                    <span>Loading data...</span>
+                    <span>Setting up problem...</span>
                 </div>
             </div>
         {/if}
