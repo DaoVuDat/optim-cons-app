@@ -275,19 +275,28 @@ func (g *GWOAlgorithm) outOfBoundaries(pos []float64) {
 	}
 }
 
-func (g *GWOAlgorithm) GetResults() []algorithms.AlgorithmResult {
+func (g *GWOAlgorithm) GetResults() algorithms.Result {
 	results := make([]algorithms.AlgorithmResult, 1)
 
-	mapLoc, err := g.ObjectiveFunction.GetLocationResult(g.Alpha.Position)
+	mapLoc, cranes, err := g.ObjectiveFunction.GetLocationResult(g.Alpha.Position)
 
 	if err != nil {
-		return nil
+		return algorithms.Result{}
 	}
 	results[0] = algorithms.AlgorithmResult{
 		MapLocations: mapLoc,
 		Value:        g.Alpha.Value,
 		Penalty:      g.Alpha.Penalty,
+		Cranes:       cranes,
 	}
-	
-	return results
+
+	minX, maxX, minY, maxY, _ := g.ObjectiveFunction.GetLayoutSize()
+
+	return algorithms.Result{
+		Result: results,
+		MinX:   minX,
+		MaxX:   maxX,
+		MinY:   minY,
+		MaxY:   maxY,
+	}
 }

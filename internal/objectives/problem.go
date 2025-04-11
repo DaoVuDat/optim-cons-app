@@ -3,6 +3,7 @@ package objectives
 import (
 	"errors"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/objectives"
 )
 
 var (
@@ -22,5 +23,7 @@ type Problem interface {
 	GetConstraints() map[data.ConstraintType]data.Constrainter
 	AddObjective(name data.ObjectiveType, objective data.Objectiver) error
 	AddConstraint(name data.ConstraintType, constraint data.Constrainter) error
-	GetLocationResult(input []float64) (map[string]data.Location, error)
+	GetPhases() [][]string
+	GetLocationResult(input []float64) (map[string]data.Location, []objectives.Crane, error)
+	GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error)
 }

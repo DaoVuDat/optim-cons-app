@@ -241,21 +241,30 @@ func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
 	return sorted
 }
 
-func (ga *GAAlgorithm) GetResults() []algorithms.AlgorithmResult {
+func (ga *GAAlgorithm) GetResults() algorithms.Result {
 	results := make([]algorithms.AlgorithmResult, 1)
 
-	mapLoc, err := ga.ObjectiveFunction.GetLocationResult(ga.Best.Position)
+	mapLoc, cranes, err := ga.ObjectiveFunction.GetLocationResult(ga.Best.Position)
 
 	if err != nil {
-		return nil
+		return algorithms.Result{}
 	}
 	results[0] = algorithms.AlgorithmResult{
 		MapLocations: mapLoc,
 		Value:        ga.Best.Value,
 		Penalty:      ga.Best.Penalty,
+		Cranes:       cranes,
 	}
 
-	return results
+	minX, maxX, minY, maxY, _ := ga.ObjectiveFunction.GetLayoutSize()
+
+	return algorithms.Result{
+		Result: results,
+		MinX:   minX,
+		MaxX:   maxX,
+		MinY:   minY,
+		MaxY:   maxY,
+	}
 }
 
 // tournamentSelection selects the best individual among a random sample.

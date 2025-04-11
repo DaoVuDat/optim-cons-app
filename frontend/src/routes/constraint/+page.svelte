@@ -80,15 +80,15 @@
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
-  <section class="mt-8 text-black">
-    <h1 class="text-5xl font-bold">Data configuration</h1>
-  </section>
+<!--  <section class="mt-8 text-black">-->
+<!--    <h1 class="text-5xl font-bold">Data configuration</h1>-->
+<!--  </section>-->
 
 
   <!-- Content -->
-  <section class="px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
+  <section class="mt-8 px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
     <div
-        class="h-[420px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+        class="h-[560px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each constraintsStore.constraintList as con (con)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
           con.value === selectedConstraint ? 'bg-[#422AD5] text-white' : ''
@@ -103,7 +103,7 @@
       {/each}
     </div>
     <div
-        class="h-[420px] overflow-y-auto card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
+        class="h-[560px] overflow-y-auto card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
       {#if selectedConstraint}
         {@const Component = component}
         <Component {...noTypeCheck({

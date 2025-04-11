@@ -446,21 +446,30 @@ func (a *AHAAlgorithm) outOfBoundaries(pos []float64) {
 	}
 }
 
-func (a *AHAAlgorithm) GetResults() []algorithms.AlgorithmResult {
+func (a *AHAAlgorithm) GetResults() algorithms.Result {
 	results := make([]algorithms.AlgorithmResult, 1)
 
-	mapLoc, err := a.ObjectiveFunction.GetLocationResult(a.BestResult.Position)
+	mapLoc, cranes, err := a.ObjectiveFunction.GetLocationResult(a.BestResult.Position)
 
 	if err != nil {
-		return nil
+		return algorithms.Result{}
 	}
 	results[0] = algorithms.AlgorithmResult{
 		MapLocations: mapLoc,
 		Value:        a.BestResult.Value,
 		Penalty:      a.BestResult.Penalty,
+		Cranes:       cranes,
 	}
 
-	return results
+	minX, maxX, minY, maxY, _ := a.ObjectiveFunction.GetLayoutSize()
+
+	return algorithms.Result{
+		Result: results,
+		MinX:   minX,
+		MaxX:   maxX,
+		MinY:   minY,
+		MaxY:   maxY,
+	}
 }
 
 func initializeNMMatrix(n, m int) [][]float64 {

@@ -27,7 +27,15 @@ export interface IHoistingConfig {
 
 
 export const hoistingConfig = $state<IHoistingConfig>({
-    CraneLocations: [],
+    CraneLocations: [
+        {
+            BuildingNames: 'TF4 TF5 TF8 TF9 TF10',
+            HoistingTimeFilePath: '/home/daovudat/Downloads/data/conslay/f1_hoisting_time_data.xlsx',
+            Name: 'TF14',
+            Radius: 40,
+            Id: Math.random().toString()
+        }
+    ],
     NumberOfFloors: 10,
     FloorHeight: 3.2,
     ZM: 2,

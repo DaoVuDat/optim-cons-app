@@ -23,13 +23,13 @@
 </script>
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
-  <section class="mt-8 text-black">
-    <h1 class="text-5xl font-bold">Select objectives</h1>
-  </section>
+<!--  <section class="mt-8 text-black">-->
+<!--    <h1 class="text-5xl font-bold">Select objectives</h1>-->
+<!--  </section>-->
 
   <!-- Content -->
-  <section class="px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
-    <div class="h-[420px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
+  <section class="mt-8 px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
+    <div class="h-[560px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
       {#each objectiveStore.objectiveList as s (s.value)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
           s.value === objectiveStore.selectObjectiveOption?.value ? 'bg-[#422AD5] text-white' : ''

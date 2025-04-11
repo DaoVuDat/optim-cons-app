@@ -216,7 +216,11 @@ func (s *ConsLay) AddConstraint(name data.ConstraintType, constraint data.Constr
 	return nil
 }
 
-func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, error) {
+func (s *ConsLay) GetPhases() [][]string {
+	return s.Phases
+}
+
+func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []objectives.Crane, error) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]data.Location, len(s.Locations))
@@ -265,7 +269,11 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
 	}
 
-	return mapLocations, nil
+	return mapLocations, s.CraneLocations, nil
+}
+
+func (s *ConsLay) GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error) {
+	return 0, s.LayoutLength, 0, s.LayoutWidth, nil
 }
 
 // Constraints Utility Functions
