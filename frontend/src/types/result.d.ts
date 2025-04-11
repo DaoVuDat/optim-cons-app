@@ -24,5 +24,5 @@ export interface ResultLocation {
 }
 
 export interface ResultLocationWithId extends ResultLocation {
-  Id: number
+  Id: string
 }

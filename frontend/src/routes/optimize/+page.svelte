@@ -77,9 +77,9 @@
     }) => {
       if (data) {
         results.length = 0 // clear the old results
-        results.push(...data.Result.map(r => ({
+        results.push(...data.Result.map((r, idx) => ({
           ...r,
-          Id: Math.random()
+          Id: `${Math.random()}-${idx}`
         })))
 
         layoutSize = {
@@ -139,16 +139,16 @@
 
     </div>
     <div class="max-h-full w-full px-2 py-4 col-start-5 row-start-1 col-span-8 row-span-3 card bg-base-100
-     shadow-md rounded-lg flex flex-col justify-center items-center">
+     shadow-md rounded-lg flex justify-center items-center">
       <Graph graphData={selectedResult} layoutSize={layoutSize}>
         {#snippet footer()}
-          Exporter
+          Select phases to visualize
         {/snippet}
       </Graph>
     </div>
     <div
         class="px-2 py-4 max-h-full col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">
-      {#each results as res, idx (res.Id + idx)}
+      {#each results as res, idx (res.Id)}
         <button class={clsx("p-4 rounded h-18 flex justify-between items-center cursor-pointer text-left",
       selectedResult?.Id === res.Id ? 'bg-[#422AD5] text-white' : '')}
                 onclick={() => handleSelectedResult(res)}>
@@ -161,6 +161,7 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
+    <button class="btn btn-info">Export Data</button>
     <a class="btn" href="/algorithm" onclick={() => stepStore.prevStep()}>Back</a>
     <button class='ml-4 btn' onclick={handleOptimize}>Optimize</button>
   </section>
