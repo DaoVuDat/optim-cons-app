@@ -140,11 +140,7 @@
     </div>
     <div class="max-h-full w-full px-2 py-4 col-start-5 row-start-1 col-span-8 row-span-3 card bg-base-100
      shadow-md rounded-lg flex justify-center items-center">
-      <Graph graphData={selectedResult} layoutSize={layoutSize}>
-        {#snippet footer()}
-          Select phases to visualize
-        {/snippet}
-      </Graph>
+      <Graph graphData={selectedResult} layoutSize={layoutSize} />
     </div>
     <div
         class="px-2 py-4 max-h-full col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">

@@ -18,8 +18,8 @@
       <legend class="fieldset-legend text-lg">Populations:</legend>
       <input type="number" class="input input-lg" placeholder="300" bind:value={config.population}/>
     </fieldset>
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Archive Size:</legend>
+    <fieldset class="fieldset w-full">
+      <legend class="fieldset-legend text-lg text-nowrap">Archive Size:</legend>
       <input type="number" class="input input-lg" placeholder="100" bind:value={config.archiveSize}/>
     </fieldset>
   </div>

@@ -6,10 +6,6 @@ import (
 
 const SafetyObjectiveType data.ObjectiveType = "Safety Objective"
 
-const (
-	SafetyProximity = "The presumed value of the safety proximity relationship "
-)
-
 type SafetyConfigs struct {
 	SafetyProximity    [][]float64
 	AlphaSafetyPenalty float64

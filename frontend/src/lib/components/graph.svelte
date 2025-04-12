@@ -5,6 +5,7 @@
     import type {EChartsOption, EChartsType} from "echarts";
     import {derived} from "svelte/store";
     import {generateLabelFriendlyColors} from "$lib/utils/generateColors";
+    import clsx from "clsx";
 
     interface LayoutSize {
         minX: number;
@@ -15,12 +16,10 @@
 
     interface Props {
         graphData?: ResultLocationWithId
-        footer?: Snippet
         layoutSize: LayoutSize
     }
 
     const {
-        footer,
         graphData = $bindable(),
         layoutSize = $bindable()
     }: Props = $props()
@@ -32,7 +31,14 @@
 
     let selectedPhases = $state<number>(0)
 
-    let generatedColors = $derived.by(() => generateLabelFriendlyColors(graphData?.MapLocations.length, true))
+    let generatedColors = $derived.by(() => {
+            const color = generateLabelFriendlyColors(Object.values(graphData?.MapLocations).length, true)
+
+            return color
+        }
+    )
+
+    $inspect(graphData)
 
     let chartContainer: HTMLDivElement;
     let chartInstance: EChartsType;
@@ -40,9 +46,14 @@
     const updateChart = (graphData: ResultLocationWithId) => {
         // transform graphData
         const facilities = Object.values(graphData.MapLocations)
+            .map((loc, idx) => ({
+                ...loc,
+                idx: idx
+            }))
             .filter(loc => phasesGraphData![selectedPhases].includes(loc.Symbol))
             .map(loc => {
                 return {
+                    idx: loc.idx,
                     name: loc.Symbol,
                     value: [loc.Coordinate.X, loc.Coordinate.Y, loc.Length, loc.Width], // x, y, width, height
                     facilityInfo: {
@@ -117,8 +128,9 @@
 
                             const idx = params.dataIndex
                             const name = facilities[idx].name
+                            const facilityIdx = facilities[idx].idx
 
-                            const color = generatedColors[idx]
+                            const color = generatedColors[facilityIdx]
 
                             let style = {
                                 fill: color,
@@ -199,9 +211,17 @@
   <div class="w-full flex justify-center items-center">
     <div bind:this={chartContainer} style="width: 500px; height: 500px;"></div>
   </div>
-  {#if footer}
-    {@render footer()}
-  {/if}
+  <div class="join">
+    <button class={clsx("join-item btn", {
+        "btn-disabled": selectedPhases === 0,
+    })} onclick={() => selectedPhases--}>«
+    </button>
+    <button class="join-item btn">Phase {selectedPhases + 1}</button>
+    <button class={clsx("join-item btn", {
+        "btn-disabled":  !graphData ||  selectedPhases === graphData.Phases.length - 1,
+    })} onclick={() => selectedPhases++}>»
+    </button>
+  </div>
 </div>
 
 <style>

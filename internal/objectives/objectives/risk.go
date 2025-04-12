@@ -11,12 +11,6 @@ import (
 
 const RiskObjectiveType data.ObjectiveType = "Risk Objective"
 
-const (
-	HazardInteractionMatrix = "Hazard Interaction Matrix"
-	Delta                   = "Delta"
-	AlphaRiskPenalty        = "AlphaPenalty"
-)
-
 type RiskConfigs struct {
 	HazardInteractionMatrix [][]float64
 	Delta                   float64

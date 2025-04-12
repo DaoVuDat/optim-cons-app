@@ -459,6 +459,7 @@ func (a *AHAAlgorithm) GetResults() algorithms.Result {
 		Value:        a.BestResult.Value,
 		Penalty:      a.BestResult.Penalty,
 		Cranes:       cranes,
+		Phases:       a.ObjectiveFunction.GetPhases(),
 	}
 
 	minX, maxX, minY, maxY, _ := a.ObjectiveFunction.GetLayoutSize()
