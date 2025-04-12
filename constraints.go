@@ -125,8 +125,25 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 					return err
 				}
 
+				cranes := make([]objectives.Crane, len(problem.CraneLocations))
+
+				for i, crane := range problem.CraneLocations {
+					var location data.Location
+
+					if loc, ok := problem.Locations[crane.CraneSymbol]; ok {
+						location = loc
+					}
+
+					cranes[i] = objectives.Crane{
+						Location:     location,
+						BuildingName: crane.BuildingName,
+						Radius:       crane.Radius,
+						CraneSymbol:  crane.CraneSymbol,
+					}
+				}
+
 				coverRangeConstraint := constraints.CreateCoverRangeCraneConstraint(
-					problem.CraneLocations,
+					cranes,
 					problem.Phases,
 					coverInCraneCfg.AlphaCoverInCraneRadiusPenalty,
 					coverInCraneCfg.PowerDifferencePenalty,

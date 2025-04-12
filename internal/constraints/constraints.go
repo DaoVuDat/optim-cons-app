@@ -53,14 +53,16 @@ func (c CoverRangeCraneConstraint) GetPowerPenalty() float64 {
 
 func (c CoverRangeCraneConstraint) Eval(mapLocations map[string]data.Location) float64 {
 	amount := 0.0
-
 	for i := 0; i < len(c.Cranes); i++ {
 		buildings := make([]data.Location, len(c.Cranes[i].BuildingName))
+
 		for j := 0; j < len(c.Cranes[i].BuildingName); j++ {
 			buildings[j] = mapLocations[c.Cranes[i].BuildingName[j]]
 		}
-
+		//fmt.Println(i + 1)
+		//fmt.Println("Buildings", buildings)
 		_, val := IsCoverRangeOfCrane(c.Cranes[i], buildings)
+		//fmt.Println("val", val)
 		amount += val
 	}
 
@@ -69,7 +71,6 @@ func (c CoverRangeCraneConstraint) Eval(mapLocations map[string]data.Location) f
 
 func IsCoverRangeOfCrane(crane objectives.Crane, buildings []data.Location) (bool, float64) {
 	invalidAmountTotal := 0.0
-
 	for _, building := range buildings {
 		// Top Right
 		topRightCoordinate := data.Coordinate{
@@ -106,7 +107,6 @@ func IsCoverRangeOfCrane(crane objectives.Crane, buildings []data.Location) (boo
 
 		}
 	}
-
 	if invalidAmountTotal > 0 {
 		return false, invalidAmountTotal
 	} else {
