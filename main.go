@@ -49,6 +49,7 @@ func main() {
 			AllConstraintsType,
 			AllAlgorithmType,
 			AllEvent,
+			AllCommand,
 		},
 	})
 

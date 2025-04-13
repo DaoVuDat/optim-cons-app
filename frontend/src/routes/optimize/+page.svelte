@@ -1,6 +1,6 @@
 <script lang="ts">
   import {stepStore} from "$lib/stores/steps.svelte";
-  import {AlgorithmInfo, RunAlgorithm} from "$lib/wailsjs/go/main/App";
+  import {AlgorithmInfo, RunAlgorithm, SaveFile} from "$lib/wailsjs/go/main/App";
   import {onDestroy, onMount} from "svelte";
   import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
   import {main} from "$lib/wailsjs/go/models";
@@ -9,6 +9,7 @@
   import type {Facility} from "$lib/stores/problems/problem";
   import type {ResultLocation, ResultLocationWithId} from "../../types/result";
   import {objectiveStore} from "$lib/stores/objectives.svelte";
+  import {roundNDecimal} from "$lib/utils/rounding";
 
 
   let progress = $state<number>(0)
@@ -47,10 +48,7 @@
 
   } & Progress
 
-  const roundNDecimal = (value: number, n: number) => {
-    const pow = Math.pow(10, n)
-    return Math.round((value + Number.EPSILON) * pow) / pow
-  }
+
 
   onMount(() => {
     // Listen for the 'backendEvent' emitted from Go
@@ -105,6 +103,10 @@
     selectedResult = result
   }
 
+  const handleExportResult = async () => {
+    await SaveFile(main.CommandType.ExportResult)
+  }
+
   $inspect(selectedResult)
 </script>
 
@@ -156,9 +158,13 @@
   </section>
 
   <!-- Bottom Section -->
-  <section class="w-full text-end">
-    <button class="btn btn-info">Export Data</button>
+  <section class="w-full space-x-2 text-end">
+    <button class={
+    clsx("btn btn-primary", {
+      "btn-disabled": results.length === 0
+    })
+    } onclick="{handleExportResult}">Export Results</button>
     <a class="btn" href="/algorithm" onclick={() => stepStore.prevStep()}>Back</a>
-    <button class='ml-4 btn' onclick={handleOptimize}>Optimize</button>
+    <button class=' btn' onclick={handleOptimize}>Optimize</button>
   </section>
 </div>

@@ -36,6 +36,9 @@ export namespace main {
 	    ProgressEvent = "ProgressEvent",
 	    ResultEvent = "ResultEvent",
 	}
+	export enum CommandType {
+	    ExportResult = "ExportResult",
+	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;
 	    algorithmConfig: any;

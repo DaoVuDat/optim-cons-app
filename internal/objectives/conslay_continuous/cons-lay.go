@@ -81,7 +81,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[data.ConstraintType]float64, penalty map[data.ConstraintType]float64) {
+func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]data.Location, len(s.Locations))
@@ -139,6 +139,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[data.
 	// calculate objectives and add penalty to them
 	values = make([]float64, len(s.Objectives))
 	valuesName := make([]data.ObjectiveType, len(s.Objectives))
+	valuesWithKey = make(map[data.ObjectiveType]float64, len(s.Objectives))
 
 	i := 0
 	for k := range s.Objectives {
@@ -159,6 +160,9 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[data.
 		}
 		val := v.Eval(mapLocations)
 
+		// add value to valuesWithKey
+		valuesWithKey[k] = val
+
 		// add penalty to objective value
 		for _, penaltyAlpha := range penalty {
 			val += penaltyAlpha * v.GetAlphaPenalty()
@@ -167,7 +171,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, constraints map[data.
 		values[idx] = val
 	}
 
-	return values, map[data.ConstraintType]float64{}, penalty
+	return values, valuesWithKey, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {

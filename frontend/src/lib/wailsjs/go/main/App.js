@@ -42,6 +42,10 @@ export function RunAlgorithm() {
   return window['go']['main']['App']['RunAlgorithm']();
 }
 
+export function SaveFile(arg1) {
+  return window['go']['main']['App']['SaveFile'](arg1);
+}
+
 export function SelectFile() {
   return window['go']['main']['App']['SelectFile']();
 }

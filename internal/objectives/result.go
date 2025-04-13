@@ -13,7 +13,7 @@ type Result struct {
 	Idx              int
 	Position         []float64
 	Value            []float64
-	Constraints      map[data.ConstraintType]float64
+	ValuesWithKey    map[data.ObjectiveType]float64
 	Penalty          map[data.ConstraintType]float64
 	CrowdingDistance float64
 	Dominated        bool
@@ -42,7 +42,7 @@ func (agent *Result) CopyAgent() *Result {
 		Idx:              agent.Idx,
 		Position:         util.CopyArray(agent.Position),
 		Value:            util.CopyArray(agent.Value),
-		Constraints:      util.CopyMap(agent.Constraints),
+		ValuesWithKey:    util.CopyMap(agent.ValuesWithKey),
 		Penalty:          util.CopyMap(agent.Penalty),
 		CrowdingDistance: agent.CrowdingDistance,
 		Dominated:        agent.Dominated,

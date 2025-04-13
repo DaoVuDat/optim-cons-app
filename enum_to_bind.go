@@ -112,3 +112,19 @@ var AllEvent = []struct {
 		TSName: "ResultEvent",
 	},
 }
+
+type CommandType string
+
+const (
+	ExportResult CommandType = "ExportResult"
+)
+
+var AllCommand = []struct {
+	Value  CommandType
+	TSName string // typescript enum name
+}{
+	{
+		Value:  ExportResult,
+		TSName: "ExportResult",
+	},
+}

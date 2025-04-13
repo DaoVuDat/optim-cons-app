@@ -19,7 +19,7 @@ func CopySliceOfSlice[T int | float64](src [][]T) [][]T {
 	return dst
 }
 
-func CopyMap[T int | float64, K string | data.ConstraintType](src map[K]T) map[K]T {
+func CopyMap[T int | float64, K string | data.ConstraintType | data.ObjectiveType](src map[K]T) map[K]T {
 	dst := make(map[K]T, len(src))
 
 	for k, v := range src {

@@ -18,9 +18,11 @@ export function ObjectivesInfo():Promise<main.ObjectiveConfigResponse>;
 
 export function ProblemInfo():Promise<any>;
 
-export function Result():Promise<void>;
+export function Result():Promise<any>;
 
 export function RunAlgorithm():Promise<void>;
+
+export function SaveFile(arg1:main.CommandType):Promise<void>;
 
 export function SelectFile():Promise<string>;
 

@@ -147,7 +147,6 @@ func (a *App) RunAlgorithm() error {
 		}
 
 		// send results to resultChan
-		// TODO: transform result of this
 		resultChan <- a.algorithm.GetResults()
 
 	}(doneChan, progressChan, errorChan)
@@ -162,8 +161,10 @@ func (a *App) RunAlgorithm() error {
 	return nil
 }
 
-func (a *App) Result() error {
-	return nil
+func (a *App) Result() (any, error) {
+	result := a.algorithm.GetResults()
+
+	return result, nil
 }
 
 type AlgorithmInput struct {

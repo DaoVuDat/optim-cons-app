@@ -14,10 +14,8 @@ export function generateLabelFriendlyColors( n: number, darkLabels = true) {
 
     // If we need more colors than in our base palette
     if (n <= baseColors.length) {
-        console.log("run that")
         return baseColors.slice(0, n);
     } else {
-        console.log("run this")
         // Include all base colors
         result.push(...baseColors);
 
@@ -63,23 +61,4 @@ export function generateLabelFriendlyColors( n: number, darkLabels = true) {
         return result;
     }
 
-    // const colors: string[] = [];
-    //
-    // for (let i = 0; i < n; i++) {
-    //     // Generate random RGB values within dark range
-    //     // Keep values low to ensure dark colors (0-130)
-    //     const r = Math.floor(Math.random() * 130);
-    //     const g = Math.floor(Math.random() * 130);
-    //     const b = Math.floor(Math.random() * 130);
-    //
-    //     // Convert to hex and ensure 2 digits with padStart
-    //     const hexR = r.toString(16).padStart(2, '0');
-    //     const hexG = g.toString(16).padStart(2, '0');
-    //     const hexB = b.toString(16).padStart(2, '0');
-    //
-    //     // Add hex color string to array
-    //     colors.push(`#${hexR}${hexG}${hexB}`);
-    // }
-    //
-    // return colors;
 }
