@@ -218,8 +218,8 @@ func generateSheet1Info(f *excelize.File, summary Summary) error {
 		return err
 	}
 
-	// Make Column 2 and 3 = 20
-	err = f.SetColWidth(SheetName, "B", "C", 40)
+	err = f.SetColWidth(SheetName, "B", "B", 40)
+	err = f.SetColWidth(SheetName, "C", "C", 80)
 	if err != nil {
 		return err
 	}
@@ -227,6 +227,7 @@ func generateSheet1Info(f *excelize.File, summary Summary) error {
 	rowCount = sectionAlgorithm(f, summary.AlgorithmInfo, SheetName, rowCount, columnCount)
 	rowCount = sectionProblem(f, summary.ProblemInfo, SheetName, rowCount, columnCount)
 	rowCount = sectionObjectives(f, summary.ObjectivesInfo, SheetName, rowCount, columnCount)
+	rowCount = sectionConstraints(f, summary.ConstraintsInfo, SheetName, rowCount, columnCount)
 	return nil
 }
 
@@ -311,8 +312,9 @@ func sectionProblem(f *excelize.File, problem any, sheetName string, rowCount in
 				_ = f.MergeCell(sheetName, cell, endCell)
 				_ = f.SetCellValue(sheetName, cell, "Static / Phases / Dynamic")
 				_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
-				rowCount++
+
 				for nameIdx := 0; nameIdx < value.Len(); nameIdx++ {
+					rowCount++
 					cell, _ = excelize.CoordinatesToCellName(colCount, rowCount)
 					_ = f.SetCellValue(sheetName, cell, nameIdx+1)
 					_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
@@ -326,7 +328,6 @@ func sectionProblem(f *excelize.File, problem any, sheetName string, rowCount in
 					cell, _ = excelize.CoordinatesToCellName(colCount+1, rowCount)
 					_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
 					_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
-					rowCount++
 				}
 
 			default:
@@ -403,6 +404,8 @@ func riskInfo(f *excelize.File, risk any, sheetName string, rowCount int, colCou
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Delta", value.Float())
 			case "AlphaRiskPenalty":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			case "FilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Hazard Interaction Matrix file path", value.String())
 			default:
 				continue
 			}
@@ -478,7 +481,7 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 							}
 
 							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+2)
-							_ = f.SetCellValue(sheetName, cell, strings.Join(names, ", "))
+							_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
 							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
 						case "FilePath":
 							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+1)
@@ -503,9 +506,284 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 						default:
 							continue
 						}
-						rowCount = startRow + 4
+						rowCount = startRow + 3
 					}
 				}
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func sectionConstraints(f *excelize.File, constraints any, sheetName string, rowCount int, colCount int) int {
+	// Add header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Constraints")
+	_ = f.SetCellStyle(sheetName, cell, cell, headerStyle)
+	rowCount++
+
+	val := reflect.ValueOf(constraints)
+	val = val.Elem() // for pointer
+	typ := val.Type()
+
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "OutOfBoundary":
+				if !value.IsZero() {
+					rowCount = outOfBoundaryInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
+			case "Overlap":
+				if !value.IsZero() {
+					rowCount = overlapInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
+			case "CoverInCraneRadius":
+				if !value.IsZero() {
+					rowCount = coverCraneInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
+			case "InclusiveZone":
+				if !value.IsZero() {
+					rowCount = inclusiveZoneInfo(f, value.Interface(), sheetName, rowCount, colCount)
+
+				}
+			default:
+				continue
+			}
+		}
+	}
+
+	return rowCount + 2
+}
+
+func outOfBoundaryInfo(f *excelize.File, outOfBound any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Out Of Boundary")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+	val := reflect.ValueOf(outOfBound)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "MinWidth":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Min width", value.Float())
+			case "MaxWidth":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Max width", value.Float())
+			case "MinLength":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Min length", value.Float())
+			case "MaxLength":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Max length", value.Float())
+			case "PowerOutOfBoundPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
+			case "AlphaOutOfBoundPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func overlapInfo(f *excelize.File, overlap any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Overlap")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+	val := reflect.ValueOf(overlap)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "PowerOverlapPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
+			case "AlphaOverlapPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func inclusiveZoneInfo(f *excelize.File, inclusive any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Inclusive Zone")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+	val := reflect.ValueOf(inclusive)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "Zones":
+				for j := 0; j < value.Len(); j++ {
+					startRow := rowCount
+					elem := value.Index(j)
+
+					for k := 0; k < elem.NumField(); k++ {
+						subField := elem.Type().Field(k)
+						subValue := elem.Field(k)
+						switch subField.Name {
+						case "BuildingNames":
+							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+1)
+							_ = f.SetCellValue(sheetName, cell, "Facilities")
+							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+
+							names := make([]string, 0)
+							for nameIdx := 0; nameIdx < subValue.Len(); nameIdx++ {
+								names = append(names, subValue.Index(nameIdx).String())
+							}
+
+							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+1)
+							_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
+							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+						case "Size":
+							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+2)
+							_ = f.SetCellValue(sheetName, cell, "Size")
+							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+2)
+							_ = f.SetCellValue(sheetName, cell, subValue.Float())
+							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+						case "Location":
+							locVal := reflect.ValueOf(subValue.Interface())
+							//locType := locVal.Type()
+							for locIdx := 0; locIdx < locVal.NumField(); locIdx++ {
+								locField := locVal.Type().Field(locIdx)
+								locSubVal := locVal.Field(locIdx)
+								switch locField.Name {
+								case "Symbol":
+									cell, _ = excelize.CoordinatesToCellName(colCount, startRow)
+									endCell, _ = excelize.CoordinatesToCellName(colCount+1, startRow)
+									_ = f.MergeCell(sheetName, cell, endCell)
+									_ = f.SetCellValue(sheetName, cell, locSubVal.String())
+									_ = f.SetCellStyle(sheetName, cell, cell, contentMiddleAlignStyle)
+									break
+								default:
+									continue
+								}
+							}
+
+						default:
+							continue
+						}
+						rowCount = startRow + 3
+					}
+				}
+			case "PowerInclusivePenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
+			case "AlphaInclusivePenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func coverCraneInfo(f *excelize.File, craneInfo any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Cover in Crane's radius")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+	val := reflect.ValueOf(craneInfo)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "Cranes":
+				for j := 0; j < value.Len(); j++ {
+					startRow := rowCount
+					elem := value.Index(j)
+
+					for k := 0; k < elem.NumField(); k++ {
+						subField := elem.Type().Field(k)
+						subValue := elem.Field(k)
+
+						switch subField.Name {
+						case "BuildingName":
+							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+1)
+							_ = f.SetCellValue(sheetName, cell, "Facilities")
+							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+
+							names := make([]string, 0)
+							for nameIdx := 0; nameIdx < subValue.Len(); nameIdx++ {
+								names = append(names, subValue.Index(nameIdx).String())
+							}
+
+							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+1)
+							_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
+							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+						case "Radius":
+							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+2)
+							_ = f.SetCellValue(sheetName, cell, "Radius")
+							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+2)
+							_ = f.SetCellValue(sheetName, cell, subValue.Float())
+							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+						case "CraneSymbol":
+							cell, _ = excelize.CoordinatesToCellName(colCount, startRow)
+							endCell, _ = excelize.CoordinatesToCellName(colCount+1, startRow)
+							_ = f.MergeCell(sheetName, cell, endCell)
+							_ = f.SetCellValue(sheetName, cell, subValue.String())
+							_ = f.SetCellStyle(sheetName, cell, cell, contentMiddleAlignStyle)
+						default:
+							continue
+						}
+						rowCount = startRow + 2
+					}
+				}
+			case "PowerCoverInCraneRadiusPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
+			case "AlphaCoverInCraneRadiusPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
 			default:
 				continue
 			}

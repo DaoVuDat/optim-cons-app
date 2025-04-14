@@ -16,6 +16,7 @@ type RiskConfigs struct {
 	Delta                   float64
 	AlphaRiskPenalty        float64
 	Phases                  [][]string
+	FilePath                string
 }
 
 type RiskObjective struct {
@@ -36,6 +37,7 @@ func CreateRiskObjectiveFromConfig(riskConfigs RiskConfigs) (*RiskObjective, err
 		Delta:                   riskConfigs.Delta,
 		AlphaRiskPenalty:        riskConfigs.AlphaRiskPenalty,
 		Phases:                  riskConfigs.Phases,
+		FilePath:                riskConfigs.FilePath,
 	}
 	return riskObj, nil
 }

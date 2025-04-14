@@ -123,6 +123,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					Delta:                   riskCfg.Delta,
 					AlphaRiskPenalty:        riskCfg.AlphaRiskPenalty,
 					Phases:                  problem.Phases,
+					FilePath:                riskCfg.HazardInteractionMatrixFilePath,
 				})
 				if err != nil {
 					return err
@@ -167,11 +168,13 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					Delta                   float64     `json:"delta"`
 					AlphaRiskPenalty        float64     `json:"alphaRiskPenalty"`
 					Phases                  [][]string  `json:"phases"`
+					FilePath                string      `json:"filePath"`
 				}{
 					HazardInteractionMatrix: risk.HazardInteractionMatrix,
 					Delta:                   risk.Delta,
 					AlphaRiskPenalty:        risk.AlphaRiskPenalty,
 					Phases:                  risk.Phases,
+					FilePath:                risk.FilePath,
 				}
 			case objectives.HoistingObjectiveType:
 				hoisting := obj.(*objectives.HoistingObjective)
