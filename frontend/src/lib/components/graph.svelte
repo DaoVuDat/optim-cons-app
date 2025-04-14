@@ -26,6 +26,11 @@
     }: Props = $props()
 
 
+    const numberOfGridCols = $derived.by(() => {
+      if (!graphData) return
+      return Math.ceil(graphData.Value.length/2)
+    })
+
     const phasesGraphData: string[][] | undefined = $derived.by(() => {
         if (!graphData) return
         // check is whether static or not
@@ -275,7 +280,7 @@
   </div>
   <div class="w-full px-4 flex justify-between items-center">
     {#if graphData}
-      <div class="grid grid-rows-2 gap-1 flex-1/2">
+      <div class="grid grid-rows-2 grid-cols-{numberOfGridCols} gap-1 flex-1/2">
         {#each Object.entries(graphData.ValuesWithKey) as [k, v]}
           <p> <span class="font-bold text-base">
             {k.replace(/objective/gi, "")}:
@@ -289,7 +294,7 @@
         "btn-disabled": selectedPhases === 0,
     })} onclick={() => selectedPhases--}>«
         </button>
-        <button class="join-item btn">
+        <button class="join-item btn w-48">
           {selectedPhases === phasesGraphData.length - 1 ? "All" : `Phase / Time Interval: ${selectedPhases + 1}`}
         </button>
         <button class={clsx("join-item btn", {

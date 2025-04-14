@@ -10,7 +10,6 @@ import (
 	"golang-moaha-construction/internal/data"
 	eprs "golang-moaha-construction/internal/export-result"
 	"golang-moaha-construction/internal/objectives"
-	"reflect"
 	"time"
 )
 
@@ -75,7 +74,7 @@ func (a *App) SaveFile(commandType CommandType) error {
 		}
 
 		// TODO: export result
-		fmt.Println(selection)
+
 		algoInfo, err := a.AlgorithmInfo()
 		if err != nil {
 			return err
@@ -113,18 +112,14 @@ func (a *App) SaveFile(commandType CommandType) error {
 			return err
 		}
 
-		fmt.Println("===== Algo info")
-		printStructFields(algoInfo)
-		fmt.Println("===== Problem info")
-		printStructFields(problemInfo)
-		fmt.Println("===== Objectives info")
-		printStructFields(objectivesInfo)
-		fmt.Println("===== Constraints info")
-		printStructFields(constraintsInfo)
-		fmt.Println("===== Results")
-		fmt.Printf("%+v\n", results)
-
 		err = eprs.WriteXlsxResult(eprs.Options{
+			Summary: eprs.Summary{
+				AlgorithmInfo:   algoInfo,
+				ConstraintsInfo: constraintsInfo,
+				ProblemInfo:     problemInfo,
+				ObjectivesInfo:  objectivesInfo,
+			},
+			Results:  results,
 			FilePath: selection,
 		})
 
@@ -138,35 +133,6 @@ func (a *App) SaveFile(commandType CommandType) error {
 		return errors.New("invalid command type")
 	}
 
-}
-
-func printStructFields(s any) {
-	// Get the reflected value of input
-	val := reflect.ValueOf(s)
-
-	// Follow pointer if it's a pointer to a struct
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-
-	// Ensure it's a struct now
-	if val.Kind() != reflect.Struct {
-		fmt.Println("Not a struct!")
-		return
-	}
-
-	typ := val.Type()
-
-	// Loop through fields
-	for i := 0; i < val.NumField(); i++ {
-		field := typ.Field(i)
-		value := val.Field(i)
-
-		// Only exported fields (unexported fields can't be accessed)
-		if field.PkgPath == "" {
-			fmt.Printf("%s: %v\n", field.Name, value.Interface())
-		}
-	}
 }
 
 func (a *App) ShowAllInfo() error {

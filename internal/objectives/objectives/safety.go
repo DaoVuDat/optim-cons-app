@@ -14,6 +14,7 @@ type SafetyConfigs struct {
 type SafetyObjective struct {
 	SafetyProximity    [][]float64
 	AlphaSafetyPenalty float64
+	FilePath           string
 }
 
 func CreateSafetyObjective() (*SafetyObjective, error) {

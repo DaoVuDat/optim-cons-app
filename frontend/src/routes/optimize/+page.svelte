@@ -122,7 +122,7 @@
     <div
         class="pl-2 py-4 row-start-1 col-start-1 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col justify-center items-center">
       <div class="w-full px-4 flex items-center justify-center mb-2">
-        <progress class="progress progress-info w-full" value={progress} max="100">
+        <progress class="progress progress-primary w-full" value={progress} max="100">
         </progress>
         <div class="pl-4 pr-2 w-16">{progress}%</div>
       </div>

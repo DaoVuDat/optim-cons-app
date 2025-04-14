@@ -23,6 +23,7 @@ type RiskObjective struct {
 	Delta                   float64
 	AlphaRiskPenalty        float64
 	Phases                  [][]string
+	FilePath                string
 }
 
 func CreateRiskObjective() (*RiskObjective, error) {

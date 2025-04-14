@@ -45,6 +45,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 				hoistingTime := make(map[string][]objectives.HoistingTime, len(hoistingCfg.CraneLocations))
 				cranesLocation := make([]objectives.Crane, len(hoistingCfg.CraneLocations))
+				hoistingTimeWithInfo := make([]objectives.HoistingTimeWithInfo, len(hoistingCfg.CraneLocations))
 
 				for i, craneLocation := range hoistingCfg.CraneLocations {
 					hoistingTimeForCrane, err := objectives.ReadHoistingTimeDataFromFile(craneLocation.HoistingTimeFilePath)
@@ -61,6 +62,13 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 						BuildingName: facilitiesName,
 						Radius:       craneLocation.Radius,
 					}
+
+					hoistingTimeWithInfo[i] = objectives.HoistingTimeWithInfo{
+						CraneSymbol:  craneLocation.Name,
+						FilePath:     craneLocation.HoistingTimeFilePath,
+						Radius:       craneLocation.Radius,
+						BuildingName: facilitiesName,
+					}
 				}
 
 				// setup Cranes Locations and Hoisting Time
@@ -74,12 +82,14 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					Vlvg:                 hoistingCfg.Vlvg,
 					Vag:                  hoistingCfg.Vag,
 					Vwg:                  hoistingCfg.Vwg,
-					AlphaHoistingPenalty: hoistingCfg.AlphaHoistingPenalty,
 					AlphaHoisting:        hoistingCfg.AlphaHoisting,
 					BetaHoisting:         hoistingCfg.BetaHoisting,
 					NHoisting:            hoistingCfg.NHoisting,
 					Phases:               problem.Phases,
+					AlphaHoistingPenalty: hoistingCfg.AlphaHoistingPenalty,
+					HoistingTimeWithInfo: hoistingTimeWithInfo,
 				})
+
 				if err != nil {
 					return err
 
@@ -167,19 +177,20 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				hoisting := obj.(*objectives.HoistingObjective)
 				res.Hoisting = struct {
 					NumberOfFloors       int                                  `json:"numberOfFloors"`
-					HoistingTime         map[string][]objectives.HoistingTime `json:"hoistingTime"`
 					FloorHeight          float64                              `json:"floorHeight"`
-					CraneLocations       []objectives.Crane                   `json:"craneLocations"`
 					ZM                   float64                              `json:"zm"`
 					Vuvg                 float64                              `json:"vuvg"`
 					Vlvg                 float64                              `json:"vlvg"`
 					Vag                  float64                              `json:"vag"`
 					Vwg                  float64                              `json:"vwg"`
-					AlphaHoistingPenalty float64                              `json:"alphaHoistingPenalty"`
 					AlphaHoisting        float64                              `json:"alphaHoisting"`
 					BetaHoisting         float64                              `json:"betaHoisting"`
 					NHoisting            float64                              `json:"NHoisting"`
 					Phases               [][]string                           `json:"phases"`
+					AlphaHoistingPenalty float64                              `json:"alphaHoistingPenalty"`
+					HoistingTime         map[string][]objectives.HoistingTime `json:"hoistingTime"`
+					CraneLocations       []objectives.Crane                   `json:"craneLocations"`
+					HoistingTimeWithInfo []objectives.HoistingTimeWithInfo    `json:"hoistingTimeWithInfo"`
 				}{
 					NumberOfFloors:       hoisting.NumberOfFloors,
 					HoistingTime:         hoisting.HoistingTime,
@@ -195,6 +206,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					BetaHoisting:         hoisting.BetaHoisting,
 					NHoisting:            hoisting.NHoisting,
 					Phases:               hoisting.Phases,
+					HoistingTimeWithInfo: hoisting.HoistingTimeWithInfo,
 				}
 			case objectives.SafetyObjectiveType:
 

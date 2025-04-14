@@ -24,6 +24,7 @@ type HoistingConfigs struct {
 	BetaHoisting         float64
 	NHoisting            float64
 	Phases               [][]string
+	HoistingTimeWithInfo []HoistingTimeWithInfo
 }
 
 type Crane struct {
@@ -55,6 +56,7 @@ type HoistingObjective struct {
 	BetaHoisting         float64
 	NHoisting            float64
 	Phases               [][]string
+	HoistingTimeWithInfo []HoistingTimeWithInfo
 }
 
 func CreateHoistingObjective() (*HoistingObjective, error) {
@@ -77,6 +79,7 @@ func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*Hoisti
 		BetaHoisting:         hoistingConfigs.BetaHoisting,
 		NHoisting:            hoistingConfigs.NHoisting,
 		Phases:               hoistingConfigs.Phases,
+		HoistingTimeWithInfo: hoistingConfigs.HoistingTimeWithInfo,
 	}
 	return hoistingObj, nil
 }
@@ -143,6 +146,13 @@ func (obj *HoistingObjective) GetAlphaPenalty() float64 {
 }
 
 // Readers Utility Functions
+
+type HoistingTimeWithInfo struct {
+	CraneSymbol  string
+	FilePath     string
+	Radius       float64
+	BuildingName []string
+}
 
 func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 	dataFile, err := excelize.OpenFile(filePath)
