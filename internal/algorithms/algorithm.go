@@ -8,12 +8,13 @@ import (
 type AlgorithmType string
 
 type AlgorithmResult struct {
-	MapLocations  map[string]data.Location
-	Value         []float64
-	Penalty       map[data.ConstraintType]float64
-	ValuesWithKey map[data.ObjectiveType]float64
-	Cranes        []objectives.Crane
-	Phases        [][]string
+	MapLocations   map[string]data.Location
+	SliceLocations []data.Location
+	Value          []float64
+	Penalty        map[data.ConstraintType]float64
+	ValuesWithKey  map[data.ObjectiveType]float64
+	Cranes         []objectives.Crane
+	Phases         [][]string
 }
 
 type Result struct {

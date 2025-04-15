@@ -562,18 +562,19 @@ func (a *MOAHAAlgorithm) GetResults() algorithms.Result {
 
 	for i := range a.Archive {
 		res := a.Archive[i]
-		mapLoc, cranes, err := a.ObjectiveFunction.GetLocationResult(res.Position)
+		mapLoc, sliceLoc, cranes, err := a.ObjectiveFunction.GetLocationResult(res.Position)
 		if err != nil {
 			return algorithms.Result{}
 		}
 
 		results[i] = algorithms.AlgorithmResult{
-			MapLocations:  mapLoc,
-			Value:         res.Value,
-			Penalty:       res.Penalty,
-			ValuesWithKey: res.ValuesWithKey,
-			Cranes:        cranes,
-			Phases:        a.ObjectiveFunction.GetPhases(),
+			MapLocations:   mapLoc,
+			SliceLocations: sliceLoc,
+			Value:          res.Value,
+			Penalty:        res.Penalty,
+			ValuesWithKey:  res.ValuesWithKey,
+			Cranes:         cranes,
+			Phases:         a.ObjectiveFunction.GetPhases(),
 		}
 	}
 

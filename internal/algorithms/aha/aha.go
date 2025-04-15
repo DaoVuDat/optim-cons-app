@@ -449,17 +449,18 @@ func (a *AHAAlgorithm) outOfBoundaries(pos []float64) {
 func (a *AHAAlgorithm) GetResults() algorithms.Result {
 	results := make([]algorithms.AlgorithmResult, 1)
 
-	mapLoc, cranes, err := a.ObjectiveFunction.GetLocationResult(a.BestResult.Position)
+	mapLoc, sliceLoc, cranes, err := a.ObjectiveFunction.GetLocationResult(a.BestResult.Position)
 
 	if err != nil {
 		return algorithms.Result{}
 	}
 	results[0] = algorithms.AlgorithmResult{
-		MapLocations: mapLoc,
-		Value:        a.BestResult.Value,
-		Penalty:      a.BestResult.Penalty,
-		Cranes:       cranes,
-		Phases:       a.ObjectiveFunction.GetPhases(),
+		MapLocations:   mapLoc,
+		SliceLocations: sliceLoc,
+		Value:          a.BestResult.Value,
+		Penalty:        a.BestResult.Penalty,
+		Cranes:         cranes,
+		Phases:         a.ObjectiveFunction.GetPhases(),
 	}
 
 	minX, maxX, minY, maxY, _ := a.ObjectiveFunction.GetLayoutSize()

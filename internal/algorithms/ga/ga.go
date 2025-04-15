@@ -244,17 +244,18 @@ func (ga *GAAlgorithm) sortPopulationByFitness() []*objectives.Result {
 func (ga *GAAlgorithm) GetResults() algorithms.Result {
 	results := make([]algorithms.AlgorithmResult, 1)
 
-	mapLoc, cranes, err := ga.ObjectiveFunction.GetLocationResult(ga.Best.Position)
+	mapLoc, sliceLoc, cranes, err := ga.ObjectiveFunction.GetLocationResult(ga.Best.Position)
 
 	if err != nil {
 		return algorithms.Result{}
 	}
 	results[0] = algorithms.AlgorithmResult{
-		MapLocations: mapLoc,
-		Value:        ga.Best.Value,
-		Penalty:      ga.Best.Penalty,
-		Cranes:       cranes,
-		Phases:       ga.ObjectiveFunction.GetPhases(),
+		MapLocations:   mapLoc,
+		SliceLocations: sliceLoc,
+		Value:          ga.Best.Value,
+		Penalty:        ga.Best.Penalty,
+		Cranes:         cranes,
+		Phases:         ga.ObjectiveFunction.GetPhases(),
 	}
 
 	minX, maxX, minY, maxY, _ := ga.ObjectiveFunction.GetLayoutSize()

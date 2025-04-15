@@ -1,5 +1,10 @@
 package util
 
+import (
+	"regexp"
+	"strconv"
+)
+
 func MinWithIdx[T int | float64](arr []T) (T, int) {
 	minIdx := 0
 	var minVal T = arr[0]
@@ -26,4 +31,15 @@ func MaxWithIdx[T int | float64](arr []T) (T, int) {
 	}
 
 	return maxVal, maxIdx
+}
+
+var re = regexp.MustCompile(`\D*(\d+)`)
+
+func ExtractNumber(s string) int {
+	matches := re.FindStringSubmatch(s)
+	if len(matches) < 2 {
+		return 0
+	}
+	num, _ := strconv.Atoi(matches[1])
+	return num
 }

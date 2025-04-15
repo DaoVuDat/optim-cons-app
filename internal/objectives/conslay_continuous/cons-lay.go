@@ -5,6 +5,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/objectives"
+	"golang-moaha-construction/internal/util"
 	"math"
 	"slices"
 	"sort"
@@ -224,10 +225,11 @@ func (s *ConsLay) GetPhases() [][]string {
 	return s.Phases
 }
 
-func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []objectives.Crane, error) {
+func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []data.Location, []objectives.Crane, error) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]data.Location, len(s.Locations))
+	sliceLocations := make([]data.Location, len(s.Locations))
 
 	for i := 0; i < len(nonFixedLocations); i++ {
 		loc := s.NonFixedLocations[i]
@@ -266,14 +268,20 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 
 		nonFixedLocations[i] = location
 		mapLocations[loc.Symbol] = location
+		sliceLocations[i] = location
 	}
 
 	// add fixed location to mapLocations
 	for i := 0; i < len(s.FixedLocations); i++ {
 		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
+		sliceLocations[i+len(nonFixedLocations)] = s.FixedLocations[i]
 	}
 
-	return mapLocations, s.CraneLocations, nil
+	sort.Slice(sliceLocations, func(i, j int) bool {
+		return util.ExtractNumber(sliceLocations[i].Symbol) < util.ExtractNumber(sliceLocations[j].Symbol)
+	})
+
+	return mapLocations, sliceLocations, s.CraneLocations, nil
 }
 
 func (s *ConsLay) GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error) {
