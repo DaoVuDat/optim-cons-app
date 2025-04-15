@@ -27,10 +27,12 @@
   })
   let isMulti = $derived<boolean>(objectiveStore.objectives.selectedObjectives.length > 1)
 
-  const handleOptimize = async () => {
-    const algorithmInfo = await AlgorithmInfo()
+  let isLoading = $state<boolean>(false)
 
+  const handleOptimize = async () => {
+    isLoading = true
     await RunAlgorithm()
+    isLoading = false
   }
 
   interface Progress {
@@ -161,10 +163,14 @@
   <section class="w-full space-x-2 text-end">
     <button class={
     clsx("btn btn-primary", {
-      "btn-disabled": results.length === 0
+      "btn-disabled": results.length === 0 || isLoading
     })
     } onclick="{handleExportResult}">Export Results</button>
-    <a class="btn" href="/algorithm" onclick={() => stepStore.prevStep()}>Back</a>
-    <button class=' btn' onclick={handleOptimize}>Optimize</button>
+    <a class={clsx("btn", {
+      "btn-disabled": isLoading
+    })} href="/algorithm" onclick={() => stepStore.prevStep()}>Back</a>
+    <button class={clsx('btn', {
+      'btn-disabled': isLoading
+    })} onclick={handleOptimize}>Optimize</button>
   </section>
 </div>

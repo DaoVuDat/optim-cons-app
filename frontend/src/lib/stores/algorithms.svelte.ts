@@ -55,7 +55,6 @@ export interface IAlgorithmBiologyConfigBase {
 }
 
 class AlgorithmStore {
-
   validAlgorithmsList = $derived.by<AlgorithmWithLabel[]>(() => {
     if (objectiveStore.objectives.selectedObjectives.length == 1) {
       return SingleList

@@ -16,7 +16,7 @@
       <input type="number" class="input input-lg" placeholder="300" bind:value={config.iterations} />
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Populations:</legend>
+      <legend class="fieldset-legend text-lg">Population:</legend>
       <input type="number" class="input input-lg" placeholder="300" bind:value={config.population}/>
     </fieldset>
     <fieldset class="fieldset">

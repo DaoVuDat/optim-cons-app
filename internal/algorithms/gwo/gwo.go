@@ -111,9 +111,10 @@ func (g *GWOAlgorithm) Run() error {
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				value, _, _ := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
-
+				value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
 				g.Agents[agentIdx].Value = value
+				g.Agents[agentIdx].Penalty = penalty
+				g.Agents[agentIdx].ValuesWithKey = valuesWithKey
 			}(agentIdx)
 		}
 
@@ -139,7 +140,6 @@ func (g *GWOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 	l := 0
 	a := g.AParam
 
-	bar := progressbar.Default(int64(g.NumberOfIter))
 	var wg sync.WaitGroup
 
 	for l < g.NumberOfIter {
@@ -181,9 +181,10 @@ func (g *GWOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				value, _, _ := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
-
+				value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
 				g.Agents[agentIdx].Value = value
+				g.Agents[agentIdx].Penalty = penalty
+				g.Agents[agentIdx].ValuesWithKey = valuesWithKey
 			}(agentIdx)
 		}
 
@@ -192,11 +193,21 @@ func (g *GWOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 		g.findBest()
 
 		g.Convergence[l] = g.Alpha.Value[0]
-		bar.Describe(fmt.Sprintf("Iter %d: %e", l+1, g.Alpha.Value[0]))
-		bar.Add(1)
+
+		channel <- struct {
+			Progress    float64 `json:"progress"`
+			BestFitness float64 `json:"bestFitness"`
+			Type        string  `json:"type"`
+		}{
+			Progress:    (float64(l+1) / float64(g.NumberOfIter)) * 100,
+			BestFitness: g.Alpha.Value[0],
+			Type:        "single",
+		}
 
 		l++
 	}
+
+	close(channel)
 
 	return nil
 }
@@ -241,8 +252,10 @@ func (g *GWOAlgorithm) initialization() {
 				Position: positions,
 			}
 
-			value, _, _ := g.ObjectiveFunction.Eval(positions)
+			value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(positions)
 			newAgent.Value = value
+			newAgent.Penalty = penalty
+			newAgent.ValuesWithKey = valuesWithKey
 
 			g.Agents[agentIdx] = newAgent
 		}(agentIdx)
@@ -290,6 +303,7 @@ func (g *GWOAlgorithm) GetResults() algorithms.Result {
 		Penalty:        g.Alpha.Penalty,
 		Cranes:         cranes,
 		Phases:         g.ObjectiveFunction.GetPhases(),
+		ValuesWithKey:  g.Alpha.ValuesWithKey,
 	}
 
 	minX, maxX, minY, maxY, _ := g.ObjectiveFunction.GetLayoutSize()

@@ -75,7 +75,7 @@
       return {}
   };
 
-
+  $inspect(constraintsStore.constraints)
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
@@ -89,7 +89,7 @@
   <section class="mt-8 px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
     <div
         class="h-[560px] px-2 py-4 card bg-base-100 shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
-      {#each constraintsStore.constraintList as con (con)}
+      {#each constraintsStore.validConstraintList as con (con)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer",
           con.value === selectedConstraint ? 'bg-[#422AD5] text-white' : ''
         )}
@@ -125,7 +125,10 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="ml-4 btn" href="/data" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="ml-4 btn" href="/data" onclick={() => {
+      constraintsStore.clearConstraint()
+      stepStore.prevStep()
+    }}>Back</a>
     <button class='ml-4 btn'
             onclick={() => handleNext()}
     >Next

@@ -1,4 +1,3 @@
-
 import {data} from "$lib/wailsjs/go/models";
 import {
   coverInCraneRadiusConfig,
@@ -7,6 +6,7 @@ import {
   type IOutOfBoundConfig,
   type IOverlapConfig, outOfBoundConfig, overlapConfig
 } from "$lib/stores/constraints";
+import {objectiveStore} from "$lib/stores/objectives.svelte";
 
 type IConfigType = IOutOfBoundConfig | IOverlapConfig | ICoverInCraneRadiusConfig | IInclusiveZoneConfig
 
@@ -59,7 +59,19 @@ class ConstraintsStore {
     }
   ])
 
-  selectConstraintOption = $state<IConstraintOptions>()
+  validConstraintList = $derived.by<IConstraintOptions[]>(() => {
+    // filtering the "cover in crane radius"
+    const selectedObjectives = objectiveStore.objectives.selectedObjectives.map(selectedObjective => selectedObjective.objectiveType)
+    return this.constraintList.filter(cons => cons.value !== data.ConstraintType.CoverInCraneRadius ||
+      selectedObjectives.includes(data.ObjectiveType.HoistingObjective))
+  })
+
+  clearConstraint = () => {
+    this.constraints.selectedConstraints.length = 0
+    this.validConstraintList.forEach(constraint => {
+      constraint.isChecked = false
+    })
+  }
 
   selectConstraint = (option: IConstraintOptions) => {
     if (option.isChecked) {

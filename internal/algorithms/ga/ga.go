@@ -108,8 +108,11 @@ func (ga *GAAlgorithm) Run() error {
 					Idx:      idx,
 					Position: childPos,
 				}
-				value, _, _ := ga.ObjectiveFunction.Eval(childPos)
+				value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(childPos)
 				child.Value = value
+				child.ValuesWithKey = valuesWithKey
+				child.Penalty = penalty
+
 				newPopulation[idx] = child
 			}(i)
 		}
@@ -129,7 +132,6 @@ func (ga *GAAlgorithm) Run() error {
 func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
 	ga.initialization()
 
-	bar := progressbar.Default(int64(ga.MaxIterations))
 	var wg sync.WaitGroup
 
 	dim := ga.ObjectiveFunction.GetDimension()
@@ -175,8 +177,11 @@ func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 					Idx:      idx,
 					Position: childPos,
 				}
-				value, _, _ := ga.ObjectiveFunction.Eval(childPos)
+				value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(childPos)
 				child.Value = value
+				child.Penalty = penalty
+				child.ValuesWithKey = valuesWithKey
+
 				newPopulation[idx] = child
 			}(i)
 		}
@@ -186,9 +191,20 @@ func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 		ga.findBest()
 
 		ga.Convergence[iter] = ga.Best.Value[0]
-		bar.Describe(fmt.Sprintf("Iter %d: %e", iter+1, ga.Best.Value[0]))
-		bar.Add(1)
+
+		channel <- struct {
+			Progress    float64 `json:"progress"`
+			BestFitness float64 `json:"bestFitness"`
+			Type        string  `json:"type"`
+		}{
+			Progress:    (float64(iter+1) / float64(ga.MaxIterations)) * 100,
+			BestFitness: ga.Best.Value[0],
+			Type:        "single",
+		}
+
 	}
+
+	close(channel)
 
 	return nil
 }
@@ -212,8 +228,10 @@ func (ga *GAAlgorithm) initialization() {
 				Position: pos,
 			}
 
-			value, _, _ := ga.ObjectiveFunction.Eval(pos)
+			value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(pos)
 			newGene.Value = value
+			newGene.Penalty = penalty
+			newGene.ValuesWithKey = valuesWithKey
 
 			ga.Population[idx] = newGene
 		}(i)
@@ -256,6 +274,7 @@ func (ga *GAAlgorithm) GetResults() algorithms.Result {
 		Penalty:        ga.Best.Penalty,
 		Cranes:         cranes,
 		Phases:         ga.ObjectiveFunction.GetPhases(),
+		ValuesWithKey:  ga.Best.ValuesWithKey,
 	}
 
 	minX, maxX, minY, maxY, _ := ga.ObjectiveFunction.GetLayoutSize()
