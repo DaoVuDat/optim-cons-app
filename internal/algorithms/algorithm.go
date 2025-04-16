@@ -15,6 +15,7 @@ type AlgorithmResult struct {
 	ValuesWithKey  map[data.ObjectiveType]float64
 	Cranes         []objectives.Crane
 	Phases         [][]string
+	Convergence    []float64
 }
 
 type Result struct {

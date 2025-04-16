@@ -5,22 +5,23 @@ export interface Penalty {
   [k: string]: number
 }
 
-export type ValuesWithKey = Map<string, number>
+export type ValuesWithKey = { [key: string]: number }
 
 export interface MapLocation {
   [k: string]: Facility
 }
 
-interface Crane extends Facility{
+interface Crane extends Facility {
   BuildingName: string[]
-  Radius       : number
-  CraneSymbol  : string
+  Radius: number
+  CraneSymbol: string
 }
 
 export interface ResultLocation {
   MapLocations: MapLocation
   Value: number[]
   ValuesWithKey: ValuesWithKey
+  Convergence: number[]
   Penalty: Penalty
   Cranes: Crane[]
   Phases: string[][]

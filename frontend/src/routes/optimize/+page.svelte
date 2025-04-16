@@ -5,13 +5,14 @@
   import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
   import {main} from "$lib/wailsjs/go/models";
   import Graph from "$lib/components/graph.svelte";
+  import GraphSummary from "$lib/components/graph-summary.svelte";
   import clsx from "clsx";
   import type {Facility} from "$lib/stores/problems/problem";
   import type {ResultLocation, ResultLocationWithId} from "../../types/result";
   import {objectiveStore} from "$lib/stores/objectives.svelte";
   import {roundNDecimal} from "$lib/utils/rounding";
 
-
+  let summaryGraphCheck = $state<boolean>(false)
   let progress = $state<number>(0)
   let progressInfo = $state<string>("")
   let layoutSize = $state<{
@@ -49,7 +50,6 @@
     type: 'single'
 
   } & Progress
-
 
 
   onMount(() => {
@@ -144,18 +144,39 @@
     </div>
     <div class="max-h-full w-full px-2 py-4 col-start-5 row-start-1 col-span-8 row-span-3 card bg-base-100
      shadow-md rounded-lg flex justify-center items-center">
-      <Graph graphData={selectedResult} layoutSize={layoutSize} />
+      {#if summaryGraphCheck}
+        <GraphSummary graphsData={results}/>
+      {:else}
+        <Graph graphData={selectedResult} layoutSize={layoutSize}/>
+      {/if}
     </div>
     <div
-        class="px-2 py-4 max-h-full col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">
-      {#each results as res, idx (res.Id)}
-        <button class={clsx("p-4 rounded h-18 flex justify-between items-center cursor-pointer text-left",
+        class="px-2 py-4 col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">
+      {#if isMulti}
+        <fieldset class="fieldset p-4 mb-2 bg-base-100 border border-base-300 rounded-box w-full">
+          <legend class="fieldset-legend">Show Pareto</legend>
+          <label class="fieldset-label">
+            <input type="checkbox" bind:checked={summaryGraphCheck} class="toggle" disabled={isLoading}/>
+            {#if summaryGraphCheck}
+              Pareto
+            {:else}
+              Results
+            {/if}
+          </label>
+        </fieldset>
+      {/if}
+      <div class="max-h-full overflow-y-auto">
+        {#if !summaryGraphCheck}
+          {#each results as res, idx (res.Id)}
+            <button class={clsx("p-4 rounded w-full h-18 flex justify-between items-center cursor-pointer text-left",
       selectedResult?.Id === res.Id ? 'bg-[#422AD5] text-white' : '')}
-                onclick={() => handleSelectedResult(res)}>
-          Result #{idx + 1}
-          ({Object.values(res.Penalty).reduce((prev, cur) => prev + cur, 0) !== 0 ? "Infeasible" : "Feasible"})
-        </button>
-      {/each}
+                    onclick={() => handleSelectedResult(res)}>
+              Result #{idx + 1}
+              ({Object.values(res.Penalty).reduce((prev, cur) => prev + cur, 0) !== 0 ? "Infeasible" : "Feasible"})
+            </button>
+          {/each}
+        {/if}
+      </div>
     </div>
   </section>
 
@@ -165,12 +186,14 @@
     clsx("btn btn-primary", {
       "btn-disabled": results.length === 0 || isLoading
     })
-    } onclick="{handleExportResult}">Export Results</button>
+    } onclick="{handleExportResult}">Export Results
+    </button>
     <a class={clsx("btn", {
       "btn-disabled": isLoading
     })} href="/algorithm" onclick={() => stepStore.prevStep()}>Back</a>
     <button class={clsx('btn', {
       'btn-disabled': isLoading
-    })} onclick={handleOptimize}>Optimize</button>
+    })} onclick={handleOptimize}>Optimize
+    </button>
   </section>
 </div>

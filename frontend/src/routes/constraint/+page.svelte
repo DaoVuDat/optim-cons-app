@@ -75,7 +75,6 @@
       return {}
   };
 
-  $inspect(constraintsStore.constraints)
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">

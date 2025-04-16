@@ -479,6 +479,7 @@ func (a *AHAAlgorithm) GetResults() algorithms.Result {
 		Cranes:         cranes,
 		Phases:         a.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  a.BestResult.ValuesWithKey,
+		Convergence:    a.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := a.ObjectiveFunction.GetLayoutSize()

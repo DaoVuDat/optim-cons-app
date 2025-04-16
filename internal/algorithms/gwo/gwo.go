@@ -304,6 +304,7 @@ func (g *GWOAlgorithm) GetResults() algorithms.Result {
 		Cranes:         cranes,
 		Phases:         g.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  g.Alpha.ValuesWithKey,
+		Convergence:    g.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := g.ObjectiveFunction.GetLayoutSize()

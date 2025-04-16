@@ -204,41 +204,44 @@
                             }]
 
                             // is crane -> draw circle
+                          if (graphData.Cranes) {
                             const crane = graphData.Cranes.find(c => c.CraneSymbol === name)
                             let circle: CustomElementOption | undefined
                             if (crane) {
-                                const radiusPx = api.size([crane.Radius, 0])[0];
+                              const radiusPx = api.size([crane.Radius, 0])[0];
 
-                                circle = {
-                                    type: 'circle',
-                                    z: 1,
-                                    shape: {
-                                        // Offset so the rectangle is centered (top-left of rect = -half width, -half height)
-                                        x: -widthPx / 2,
-                                        y: -heightPx / 2,
-                                        r: radiusPx,
-                                    },
-                                    style: {
-                                        fill: 'none',
-                                        stroke: color,
-                                        lineWidth: 2
-                                    },
-                                    enterFrom: {
-                                        style: {opacity: 0},
-                                    },
-                                    leaveTo: {
-                                        style: {opacity: 0},
-                                    },
-                                    enterAnimation: {
-                                        duration: 200
-                                    },
-                                    leaveAnimation: {
-                                        duration: 200
-                                    }
+                              circle = {
+                                type: 'circle',
+                                z: 1,
+                                shape: {
+                                  // Offset so the rectangle is centered (top-left of rect = -half width, -half height)
+                                  x: -widthPx / 2,
+                                  y: -heightPx / 2,
+                                  r: radiusPx,
+                                },
+                                style: {
+                                  fill: 'none',
+                                  stroke: color,
+                                  lineWidth: 2
+                                },
+                                enterFrom: {
+                                  style: {opacity: 0},
+                                },
+                                leaveTo: {
+                                  style: {opacity: 0},
+                                },
+                                enterAnimation: {
+                                  duration: 200
+                                },
+                                leaveAnimation: {
+                                  duration: 200
                                 }
+                              }
 
-                                children.push(circle)
+                              children.push(circle)
                             }
+                          }
+
 
 
                             // Return a group that contains a rectangle.

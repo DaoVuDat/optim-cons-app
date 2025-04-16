@@ -275,6 +275,7 @@ func (ga *GAAlgorithm) GetResults() algorithms.Result {
 		Cranes:         cranes,
 		Phases:         ga.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  ga.Best.ValuesWithKey,
+		Convergence:    ga.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := ga.ObjectiveFunction.GetLayoutSize()
