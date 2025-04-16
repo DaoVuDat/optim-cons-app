@@ -154,7 +154,7 @@
         class="px-2 py-4 col-start-1 row-start-2 row-span-2 col-span-4 card bg-base-100 shadow-md rounded-lg flex flex-col overflow-y-auto">
       {#if isMulti}
         <fieldset class="fieldset p-4 mb-2 bg-base-100 border border-base-300 rounded-box w-full">
-          <legend class="fieldset-legend">Show Pareto</legend>
+          <legend class="fieldset-legend text-nowrap">Show Pareto</legend>
           <label class="fieldset-label">
             <input type="checkbox" bind:checked={summaryGraphCheck} class="toggle" disabled={isLoading}/>
             {#if summaryGraphCheck}

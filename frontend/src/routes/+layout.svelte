@@ -3,9 +3,22 @@
   import {stepStore} from "$lib/stores/steps.svelte";
 
   import clsx from "clsx";
+  import {onMount} from "svelte";
+  import {browser} from "$app/environment";
 
   const {children} = $props()
 
+  onMount(() => {
+      if (browser) {
+          
+          const preventContextMenu = (e) => e.preventDefault();
+          window.addEventListener('contextmenu', preventContextMenu);
+
+          return () => {
+              window.removeEventListener('contextmenu', preventContextMenu);
+          };
+      }
+  });
 </script>
 
 <main class="p-8 bg-gray-100">
