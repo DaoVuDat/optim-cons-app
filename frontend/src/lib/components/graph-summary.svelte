@@ -27,13 +27,8 @@
 
         const results = graphsData.map(res => {
 
-            // testing 3rd objective
-            const randomVal = Math.random()
 
             const valueWithKeys = {...res.ValuesWithKey}
-
-            // testing 3rd objective
-            valueWithKeys.random = randomVal
 
             let keys = Object.keys(valueWithKeys);
 
@@ -54,57 +49,27 @@
 
         const numberOfValues = results[0].value.length
         const minValues = results.reduce((prev, cur) => {
-            const firstVal = cur.value[0]
-            const secondVal = cur.value[1]
-            if (firstVal < prev[0]) {
-                prev[0] = firstVal;
+            for (let i = 0; i < numberOfValues; i++) {
+                if (cur.value[i] < prev[i]) {
+                    prev[i] = cur.value[i];
+                }
             }
-
-            if (secondVal < prev[1]) {
-                prev[1] = secondVal;
-            }
-
-            // testing 3rd objective
-            prev[2] = 0
 
             return prev
         }, [...results[0].value])
 
         const maxValues = results.reduce((prev, cur) => {
-            const firstVal = cur.value[0]
-            const secondVal = cur.value[1]
-            if (firstVal > prev[0]) {
-                prev[0] = firstVal;
+            for (let i = 0; i < numberOfValues; i++) {
+                if (cur.value[i] > prev[i]) {
+                    prev[i] = cur.value[i];
+                }
             }
-
-            if (secondVal > prev[1]) {
-                prev[1] = secondVal;
-            }
-
-            // testing 3rd objective
-            prev[2] = 1
 
             return prev
         }, [...results[0].value])
 
         console.log(minValues, maxValues, results)
 
-        function generateData() {
-            let data = [];
-            let dataCount = 100;
-
-            for (let i = 0; i < dataCount; i++) {
-                let x = Math.random() * 10 - 5;
-                let y = Math.random() * 10 - 5;
-                let z = Math.random() * 10 - 5;
-
-                // Calculate a value based on distance to origin
-                let value = Math.sqrt(x * x + y * y + z * z);
-
-                data.push([x, y, z, value]);
-            }
-            return data;
-        }
 
         if (chartInstance) {
             chartInstance.clear()
@@ -151,18 +116,21 @@
                     type: 'value',
                     min: (minValues[0] * 0.9998).toFixed(3),
                     max: (maxValues[0] * 1.0002).toFixed(3),
+                    nameGap: 30
                 }
                 options.yAxis3D = {
                     name: results[0].keys[1],
                     type: 'value',
                     min: (minValues[1] * 0.9998).toFixed(3),
                     max: (maxValues[1] * 1.0002).toFixed(3),
+                    nameGap: 30
                 }
                 options.zAxis3D = {
                     name: results[0].keys[2],
                     type: 'value',
-                    min: 0,
-                    max: 1,
+                    min: (minValues[2] * 0.9998).toFixed(3),
+                    max: (maxValues[2] * 1.0002).toFixed(3),
+                    nameGap: 30
                 }
                 options.series = [
                     {
@@ -195,8 +163,6 @@
                     }
                 ]
             }
-            // Pareto
-
 
             chartInstance.setOption(options);
         }

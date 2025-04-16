@@ -161,15 +161,15 @@ func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[dat
 		}
 		val := v.Eval(mapLocations)
 
-		// add value to valuesWithKey
-		valuesWithKey[k] = val
-
 		// add penalty to objective value
 		for _, penaltyAlpha := range penalty {
 			val += penaltyAlpha * v.GetAlphaPenalty()
 		}
 
 		values[idx] = val
+
+		// add value to valuesWithKey
+		valuesWithKey[k] = val
 	}
 
 	return values, valuesWithKey, penalty

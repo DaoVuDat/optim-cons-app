@@ -10,7 +10,7 @@
 
   onMount(() => {
       if (browser) {
-          
+
           const preventContextMenu = (e) => e.preventDefault();
           window.addEventListener('contextmenu', preventContextMenu);
 

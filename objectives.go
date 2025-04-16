@@ -22,7 +22,29 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 		for _, obj := range objs {
 			switch obj.ObjectiveName {
 			case objectives.SafetyObjectiveType:
-				safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{})
+				safetyBytes, err := sonic.Marshal(obj.ObjectiveConfig)
+				if err != nil {
+					return err
+				}
+
+				var safetyCfg safetyConfig
+				err = sonic.Unmarshal(safetyBytes, &safetyCfg)
+				if err != nil {
+					return err
+				}
+
+				safetyProximityMatrix, err := objectives.ReadSafetyProximityDataFromFile(safetyCfg.SafetyProximityMatrixFilePath)
+
+				if err != nil {
+					return err
+				}
+
+				safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{
+					SafetyProximity:    safetyProximityMatrix,
+					AlphaSafetyPenalty: safetyCfg.AlphaSafetyPenalty,
+					Phases:             problem.Phases,
+					FilePath:           safetyCfg.SafetyProximityMatrixFilePath,
+				})
 				if err != nil {
 					return err
 				}
@@ -212,7 +234,19 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					HoistingTimeWithInfo: hoisting.HoistingTimeWithInfo,
 				}
 			case objectives.SafetyObjectiveType:
+				safety := obj.(*objectives.SafetyObjective)
 
+				res.Safety = struct {
+					SafetyProximityMatrix [][]float64 `json:"safetyProximityMatrix"`
+					AlphaSafetyPenalty    float64     `json:"alphaSafetyPenalty"`
+					Phases                [][]string  `json:"phases"`
+					FilePath              string      `json:"filePath"`
+				}{
+					SafetyProximityMatrix: safety.SafetyProximity,
+					AlphaSafetyPenalty:    safety.AlphaSafetyPenalty,
+					Phases:                safety.Phases,
+					FilePath:              safety.FilePath,
+				}
 			}
 		}
 
@@ -251,4 +285,9 @@ type riskConfig struct {
 	HazardInteractionMatrixFilePath string  `json:"hazardInteractionMatrixFilePath"`
 	Delta                           float64 `json:"Delta"`
 	AlphaRiskPenalty                float64 `json:"AlphaRiskPenalty"`
+}
+
+type safetyConfig struct {
+	SafetyProximityMatrixFilePath string  `json:"safetyProximityMatrixFilePath"`
+	AlphaSafetyPenalty            float64 `json:"AlphaSafetyPenalty"`
 }

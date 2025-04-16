@@ -189,7 +189,7 @@ func TestRiskObjective_Eval(t *testing.T) {
 		},
 	}
 
-	hazardInteraction, err := ReadRiskHazardInteractionDataFromFile("../../../data/conslay/f2_risk_data.xlsx")
+	hazardInteraction, err := ReadRiskHazardInteractionDataFromFile("../../../data/conslay/risk_data.xlsx")
 
 	// Hoisting Objective Configs
 	riskConfigs := RiskConfigs{

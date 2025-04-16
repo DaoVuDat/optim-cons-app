@@ -337,7 +337,7 @@ func TestHoistingObjective_Eval(t *testing.T) {
 		},
 	}
 
-	hoistingTime, err := ReadHoistingTimeDataFromFile("../../../data/conslay/f1_hoisting_time_data.xlsx")
+	hoistingTime, err := ReadHoistingTimeDataFromFile("../../../data/conslay/hoisting_time_data.xlsx")
 
 	if err != nil {
 		log.Fatal(err)

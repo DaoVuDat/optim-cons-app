@@ -1,52 +1,39 @@
 <script lang="ts">
-  import {problemStore} from "$lib/stores/problem.svelte";
   import {SelectFile} from "$lib/wailsjs/go/main/App";
-  import {ContinuousFile, continuousProblemConfig} from "$lib/stores/problems";
-  import {riskConfig} from "$lib/stores/objectives";
+  import {safetyConfig} from "$lib/stores/objectives";
 
-  const config = riskConfig
+  const config = safetyConfig
 
-  const selectFile = async (field: ContinuousFile) => {
-
+  const selectFile = async () => {
+      config.SafetyProximityMatrixFilePath = await SelectFile()
   }
 
 </script>
 
 
 <div class="p-2 w-full h-full flex flex-col justify-between">
-<!--  <div class="grid gap-2 grid-cols-2 grid-rows-2 ">-->
-<!--    <fieldset class="fieldset w-full flex flex-col">-->
-<!--      <legend class="fieldset-legend text-lg">Layout length:</legend>-->
-<!--      <input type="number" class="input input-lg" placeholder="300" bind:value={config.length} />-->
-<!--    </fieldset>-->
-<!--    <fieldset class="fieldset flex flex-col">-->
-<!--      <legend class="fieldset-legend text-lg ">Layout width:</legend>-->
-<!--      <input type="number" class="input input-lg" placeholder="300" bind:value={config.width}/>-->
-<!--    </fieldset>-->
-<!--    <fieldset class="fieldset flex flex-col">-->
-<!--      <legend class="fieldset-legend text-lg">Facilities file:</legend>-->
-<!--      <div class="join">-->
-<!--        <div>-->
-<!--          <label class="input validator join-item">-->
-<!--            <input type="text" placeholder="path://" bind:value={config.facilitiesFilePath.value}/>-->
-<!--          </label>-->
-<!--        </div>-->
-<!--        <button class="btn btn-neutral join-item" onclick={() =>selectFile(config.facilitiesFilePath.label)}>Select file</button>-->
-<!--      </div>-->
-<!--    </fieldset>-->
-<!--    <fieldset class="fieldset flex flex-col">-->
-<!--      <legend class="fieldset-legend text-lg">Static / Phase / Dynamic file:</legend>-->
-<!--      <div class="join">-->
-<!--        <div>-->
-<!--          <label class="input validator join-item">-->
-<!--            <input type="text" placeholder="path://" bind:value={config.phasesFilePath.value} />-->
-<!--          </label>-->
-<!--        </div>-->
-<!--        <button class="btn btn-neutral join-item" onclick={() =>selectFile(config.phasesFilePath.label)}>Select file</button>-->
-<!--      </div>-->
-<!--    </fieldset>-->
-<!--  </div>-->
-<!--  <div class="flex justify-end items-center">-->
-<!--    <button class="btn btn-primary">Import Data Template</button>-->
-<!--  </div>-->
+  <div class="grid gap-2 grid-rows-2 ">
+    <fieldset class="fieldset flex flex-col">
+      <legend class="fieldset-legend text-lg">Safety Proximity Matrix file:</legend>
+
+      <div class="join">
+        <div>
+          <label class="input input-lg validator join-item">
+            <input type="text" placeholder="path://" bind:value={config.SafetyProximityMatrixFilePath}/>
+          </label>
+        </div>
+        <button class="btn btn-neutral join-item btn-lg"
+                onclick={() =>selectFile()}>Select file
+        </button>
+      </div>
+    </fieldset>
+    <fieldset class="fieldset flex flex-col">
+      <legend class="fieldset-legend text-lg ">Alpha (for Penalty):</legend>
+      <input type="number" class="input input-lg" placeholder="100" bind:value={config.AlphaSafetyPenalty}/>
+    </fieldset>
+
+  </div>
+  <div class="flex justify-end items-center">
+    <button class="btn  btn-primary">Import Data Template</button>
+  </div>
 </div>

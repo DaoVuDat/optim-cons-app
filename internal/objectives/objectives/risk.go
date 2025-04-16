@@ -130,6 +130,10 @@ func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 	return results
 }
 
+func (obj *RiskObjective) GetAlphaPenalty() float64 {
+	return obj.AlphaRiskPenalty
+}
+
 func ReadRiskHazardInteractionDataFromFile(filePath string) ([][]float64, error) {
 	dataFile, err := excelize.OpenFile(filePath)
 	if err != nil {
@@ -166,8 +170,4 @@ func ReadRiskHazardInteractionDataFromFile(filePath string) ([][]float64, error)
 		hazardInteraction[idx-1] = arr
 	}
 	return hazardInteraction, nil
-}
-
-func (obj *RiskObjective) GetAlphaPenalty() float64 {
-	return obj.AlphaRiskPenalty
 }

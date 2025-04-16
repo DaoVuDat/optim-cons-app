@@ -371,7 +371,7 @@ func sectionObjectives(f *excelize.File, objectives any, sheetName string, rowCo
 				}
 			case "Safety":
 				if !value.IsZero() {
-					fmt.Println(field.Name, value)
+					rowCount = safetyInfo(f, value.Interface(), sheetName, rowCount, colCount)
 				}
 			default:
 				continue
@@ -509,6 +509,38 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 						rowCount = startRow + 3
 					}
 				}
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func safetyInfo(f *excelize.File, safety any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Safety")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+
+	val := reflect.ValueOf(safety)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "AlphaSafetyPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			case "FilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Safety Proximity Matrix file path", value.String())
 			default:
 				continue
 			}
