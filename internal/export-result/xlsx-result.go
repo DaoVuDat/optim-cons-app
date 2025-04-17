@@ -858,7 +858,7 @@ func generateSheet2Results(f *excelize.File, results algorithms.Result) error {
 		for i := 0; i < resultField.Len(); i++ {
 			algResult := resultField.Index(i)
 			cell, _ := excelize.CoordinatesToCellName(1, rowCount)
-			_ = f.SetCellValue(SheetName, cell, i+1)
+			_ = f.SetCellValue(SheetName, cell, fmt.Sprintf("#%d", i+1))
 			_ = f.SetCellStyle(SheetName, cell, cell, contentBoldStyle)
 
 			// Access the ValuesWithKey map

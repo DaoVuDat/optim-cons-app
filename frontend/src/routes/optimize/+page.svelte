@@ -7,10 +7,10 @@
   import Graph from "$lib/components/graph.svelte";
   import GraphSummary from "$lib/components/graph-summary.svelte";
   import clsx from "clsx";
-  import type {Facility} from "$lib/stores/problems/problem";
   import type {ResultLocation, ResultLocationWithId} from "../../types/result";
   import {objectiveStore} from "$lib/stores/objectives.svelte";
   import {roundNDecimal} from "$lib/utils/rounding";
+  import {toast} from "@zerodevx/svelte-toast";
 
   let summaryGraphCheck = $state<boolean>(false)
   let progress = $state<number>(0)
@@ -31,6 +31,7 @@
   let isLoading = $state<boolean>(false)
 
   const handleOptimize = async () => {
+    toast.push("Starting optimize...")
     isLoading = true
     await RunAlgorithm()
     isLoading = false

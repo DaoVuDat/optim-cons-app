@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/objectives"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"slices"
@@ -28,7 +27,7 @@ type ConsLay struct {
 	Constraints       map[data.ConstraintType]data.Constrainter
 	Phases            [][]string
 	Rounding          bool
-	CraneLocations    []objectives.Crane
+	CraneLocations    []data.Crane
 }
 
 type ConsLayConfigs struct {
@@ -225,7 +224,7 @@ func (s *ConsLay) GetPhases() [][]string {
 	return s.Phases
 }
 
-func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []data.Location, []objectives.Crane, error) {
+func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []data.Location, []data.Crane, error) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]data.Location, len(s.Locations))
@@ -286,6 +285,21 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 
 func (s *ConsLay) GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error) {
 	return 0, s.LayoutLength, 0, s.LayoutWidth, nil
+}
+
+func (s *ConsLay) InitializeObjectives() error {
+	s.Objectives = make(map[data.ObjectiveType]data.Objectiver)
+	return nil
+}
+
+func (s *ConsLay) InitializeConstraints() error {
+	s.Constraints = make(map[data.ConstraintType]data.Constrainter)
+	return nil
+}
+
+func (s *ConsLay) SetCranesLocations(locations []data.Crane) error {
+	s.CraneLocations = locations
+	return nil
 }
 
 // Constraints Utility Functions

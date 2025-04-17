@@ -5,8 +5,13 @@
   import clsx from "clsx";
   import {onMount} from "svelte";
   import {browser} from "$app/environment";
+  import {SvelteToast} from "@zerodevx/svelte-toast";
 
   const {children} = $props()
+
+  const options = {
+    duration: 2000,
+  }
 
   onMount(() => {
       if (browser) {
@@ -21,6 +26,7 @@
   });
 </script>
 
+<SvelteToast {options} />
 <main class="p-8 bg-gray-100">
   <!-- Steps -->
   <div class="w-full flex justify-center items-centers text-black">

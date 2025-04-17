@@ -1,3 +1,5 @@
 export * from './hoisting.svelte'
 export * from './risk.svelte'
 export * from './safety.svelte'
+export * from './safety-hazard.svelte'
+export * from './transport-cost.svelte'

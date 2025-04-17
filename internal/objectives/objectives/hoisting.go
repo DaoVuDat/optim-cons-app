@@ -13,7 +13,7 @@ type HoistingConfigs struct {
 	NumberOfFloors       int
 	HoistingTime         map[string][]HoistingTime
 	FloorHeight          float64
-	CraneLocations       []Crane
+	CraneLocations       []data.Crane
 	ZM                   float64
 	Vuvg                 float64
 	Vlvg                 float64
@@ -27,13 +27,6 @@ type HoistingConfigs struct {
 	HoistingTimeWithInfo []HoistingTimeWithInfo
 }
 
-type Crane struct {
-	data.Location
-	BuildingName []string
-	Radius       float64
-	CraneSymbol  string
-}
-
 type HoistingTime struct {
 	Coordinate     data.Coordinate
 	HoistingNumber int
@@ -45,7 +38,7 @@ type HoistingObjective struct {
 	NumberOfFloors       int
 	HoistingTime         map[string][]HoistingTime
 	FloorHeight          float64
-	CraneLocations       []Crane
+	CraneLocations       []data.Crane
 	ZM                   float64
 	Vuvg                 float64
 	Vlvg                 float64
@@ -88,7 +81,7 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 
 	result := 0.0
 
-	cranes := make([]Crane, len(obj.CraneLocations))
+	cranes := make([]data.Crane, len(obj.CraneLocations))
 	for i, location := range obj.CraneLocations {
 		if loc, ok := locations[location.CraneSymbol]; ok {
 			cranes[i].CraneSymbol = location.Symbol

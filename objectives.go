@@ -14,10 +14,12 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 	// TODO: add Config for each objective
 	switch a.problemName {
 	case conslay_continuous.ContinuousConsLayoutName:
-		problem := a.problem.(*conslay_continuous.ConsLay)
+		//problem := a.problem.(*conslay_continuous.ConsLay)
+		problem := a.problem
 
 		// remove old objective first
-		problem.Objectives = make(map[data.ObjectiveType]data.Objectiver)
+		//problem.Objectives = make(map[data.ObjectiveType]data.Objectiver)
+		_ = problem.InitializeObjectives()
 
 		for _, obj := range objs {
 			switch obj.ObjectiveName {
@@ -42,7 +44,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{
 					SafetyProximity:    safetyProximityMatrix,
 					AlphaSafetyPenalty: safetyCfg.AlphaSafetyPenalty,
-					Phases:             problem.Phases,
+					Phases:             problem.GetPhases(),
 					FilePath:           safetyCfg.SafetyProximityMatrixFilePath,
 				})
 				if err != nil {
@@ -66,7 +68,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				}
 
 				hoistingTime := make(map[string][]objectives.HoistingTime, len(hoistingCfg.CraneLocations))
-				cranesLocation := make([]objectives.Crane, len(hoistingCfg.CraneLocations))
+				cranesLocation := make([]data.Crane, len(hoistingCfg.CraneLocations))
 				hoistingTimeWithInfo := make([]objectives.HoistingTimeWithInfo, len(hoistingCfg.CraneLocations))
 
 				for i, craneLocation := range hoistingCfg.CraneLocations {
@@ -79,7 +81,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 					facilitiesName := strings.Split(craneLocation.BuildingNames, " ")
 
-					cranesLocation[i] = objectives.Crane{
+					cranesLocation[i] = data.Crane{
 						CraneSymbol:  craneLocation.Name,
 						BuildingName: facilitiesName,
 						Radius:       craneLocation.Radius,
@@ -107,7 +109,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					AlphaHoisting:        hoistingCfg.AlphaHoisting,
 					BetaHoisting:         hoistingCfg.BetaHoisting,
 					NHoisting:            hoistingCfg.NHoisting,
-					Phases:               problem.Phases,
+					Phases:               problem.GetPhases(),
 					AlphaHoistingPenalty: hoistingCfg.AlphaHoistingPenalty,
 					HoistingTimeWithInfo: hoistingTimeWithInfo,
 				})
@@ -120,8 +122,8 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				if err != nil {
 					return err
 				}
-				problem.CraneLocations = cranesLocation
-
+				//problem.CraneLocations = cranesLocation
+				_ = problem.SetCranesLocations(cranesLocation)
 			case objectives.RiskObjectiveType:
 				configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
 				if err != nil {
@@ -144,8 +146,70 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					HazardInteractionMatrix: hazardInteractionMatrix,
 					Delta:                   riskCfg.Delta,
 					AlphaRiskPenalty:        riskCfg.AlphaRiskPenalty,
-					Phases:                  problem.Phases,
+					Phases:                  problem.GetPhases(),
 					FilePath:                riskCfg.HazardInteractionMatrixFilePath,
+				})
+				if err != nil {
+					return err
+				}
+				err = problem.AddObjective(obj.ObjectiveName, riskObj)
+				if err != nil {
+					return err
+				}
+			case objectives.TransportCostObjectiveType:
+				configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
+				if err != nil {
+					return err
+				}
+
+				var tcConfig transportCostConfig
+				err = sonic.Unmarshal(configBytes, &tcConfig)
+				if err != nil {
+					return err
+				}
+
+				interactionMatrix, err := objectives.ReadInteractionTransportCostDataFromFile(tcConfig.InteractionMatrixFilePath)
+
+				if err != nil {
+					return err
+				}
+
+				riskObj, err := objectives.CreateTransportCostObjectiveFromConfig(objectives.TransportCostConfigs{
+					InteractionMatrix: interactionMatrix,
+					AlphaTCPenalty:    tcConfig.AlphaTransportCostPenalty,
+					Phases:            problem.GetPhases(),
+					FilePath:          tcConfig.InteractionMatrixFilePath,
+				})
+				if err != nil {
+					return err
+				}
+				err = problem.AddObjective(obj.ObjectiveName, riskObj)
+				if err != nil {
+					return err
+				}
+			case objectives.SafetyHazardObjectiveType:
+				configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
+				if err != nil {
+					return err
+				}
+
+				var shCfg safetyHazardConfig
+				err = sonic.Unmarshal(configBytes, &shCfg)
+				if err != nil {
+					return err
+				}
+
+				seMatrix, err := objectives.ReadSafetyAndEnvDataFromFile(shCfg.SEMatrixFilePath)
+
+				if err != nil {
+					return err
+				}
+
+				riskObj, err := objectives.CreateSafetyHazardObjectiveFromConfig(objectives.SafetyHazardConfigs{
+					SEMatrix:       seMatrix,
+					AlphaSHPenalty: shCfg.AlphaSafetyHazardPenalty,
+					Phases:         problem.GetPhases(),
+					FilePath:       shCfg.SEMatrixFilePath,
 				})
 				if err != nil {
 					return err
@@ -165,9 +229,11 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 }
 
 type ObjectiveConfigResponse struct {
-	Risk     any `json:"risk,omitempty"`
-	Hoisting any `json:"hoisting,omitempty"`
-	Safety   any `json:"safety,omitempty"`
+	Risk          any `json:"risk,omitempty"`
+	Hoisting      any `json:"hoisting,omitempty"`
+	Safety        any `json:"safety,omitempty"`
+	TransportCost any `json:"transportCost,omitempty"`
+	SafetyHazard  any `json:"safetyHazard,omitempty"`
 }
 
 func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
@@ -214,7 +280,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					Phases               [][]string                           `json:"phases"`
 					AlphaHoistingPenalty float64                              `json:"alphaHoistingPenalty"`
 					HoistingTime         map[string][]objectives.HoistingTime `json:"hoistingTime"`
-					CraneLocations       []objectives.Crane                   `json:"craneLocations"`
+					CraneLocations       []data.Crane                         `json:"craneLocations"`
 					HoistingTimeWithInfo []objectives.HoistingTimeWithInfo    `json:"hoistingTimeWithInfo"`
 				}{
 					NumberOfFloors:       hoisting.NumberOfFloors,
@@ -247,7 +313,36 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 					Phases:                safety.Phases,
 					FilePath:              safety.FilePath,
 				}
+			case objectives.TransportCostObjectiveType:
+				tc := obj.(*objectives.TransportCostObjective)
+
+				res.TransportCost = struct {
+					InteractionMatrix         [][]float64 `json:"interactionMatrix"`
+					AlphaTransportCostPenalty float64     `json:"alphaTransportCostPenalty"`
+					Phases                    [][]string  `json:"phases"`
+					FilePath                  string      `json:"filePath"`
+				}{
+					InteractionMatrix:         tc.InteractionMatrix,
+					AlphaTransportCostPenalty: tc.AlphaTCPenalty,
+					Phases:                    tc.Phases,
+					FilePath:                  tc.FilePath,
+				}
+			case objectives.SafetyHazardObjectiveType:
+				sh := obj.(*objectives.SafetyHazardObjective)
+
+				res.TransportCost = struct {
+					SEMatrix                 [][]float64 `json:"seMatrix"`
+					AlphaSafetyHazardPenalty float64     `json:"alphaSafetyHazardPenalty"`
+					Phases                   [][]string  `json:"phases"`
+					FilePath                 string      `json:"filePath"`
+				}{
+					SEMatrix:                 sh.SEMatrix,
+					AlphaSafetyHazardPenalty: sh.AlphaSHPenalty,
+					Phases:                   sh.Phases,
+					FilePath:                 sh.FilePath,
+				}
 			}
+
 		}
 
 		return res, nil
@@ -290,4 +385,14 @@ type riskConfig struct {
 type safetyConfig struct {
 	SafetyProximityMatrixFilePath string  `json:"safetyProximityMatrixFilePath"`
 	AlphaSafetyPenalty            float64 `json:"AlphaSafetyPenalty"`
+}
+
+type transportCostConfig struct {
+	InteractionMatrixFilePath string  `json:"interactionMatrixFilePath"`
+	AlphaTransportCostPenalty float64 `json:"AlphaTransportCostPenalty"`
+}
+
+type safetyHazardConfig struct {
+	SEMatrixFilePath         string  `json:"SEMatrixFilePath"`
+	AlphaSafetyHazardPenalty float64 `json:"AlphaSafetyHazardPenalty"`
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"golang-moaha-construction/internal/algorithms/moaha"
 	"golang-moaha-construction/internal/constraints"
+	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
 	"golang-moaha-construction/internal/objectives/objectives"
 	"log"
@@ -141,10 +142,10 @@ func constructionOptimization() {
 		},
 	}
 
-	craneLocations := make([]objectives.Crane, 0)
+	craneLocations := make([]data.Crane, 0)
 	for _, loc := range selectedCrane {
 		if _, ok := consLayObj.Locations[loc.Name]; ok {
-			craneLocations = append(craneLocations, objectives.Crane{
+			craneLocations = append(craneLocations, data.Crane{
 				//Location:     craneLoc,
 				BuildingName: loc.BuildingNames,
 				Radius:       loc.Radius,

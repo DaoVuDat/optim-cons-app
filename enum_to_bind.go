@@ -46,6 +46,14 @@ var AllObjectivesType = []struct {
 		Value:  objectives.RiskObjectiveType,
 		TSName: "RiskObjective",
 	},
+	{
+		Value:  objectives.TransportCostObjectiveType,
+		TSName: "TransportCostObjective",
+	},
+	{
+		Value:  objectives.SafetyHazardObjectiveType,
+		TSName: "SafetyHazardObjective",
+	},
 }
 
 var AllConstraintsType = []struct {

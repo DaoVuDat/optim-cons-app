@@ -2,7 +2,6 @@ package algorithms
 
 import (
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/objectives"
 )
 
 type AlgorithmType string
@@ -13,7 +12,7 @@ type AlgorithmResult struct {
 	Value          []float64
 	Penalty        map[data.ConstraintType]float64
 	ValuesWithKey  map[data.ObjectiveType]float64
-	Cranes         []objectives.Crane
+	Cranes         []data.Crane
 	Phases         [][]string
 	Convergence    []float64
 }

@@ -20,6 +20,8 @@ export namespace data {
 	    SafetyObjective = "Safety Objective",
 	    HoistingObjective = "Hoisting Objective",
 	    RiskObjective = "Risk Objective",
+	    TransportCostObjective = "Transport Cost Objective",
+	    SafetyHazardObjective = "Safety Hazard Objective",
 	}
 	export enum ConstraintType {
 	    Overlap = "Overlap",
@@ -89,6 +91,8 @@ export namespace main {
 	    risk?: any;
 	    hoisting?: any;
 	    safety?: any;
+	    transportCost?: any;
+	    safetyHazard?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new ObjectiveConfigResponse(source);
@@ -99,6 +103,8 @@ export namespace main {
 	        this.risk = source["risk"];
 	        this.hoisting = source["hoisting"];
 	        this.safety = source["safety"];
+	        this.transportCost = source["transportCost"];
+	        this.safetyHazard = source["safetyHazard"];
 	    }
 	}
 	export class ObjectiveInput {

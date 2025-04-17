@@ -6,7 +6,6 @@ import (
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
-	"golang-moaha-construction/internal/objectives/objectives"
 	"strings"
 )
 
@@ -125,7 +124,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 					return err
 				}
 
-				cranes := make([]objectives.Crane, len(problem.CraneLocations))
+				cranes := make([]data.Crane, len(problem.CraneLocations))
 
 				for i, crane := range problem.CraneLocations {
 					var location data.Location
@@ -134,7 +133,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 						location = loc
 					}
 
-					cranes[i] = objectives.Crane{
+					cranes[i] = data.Crane{
 						Location:     location,
 						BuildingName: crane.BuildingName,
 						Radius:       crane.Radius,
@@ -229,10 +228,10 @@ func (a *App) ConstraintsInfo() (*ConstraintsConfigResponse, error) {
 			case constraints.ConstraintsCoverInCraneRadius:
 				coverInCrane := obj.(*constraints.CoverRangeCraneConstraint)
 				res.CoverInCraneRadius = struct {
-					AlphaCoverInCraneRadiusPenalty float64            `json:"alphaCoverInCraneRadiusPenalty"`
-					PowerCoverInCraneRadiusPenalty float64            `json:"powerCoverInCraneRadiusPenalty"`
-					Phases                         [][]string         `json:"phases"`
-					Cranes                         []objectives.Crane `json:"cranes"`
+					AlphaCoverInCraneRadiusPenalty float64      `json:"alphaCoverInCraneRadiusPenalty"`
+					PowerCoverInCraneRadiusPenalty float64      `json:"powerCoverInCraneRadiusPenalty"`
+					Phases                         [][]string   `json:"phases"`
+					Cranes                         []data.Crane `json:"cranes"`
 				}{
 					AlphaCoverInCraneRadiusPenalty: coverInCrane.AlphaCoverRangePenalty,
 					PowerCoverInCraneRadiusPenalty: coverInCrane.PowerCoverRangePenalty,

@@ -2,7 +2,6 @@ package constraints
 
 import (
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/objectives"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"testing"
@@ -11,14 +10,14 @@ import (
 func TestIsCoverRangeOfCrane(t *testing.T) {
 	tests := []struct {
 		name      string
-		crane     objectives.Crane
+		crane     data.Crane
 		buildings []data.Location
 		expected  bool
 		invalid   float64
 	}{
 		{
 			name: "crane fully covers one building",
-			crane: objectives.Crane{
+			crane: data.Crane{
 				Location: data.Location{
 					Coordinate: data.Coordinate{X: 0, Y: 0},
 				},
@@ -36,7 +35,7 @@ func TestIsCoverRangeOfCrane(t *testing.T) {
 		},
 		{
 			name: "crane partially covers a building",
-			crane: objectives.Crane{
+			crane: data.Crane{
 				Location: data.Location{
 					Coordinate: data.Coordinate{X: 0, Y: 0},
 				},
@@ -56,7 +55,7 @@ func TestIsCoverRangeOfCrane(t *testing.T) {
 		},
 		{
 			name: "crane doesn't cover any buildings",
-			crane: objectives.Crane{
+			crane: data.Crane{
 				Location: data.Location{
 					Coordinate: data.Coordinate{X: 0, Y: 0},
 				},
@@ -77,7 +76,7 @@ func TestIsCoverRangeOfCrane(t *testing.T) {
 		},
 		{
 			name: "crane fully covers multiple buildings",
-			crane: objectives.Crane{
+			crane: data.Crane{
 				Location: data.Location{
 					Coordinate: data.Coordinate{X: 0, Y: 0},
 				},
@@ -100,7 +99,7 @@ func TestIsCoverRangeOfCrane(t *testing.T) {
 		},
 		{
 			name: "crane partially covers multiple buildings",
-			crane: objectives.Crane{
+			crane: data.Crane{
 				Location: data.Location{
 					Coordinate: data.Coordinate{X: 0, Y: 0},
 				},
@@ -896,7 +895,7 @@ func TestOverlapConstraint_Eval_Feasible(t *testing.T) {
 func TestCoverRangeCraneConstraint_Eval_Feasible(t *testing.T) {
 	locations := CreateInputLocation(true)
 	coverRangeConstraint := CreateCoverRangeCraneConstraint(
-		[]objectives.Crane{
+		[]data.Crane{
 			{
 				Location:     locations["TF14"],
 				BuildingName: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
@@ -979,7 +978,7 @@ func TestOverlapConstraint_Eval_Infeasible(t *testing.T) {
 func TestCoverRangeCraneConstraint_Eval_Infeasible(t *testing.T) {
 	locations := CreateInputLocation(false)
 	coverRangeConstraint := CreateCoverRangeCraneConstraint(
-		[]objectives.Crane{
+		[]data.Crane{
 			{
 				Location:     locations["TF14"],
 				BuildingName: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},

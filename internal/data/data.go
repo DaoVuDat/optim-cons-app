@@ -40,6 +40,13 @@ func (loc Location) ConvertToIdx() (int, error) {
 	return idx - 1, nil
 }
 
+type Crane struct {
+	Location
+	BuildingName []string
+	Radius       float64
+	CraneSymbol  string
+}
+
 type ProblemName string
 type ObjectiveType string
 type ConstraintType string

@@ -2,7 +2,6 @@ package constraints
 
 import (
 	"golang-moaha-construction/internal/data"
-	"golang-moaha-construction/internal/objectives/objectives"
 	"math"
 )
 
@@ -18,7 +17,7 @@ const (
 // Cover Range of Crane
 
 type CoverRangeCraneConstraint struct {
-	Cranes                 []objectives.Crane
+	Cranes                 []data.Crane
 	Phases                 [][]string
 	Name                   data.ConstraintType
 	AlphaCoverRangePenalty float64
@@ -26,7 +25,7 @@ type CoverRangeCraneConstraint struct {
 }
 
 func CreateCoverRangeCraneConstraint(
-	cranes []objectives.Crane, phases [][]string,
+	cranes []data.Crane, phases [][]string,
 	alphaCoverRangePenalty float64,
 	powerCoverRangePenalty float64,
 ) *CoverRangeCraneConstraint {
@@ -69,7 +68,7 @@ func (c CoverRangeCraneConstraint) Eval(mapLocations map[string]data.Location) f
 	return amount
 }
 
-func IsCoverRangeOfCrane(crane objectives.Crane, buildings []data.Location) (bool, float64) {
+func IsCoverRangeOfCrane(crane data.Crane, buildings []data.Location) (bool, float64) {
 	invalidAmountTotal := 0.0
 	for _, building := range buildings {
 		// Top Right
