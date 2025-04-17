@@ -5,6 +5,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/algorithms"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -13,6 +14,7 @@ var subHeaderStyle int
 var contentStyle int
 var contentMiddleAlignStyle int
 var contentBoldStyle int
+var re = regexp.MustCompile(`(?i)objective`) // (?i) = case-insensitive
 
 type Summary struct {
 	AlgorithmInfo   any
@@ -373,6 +375,14 @@ func sectionObjectives(f *excelize.File, objectives any, sheetName string, rowCo
 				if !value.IsZero() {
 					rowCount = safetyInfo(f, value.Interface(), sheetName, rowCount, colCount)
 				}
+			case "SafetyHazard":
+				if !value.IsZero() {
+					rowCount = safetyHazardInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
+			case "TransportCost":
+				if !value.IsZero() {
+					rowCount = transportCostInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
 			default:
 				continue
 			}
@@ -541,6 +551,70 @@ func safetyInfo(f *excelize.File, safety any, sheetName string, rowCount int, co
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
 			case "FilePath":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Safety Proximity Matrix file path", value.String())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func safetyHazardInfo(f *excelize.File, safetyHazard any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Safety Hazard")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+
+	val := reflect.ValueOf(safetyHazard)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "AlphaSafetyHazardPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			case "FilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Safety and Environmental Concerns Matrix file path", value.String())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func transportCostInfo(f *excelize.File, transportCost any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Transport Cost")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+
+	val := reflect.ValueOf(transportCost)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "AlphaTransportCostPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			case "FilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Facilities Interaction Matrix file path", value.String())
 			default:
 				continue
 			}
@@ -872,11 +946,9 @@ func generateSheet2Results(f *excelize.File, results algorithms.Result) error {
 				// Get map keys
 				mapKeys := valuesWithKey.MapKeys()
 				for keyIdx, key := range mapKeys {
-					//fmt.Printf("  Key: %s, Value: %f\n",
-					//	key.String(), valuesWithKey.MapIndex(key).Float())
-
+				
 					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
-					_ = f.SetCellValue(SheetName, cell, key.String())
+					_ = f.SetCellValue(SheetName, cell, re.ReplaceAllString(key.String(), ""))
 					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)
 
 					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount+1)

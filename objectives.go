@@ -174,7 +174,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					return err
 				}
 
-				riskObj, err := objectives.CreateTransportCostObjectiveFromConfig(objectives.TransportCostConfigs{
+				tcObj, err := objectives.CreateTransportCostObjectiveFromConfig(objectives.TransportCostConfigs{
 					InteractionMatrix: interactionMatrix,
 					AlphaTCPenalty:    tcConfig.AlphaTransportCostPenalty,
 					Phases:            problem.GetPhases(),
@@ -183,7 +183,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				if err != nil {
 					return err
 				}
-				err = problem.AddObjective(obj.ObjectiveName, riskObj)
+				err = problem.AddObjective(obj.ObjectiveName, tcObj)
 				if err != nil {
 					return err
 				}
@@ -205,7 +205,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					return err
 				}
 
-				riskObj, err := objectives.CreateSafetyHazardObjectiveFromConfig(objectives.SafetyHazardConfigs{
+				safetyHazardObj, err := objectives.CreateSafetyHazardObjectiveFromConfig(objectives.SafetyHazardConfigs{
 					SEMatrix:       seMatrix,
 					AlphaSHPenalty: shCfg.AlphaSafetyHazardPenalty,
 					Phases:         problem.GetPhases(),
@@ -214,7 +214,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				if err != nil {
 					return err
 				}
-				err = problem.AddObjective(obj.ObjectiveName, riskObj)
+				err = problem.AddObjective(obj.ObjectiveName, safetyHazardObj)
 				if err != nil {
 					return err
 				}
@@ -330,7 +330,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 			case objectives.SafetyHazardObjectiveType:
 				sh := obj.(*objectives.SafetyHazardObjective)
 
-				res.TransportCost = struct {
+				res.SafetyHazard = struct {
 					SEMatrix                 [][]float64 `json:"seMatrix"`
 					AlphaSafetyHazardPenalty float64     `json:"alphaSafetyHazardPenalty"`
 					Phases                   [][]string  `json:"phases"`
@@ -389,7 +389,7 @@ type safetyConfig struct {
 
 type transportCostConfig struct {
 	InteractionMatrixFilePath string  `json:"interactionMatrixFilePath"`
-	AlphaTransportCostPenalty float64 `json:"AlphaTransportCostPenalty"`
+	AlphaTransportCostPenalty float64 `json:"AlphaTCPenalty"`
 }
 
 type safetyHazardConfig struct {

@@ -283,7 +283,7 @@
   </div>
   <div class="w-full px-4 flex justify-between items-center">
     {#if graphData}
-      <div class="grid grid-rows-2 grid-cols-{numberOfGridCols} gap-1 flex-1/2">
+      <div class="grid grid-rows-2 grid-cols-{numberOfGridCols} gap-1 flex-2/3">
         {#each Object.entries(graphData.ValuesWithKey) as [k, v]}
           <p> <span class="font-bold text-base">
             {k.replace(/objective/gi, "")}:
@@ -292,7 +292,7 @@
       </div>
     {/if}
     {#if phasesGraphData && phasesGraphData.length > 1}
-      <div class="join flex-1/2 justify-end">
+      <div class="join flex-1/3 justify-end">
         <button class={clsx("join-item btn", {
         "btn-disabled": selectedPhases === 0,
     })} onclick={() => selectedPhases--}>«
