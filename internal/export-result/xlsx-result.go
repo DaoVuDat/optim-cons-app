@@ -946,7 +946,7 @@ func generateSheet2Results(f *excelize.File, results algorithms.Result) error {
 				// Get map keys
 				mapKeys := valuesWithKey.MapKeys()
 				for keyIdx, key := range mapKeys {
-				
+
 					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
 					_ = f.SetCellValue(SheetName, cell, re.ReplaceAllString(key.String(), ""))
 					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)

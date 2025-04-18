@@ -16,7 +16,7 @@ export interface IGridConfig {
     label: GridFile,
     value: string
   };
-  gridSize: string;
+  gridSize: number;
 }
 
 
@@ -31,5 +31,5 @@ export const gridProblemConfig = $state<IGridConfig>({
     label: GridFile.Phase,
     value: ''
   },
-  gridSize: '2x2',
+  gridSize: 1,
 })

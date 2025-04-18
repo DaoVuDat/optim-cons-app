@@ -22,10 +22,10 @@ export const continuousProblemConfig = $state<IContinuousConfig>({
   width: 95,
   facilitiesFilePath: {
     label: ContinuousFile.Facility,
-    value: '/home/daovudat/Downloads/data/conslay/locations.xlsx'
+    value: ''
   },
   phasesFilePath: {
     label: ContinuousFile.Phase,
-    value: '/home/daovudat/Downloads/data/conslay/dynamicBuilding.xlsx'
+    value: ''
   },
 })

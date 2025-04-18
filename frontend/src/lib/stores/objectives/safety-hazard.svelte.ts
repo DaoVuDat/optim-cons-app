@@ -6,5 +6,5 @@ export interface ISafetyHazardConfig {
 
 export const safetyHazardConfig = $state<ISafetyHazardConfig>({
   AlphaSafetyHazardPenalty: 100,
-  SEMatrixFilePath: '/home/daovudat/Downloads/data/conslay/safety_hazard_data.xlsx',
+  SEMatrixFilePath: '',
 })

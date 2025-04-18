@@ -1,9 +1,9 @@
 <script lang="ts">
   import {stepStore} from "$lib/stores/steps.svelte";
-  import {AlgorithmInfo, RunAlgorithm, SaveFile} from "$lib/wailsjs/go/main/App";
+  import {RunAlgorithm, SaveFile} from "$lib/wailsjs/go/main/App";
   import {onDestroy, onMount} from "svelte";
   import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
-  import {main} from "$lib/wailsjs/go/models";
+  import {main, data as dataType} from "$lib/wailsjs/go/models";
   import Graph from "$lib/components/graph.svelte";
   import GraphSummary from "$lib/components/graph-summary.svelte";
   import clsx from "clsx";
@@ -11,6 +11,8 @@
   import {objectiveStore} from "$lib/stores/objectives.svelte";
   import {roundNDecimal} from "$lib/utils/rounding";
   import {toast} from "@zerodevx/svelte-toast";
+  import {problemStore} from "$lib/stores/problem.svelte";
+  import {gridProblemConfig} from "$lib/stores/problems";
 
   let summaryGraphCheck = $state<boolean>(false)
   let progress = $state<number>(0)
@@ -110,6 +112,20 @@
     await SaveFile(main.CommandType.ExportResult)
   }
 
+  let gridConfig = $derived.by(() => {
+    if (problemStore.selectedProblem && problemStore.selectedProblem.value === dataType.ProblemName.GridConstructionLayout) {
+      return {
+        useGrid: true,
+        gridSize: gridProblemConfig.gridSize,
+      }
+    }
+
+    return {
+      useGrid: false,
+      gridSize: 1
+    }
+  })
+
   $inspect(selectedResult)
 </script>
 
@@ -148,7 +164,11 @@
       {#if summaryGraphCheck}
         <GraphSummary graphsData={results}/>
       {:else}
-        <Graph graphData={selectedResult} layoutSize={layoutSize}/>
+        <Graph
+            useGrid={gridConfig.useGrid}
+            gridSize={gridConfig.gridSize}
+            graphData={selectedResult}
+            layoutSize={layoutSize}/>
       {/if}
     </div>
     <div
