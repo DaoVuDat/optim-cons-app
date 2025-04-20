@@ -25,7 +25,7 @@
   const {
     graphData = $bindable(),
     layoutSize = $bindable(),
-    useGrid = false,
+    useGrid = true,
     gridSize = 1,
   }: Props = $props()
 

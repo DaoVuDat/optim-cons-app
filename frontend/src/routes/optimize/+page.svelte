@@ -164,6 +164,7 @@
       {#if summaryGraphCheck}
         <GraphSummary graphsData={results}/>
       {:else}
+<!--            useGrid={true}-->
         <Graph
             useGrid={gridConfig.useGrid}
             gridSize={gridConfig.gridSize}
