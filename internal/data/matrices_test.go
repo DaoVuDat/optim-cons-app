@@ -161,3 +161,8 @@ func TestTwoDimensionalMatrix_GetCellValueFromNames(t *testing.T) {
 		t.Errorf("expected to get value 6, got %f", val)
 	}
 }
+
+// Test for RectangleMatrix
+func TestCreateRectangleMatrix(t *testing.T) {
+
+}

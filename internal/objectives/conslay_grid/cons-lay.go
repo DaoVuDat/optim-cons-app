@@ -316,6 +316,14 @@ func (s *ConsLay) SetCranesLocations(locations []data.Crane) error {
 	return nil
 }
 
+func (s *ConsLay) GetCranesLocations() []data.Crane {
+	return s.CraneLocations
+}
+
+func (s *ConsLay) GetLocations() map[string]data.Location {
+	return s.Locations
+}
+
 // Constraints Utility Functions
 
 // Readers Utility Functions

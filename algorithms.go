@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang-moaha-construction/internal/algorithms"
@@ -61,7 +62,8 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 		}
 
 		a.algorithm = algo
-
+		fmt.Println("ALgorithm")
+		fmt.Println(algo)
 	case ga.NameType:
 		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
 		if err != nil {

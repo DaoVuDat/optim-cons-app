@@ -72,11 +72,20 @@
       }))
       .filter(loc => phasesGraphData![selectedPhases].includes(loc.Symbol))
       .map(loc => {
+        let x = loc.Coordinate.X
+        let y = loc.Coordinate.Y
+        if (useGrid) {
+          x = x - loc.Length / 2
+          y = y - loc.Width / 2
+        }
+
         return {
           idx: loc.idx,
           name: loc.Symbol,
           value: [loc.Coordinate.X, loc.Coordinate.Y, loc.Length, loc.Width], // x, y, width, height
           facilityInfo: {
+            x: x,
+            y: y,
             rotation: loc.Rotation ? 'Yes' : 'No',
             isFixed: loc.IsFixed ? 'Yes' : 'No',
             name: loc.Name,
@@ -95,7 +104,7 @@
       const numberOfGrid = gridSize
       const fixedMajorGrid = 6
       axisXAndYOptionsForGrid = {
-        splitLine: { show: true },
+        splitLine: {show: true},
         // for example, auto‐choose ~6 major segments:
         // splitNumber: fixedMajorGrid,
         // // minor ticks between each major segment:
@@ -146,12 +155,12 @@
           formatter: function (params) {
             const facilityInfo = params.data.facilityInfo;
             return `
-                          <div style="font-weight: bold; margin-bottom: 5px;">${params.name} - ${facilityInfo.name}</div>
-                          <div><span style="font-weight: bold;">Position:</span> (${params.value[0].toFixed(2)}, ${params.value[1].toFixed(2)})</div>
-                          <div><span style="font-weight: bold;">Dimensions:</span> ${params.value[2]} × ${params.value[3]}</div>
-                          <div><span style="font-weight: bold;">Rotated:</span> ${facilityInfo.rotation}</div>
-                          <div><span style="font-weight: bold;">Fixed:</span> ${facilityInfo.isFixed}</div>
-                        `;
+              <div style="font-weight: bold; margin-bottom: 5px;">${params.name} - ${facilityInfo.name}</div>
+              <div><span style="font-weight: bold;">Position:</span> (${facilityInfo.x.toFixed(2)}, ${facilityInfo.y.toFixed(2)})</div>
+              <div><span style="font-weight: bold;">Dimensions:</span> ${params.value[2]} × ${params.value[3]}</div>
+              <div><span style="font-weight: bold;">Rotated:</span> ${facilityInfo.rotation}</div>
+              <div><span style="font-weight: bold;">Fixed:</span> ${facilityInfo.isFixed}</div>
+            `;
           }
         },
         // Enable zooming

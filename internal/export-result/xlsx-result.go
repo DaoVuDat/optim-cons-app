@@ -294,11 +294,15 @@ func sectionProblem(f *excelize.File, problem any, sheetName string, rowCount in
 
 		// Only exported fields (unexported fields can't be accessed)
 		if field.PkgPath == "" {
+			fmt.Println("field name", field.Name)
 			switch field.Name {
 			case "LayoutLength":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Layout length", value.Float())
 			case "LayoutWidth":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Layout width", value.Float())
+			case "GridSize":
+				fmt.Println("Grid Size", value.Int())
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Grid size", value.Int())
 			case "Locations":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of locations", value.Len())
 			case "FixedLocations":

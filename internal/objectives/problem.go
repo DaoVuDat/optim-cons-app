@@ -21,6 +21,8 @@ type Problem interface {
 	InitializeObjectives() error
 	InitializeConstraints() error
 	SetCranesLocations(locations []data.Crane) error
+	GetCranesLocations() []data.Crane
+	GetLocations() map[string]data.Location
 	GetObjectives() map[data.ObjectiveType]data.Objectiver
 	GetConstraints() map[data.ConstraintType]data.Constrainter
 	AddObjective(name data.ObjectiveType, objective data.Objectiver) error

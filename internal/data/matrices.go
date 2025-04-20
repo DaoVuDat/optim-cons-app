@@ -156,10 +156,10 @@ func (m *RectangleMatrix) GetMatrix() [][]float64 {
 }
 
 func (m *RectangleMatrix) SetCellValueFromIdx(i, j int, value float64) error {
-	if i < 0 || i >= m.NumberOfItems {
+	if i < 0 || i >= m.Rows {
 		return errors.New("index out of bounds")
 	}
-	if j < 0 || j >= m.NumberOfItems {
+	if j < 0 || j >= m.Columns {
 		return errors.New("index out of bounds")
 	}
 
@@ -168,11 +168,11 @@ func (m *RectangleMatrix) SetCellValueFromIdx(i, j int, value float64) error {
 }
 
 func (m *RectangleMatrix) SetCellValueFromNames(nameItemI, nameItemJ string, value float64) error {
-	idxI, err := m.GetIdxFromName(nameItemI)
+	idxI, err := m.GetRowIdxFromName(nameItemI)
 	if err != nil {
 		return err
 	}
-	idxJ, err := m.GetIdxFromName(nameItemJ)
+	idxJ, err := m.GetColumnIdxFromName(nameItemJ)
 	if err != nil {
 		return err
 	}
@@ -180,10 +180,10 @@ func (m *RectangleMatrix) SetCellValueFromNames(nameItemI, nameItemJ string, val
 }
 
 func (m *RectangleMatrix) GetCellValueFromIdx(i, j int) (float64, error) {
-	if i < 0 || i >= m.NumberOfItems {
+	if i < 0 || i >= m.Rows {
 		return 0, errors.New("index out of bounds")
 	}
-	if j < 0 || j >= m.NumberOfItems {
+	if j < 0 || j >= m.Columns {
 		return 0, errors.New("index out of bounds")
 	}
 
@@ -191,19 +191,19 @@ func (m *RectangleMatrix) GetCellValueFromIdx(i, j int) (float64, error) {
 }
 
 func (m *RectangleMatrix) GetCellValueFromNames(nameItemI, nameItemJ string) (float64, error) {
-	idxI, err := m.GetIdxFromName(nameItemI)
+	idxI, err := m.GetRowIdxFromName(nameItemI)
 	if err != nil {
 		return 0, err
 	}
-	idxJ, err := m.GetIdxFromName(nameItemJ)
+	idxJ, err := m.GetColumnIdxFromName(nameItemJ)
 	if err != nil {
 		return 0, err
 	}
 	return m.GetCellValueFromIdx(idxI, idxJ)
 }
 
-func (m *RectangleMatrix) GetNameFromIdx(idx int) (string, error) {
-	val, ok := m.IdxToName[idx]
+func (m *RectangleMatrix) GetRowNameFromIdx(idx int) (string, error) {
+	val, ok := m.IdxToNameRows[idx]
 	if !ok {
 		return "", errors.New("index not found")
 	}
@@ -211,8 +211,8 @@ func (m *RectangleMatrix) GetNameFromIdx(idx int) (string, error) {
 	return val, nil
 }
 
-func (m *RectangleMatrix) GetIdxFromName(nameItem string) (int, error) {
-	val, ok := m.NameToIdx[nameItem]
+func (m *RectangleMatrix) GetRowIdxFromName(nameItem string) (int, error) {
+	val, ok := m.NameToIdxRows[nameItem]
 
 	if !ok {
 		return -1, errors.New("name not found")
@@ -221,6 +221,28 @@ func (m *RectangleMatrix) GetIdxFromName(nameItem string) (int, error) {
 	return val, nil
 }
 
-func (m *RectangleMatrix) GetNumberOfItems() int {
-	return m.NumberOfItems
+func (m *RectangleMatrix) GetColumnNameFromIdx(idx int) (string, error) {
+	val, ok := m.IdxToNameColumns[idx]
+	if !ok {
+		return "", errors.New("index not found")
+	}
+
+	return val, nil
+}
+
+func (m *RectangleMatrix) GetColumnIdxFromName(nameItem string) (int, error) {
+	val, ok := m.NameToIdxColumns[nameItem]
+
+	if !ok {
+		return -1, errors.New("name not found")
+	}
+
+	return val, nil
+}
+
+func (m *RectangleMatrix) GetNumberOfRows() int {
+	return m.Rows
+}
+func (m *RectangleMatrix) GetNumberOfColumns() int {
+	return m.Columns
 }

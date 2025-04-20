@@ -33,7 +33,7 @@
     </fieldset>
     <fieldset class="fieldset flex flex-col">
       <legend class="fieldset-legend text-lg ">Grid size:</legend>
-      <input type="text" class="input input-lg" placeholder="2x2" bind:value={config.gridSize}/>
+      <input type="number" class="input input-lg" placeholder="2" bind:value={config.gridSize}/>
     </fieldset>
     <fieldset class="fieldset flex flex-col row-start-3">
       <legend class="fieldset-legend text-lg">Facilities file:</legend>
