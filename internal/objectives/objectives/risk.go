@@ -157,25 +157,14 @@ func ReadRiskHazardInteractionDataFromFile(filePath string) (data.TwoDimensional
 			continue
 		}
 
-		arr := make([]float64, len(rows)-1)
-		for i, cell := range row {
-			if i < 1 {
-				continue
-			}
+		val, err := strconv.ParseFloat(row[idx], 64)
+		if err != nil {
+			return data.TwoDimensionalMatrix{}, err
+		}
 
-			if i == idx {
-				arr[i-1], err = strconv.ParseFloat(cell, 64)
-
-				if err != nil {
-					return data.TwoDimensionalMatrix{}, err
-				}
-
-				// Set to new matrix
-				if err := hazardInteractionNew.SetCellValueFromNames(rows[0][i], rows[0][i], arr[i-1]); err != nil {
-					return data.TwoDimensionalMatrix{}, err
-				}
-			}
-
+		// Set to new matrix
+		if err := hazardInteractionNew.SetCellValueFromNames(rows[0][idx], rows[0][idx], val); err != nil {
+			return data.TwoDimensionalMatrix{}, err
 		}
 	}
 	return hazardInteractionNew, nil

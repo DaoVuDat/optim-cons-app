@@ -25,5 +25,3 @@ export function RunAlgorithm():Promise<void>;
 export function SaveFile(arg1:main.CommandType):Promise<void>;
 
 export function SelectFile():Promise<string>;
-
-export function ShowAllInfo():Promise<void>;

@@ -34,12 +34,12 @@ export namespace data {
 
 export namespace main {
 	
-	export enum CommandType {
-	    ExportResult = "ExportResult",
-	}
 	export enum EventType {
 	    ProgressEvent = "ProgressEvent",
 	    ResultEvent = "ResultEvent",
+	}
+	export enum CommandType {
+	    ExportResult = "ExportResult",
 	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;

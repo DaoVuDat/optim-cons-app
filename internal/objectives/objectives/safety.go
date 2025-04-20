@@ -3,20 +3,21 @@ package objectives
 import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
+	"log"
 	"strconv"
 )
 
 const SafetyObjectiveType data.ObjectiveType = "Safety Objective"
 
 type SafetyConfigs struct {
-	SafetyProximity    [][]float64
+	SafetyProximity    data.TwoDimensionalMatrix
 	AlphaSafetyPenalty float64
 	Phases             [][]string
 	FilePath           string
 }
 
 type SafetyObjective struct {
-	SafetyProximity    [][]float64
+	SafetyProximity    data.TwoDimensionalMatrix
 	AlphaSafetyPenalty float64
 	Phases             [][]string
 	FilePath           string
@@ -35,25 +36,34 @@ func CreateSafetyObjectiveFromConfig(safetyConfigs SafetyConfigs) (*SafetyObject
 func (obj *SafetyObjective) Eval(locations map[string]data.Location) float64 {
 	result := 0.0
 
+	calculatedMap := make(map[string]struct{})
+
 	for _, phases := range obj.Phases {
 
 		for i := 0; i < len(phases)-1; i++ {
 			facilityNameI := phases[i]
 			facilityI := locations[facilityNameI]
-			idxI, err := facilityI.ConvertToIdx()
+			idxI, err := obj.SafetyProximity.GetIdxFromName(facilityNameI)
 			if err != nil {
+				log.Fatal(err)
 				return 0
 			}
 
 			for j := i + 1; j < len(phases); j++ {
 				facilityNameJ := phases[j]
 				facilityJ := locations[facilityNameJ]
-				idxJ, err := facilityJ.ConvertToIdx()
+				idxJ, err := obj.SafetyProximity.GetIdxFromName(facilityNameJ)
 				if err != nil {
+					log.Fatal(err)
 					return 0
 				}
 
-				result += obj.SafetyProximity[idxI][idxJ] * data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
+				if _, ok := calculatedMap[facilityNameI+facilityNameJ]; ok {
+					continue
+				}
+
+				result += obj.SafetyProximity.Matrix[idxI][idxJ] * data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
+				calculatedMap[facilityNameI+facilityNameJ] = struct{}{}
 			}
 		}
 	}
@@ -65,18 +75,28 @@ func (obj *SafetyObjective) GetAlphaPenalty() float64 {
 	return obj.AlphaSafetyPenalty
 }
 
-func ReadSafetyProximityDataFromFile(filePath string) ([][]float64, error) {
+func ReadSafetyProximityDataFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 	dataFile, err := excelize.OpenFile(filePath)
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
 	rows, err := dataFile.GetRows("Sheet1")
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
-	safetyProximity := make([][]float64, len(rows)-1)
+	facilitiesName := make([]string, len(rows)-1)
+
+	for idx, cell := range rows[0] {
+		// skip the first column
+		if idx == 0 {
+			continue
+		}
+		facilitiesName[idx-1] = cell
+	}
+
+	hazardInteractionNew := data.CreateTwoDimensionalMatrix(facilitiesName)
 
 	for idx, row := range rows {
 		// skip header
@@ -84,21 +104,20 @@ func ReadSafetyProximityDataFromFile(filePath string) ([][]float64, error) {
 			continue
 		}
 
-		arr := make([]float64, len(rows)-1)
-		for i, cell := range row {
-			if i <= idx {
-				continue
-			}
+		for i := idx + 1; i < len(row); i++ {
+			cell := row[i]
 
-			// skip the first column
-			arr[i-1], err = strconv.ParseFloat(cell, 64)
+			val, err := strconv.ParseFloat(cell, 64)
 			if err != nil {
-				return nil, err
+				return data.TwoDimensionalMatrix{}, err
 			}
 
+			if err := hazardInteractionNew.SetCellValueFromNames(rows[0][idx], rows[0][i], val); err != nil {
+				return data.TwoDimensionalMatrix{}, err
+			}
 		}
-		safetyProximity[idx-1] = arr
+
 	}
 
-	return safetyProximity, nil
+	return hazardInteractionNew, nil
 }

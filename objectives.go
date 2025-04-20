@@ -252,11 +252,11 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				risk := obj.(*objectives.RiskObjective)
 
 				res.Risk = struct {
-					HazardInteractionMatrix [][]float64 `json:"hazardInteractionMatrix"`
-					Delta                   float64     `json:"delta"`
-					AlphaRiskPenalty        float64     `json:"alphaRiskPenalty"`
-					Phases                  [][]string  `json:"phases"`
-					FilePath                string      `json:"filePath"`
+					HazardInteractionMatrix data.TwoDimensionalMatrix `json:"hazardInteractionMatrix"`
+					Delta                   float64                   `json:"delta"`
+					AlphaRiskPenalty        float64                   `json:"alphaRiskPenalty"`
+					Phases                  [][]string                `json:"phases"`
+					FilePath                string                    `json:"filePath"`
 				}{
 					HazardInteractionMatrix: risk.HazardInteractionMatrix,
 					Delta:                   risk.Delta,
@@ -303,10 +303,10 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				safety := obj.(*objectives.SafetyObjective)
 
 				res.Safety = struct {
-					SafetyProximityMatrix [][]float64 `json:"safetyProximityMatrix"`
-					AlphaSafetyPenalty    float64     `json:"alphaSafetyPenalty"`
-					Phases                [][]string  `json:"phases"`
-					FilePath              string      `json:"filePath"`
+					SafetyProximityMatrix data.TwoDimensionalMatrix `json:"safetyProximityMatrix"`
+					AlphaSafetyPenalty    float64                   `json:"alphaSafetyPenalty"`
+					Phases                [][]string                `json:"phases"`
+					FilePath              string                    `json:"filePath"`
 				}{
 					SafetyProximityMatrix: safety.SafetyProximity,
 					AlphaSafetyPenalty:    safety.AlphaSafetyPenalty,

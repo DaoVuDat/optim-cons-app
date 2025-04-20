@@ -161,25 +161,6 @@
             restore: {show: true},
           }
         },
-        // Enable mouse wheel zooming
-        dataZoom: [
-          {
-            id: 'dataZoomX',
-            type: 'inside',
-            xAxisIndex: [0],  // Apply to first X axis
-            filterMode: 'filter',
-            start: 0,         // Initial range start at 0%
-            end: 100          // Initial range end at 100%
-          },
-          {
-            id: 'dataZoomY',
-            type: 'inside',
-            yAxisIndex: [0],  // Apply to first Y axis
-            filterMode: 'filter',
-            start: 0,         // Initial range start at 0%
-            end: 100          // Initial range end at 100%
-          }
-        ],
         series: [
           {
             // Custom series for rectangles (facilities)

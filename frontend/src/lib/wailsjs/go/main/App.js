@@ -49,7 +49,3 @@ export function SaveFile(arg1) {
 export function SelectFile() {
   return window['go']['main']['App']['SelectFile']();
 }
-
-export function ShowAllInfo() {
-  return window['go']['main']['App']['ShowAllInfo']();
-}

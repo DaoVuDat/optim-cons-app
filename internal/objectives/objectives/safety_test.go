@@ -15,17 +15,17 @@ func TestSafetyObjective_Eval(t *testing.T) {
 	}{
 		{
 			locations: CreateInputLocation(true),
-			expected:  81150.2,
+			expected:  37675,
 			name:      "mostly feasible locations",
 		},
 		{
 			locations: CreateInputLocation(false),
-			expected:  88885.64,
+			expected:  43572.47,
 			name:      "infeasible locations",
 		},
 		{
 			locations: CreateSideInputLocation(),
-			expected:  115048.71,
+			expected:  54485.47,
 			name:      "test locations",
 		},
 	}

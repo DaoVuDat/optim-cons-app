@@ -134,17 +134,3 @@ func (a *App) SaveFile(commandType CommandType) error {
 	}
 
 }
-
-func (a *App) ShowAllInfo() error {
-
-	// TODO
-	// show all objectives
-
-	// show all constraints
-
-	// show problem
-
-	// show algorithm
-
-	return nil
-}

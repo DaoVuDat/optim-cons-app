@@ -52,10 +52,6 @@ type HoistingObjective struct {
 	HoistingTimeWithInfo []HoistingTimeWithInfo
 }
 
-func CreateHoistingObjective() (*HoistingObjective, error) {
-	return &HoistingObjective{}, nil
-}
-
 func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*HoistingObjective, error) {
 	hoistingObj := &HoistingObjective{
 		NumberOfFloors:       hoistingConfigs.NumberOfFloors,
