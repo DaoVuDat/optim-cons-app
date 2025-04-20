@@ -1,4 +1,4 @@
-package conslay_continuous
+package conslay_grid
 
 import (
 	"errors"
@@ -12,8 +12,10 @@ import (
 	"strings"
 )
 
-const ContinuousConsLayoutName data.ProblemName = "Continuous Construction Layout"
+const GridConsLayoutName data.ProblemName = "Grid Construction Layout"
 
+// ConsLay is a structure that represents a problem instance of a continuous construction layout problem.
+// x, y are the coordinates of the location at bottom-left corner.
 type ConsLay struct {
 	Dimensions        int
 	LayoutLength      float64
@@ -26,8 +28,9 @@ type ConsLay struct {
 	Objectives        map[data.ObjectiveType]data.Objectiver
 	Constraints       map[data.ConstraintType]data.Constrainter
 	Phases            [][]string
-	CraneLocations    []data.Crane
 	Rounding          bool
+	GridSize          int
+	CraneLocations    []data.Crane
 }
 
 type ConsLayConfigs struct {
@@ -38,6 +41,7 @@ type ConsLayConfigs struct {
 	FixedLocations    []data.Location
 	Phases            [][]string
 	Rounding          bool
+	GridSize          int
 }
 
 func (s *ConsLay) Type() data.TypeProblem {
@@ -45,6 +49,10 @@ func (s *ConsLay) Type() data.TypeProblem {
 }
 
 func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
+
+	if consLayConfigs.GridSize <= 0 {
+		return nil, errors.New("grid size must be greater than 0")
+	}
 
 	consLay := &ConsLay{
 		LayoutLength:      consLayConfigs.ConsLayoutLength,
@@ -55,6 +63,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		Phases:            consLayConfigs.Phases,
 		Objectives:        make(map[data.ObjectiveType]data.Objectiver),
 		Constraints:       make(map[data.ConstraintType]data.Constrainter),
+		GridSize:          consLayConfigs.GridSize,
 	}
 
 	// Find the x, y, r of Non-fixed Locations
@@ -103,10 +112,12 @@ func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[dat
 			length = loc.Width
 		}
 
-		if s.Rounding {
-			x = math.Round(x)
-			y = math.Round(y)
-		}
+		// rounding to grid size
+		x = util.RoundToGrid(x, s.GridSize)
+		y = util.RoundToGrid(y, s.GridSize)
+
+		x = x + length/2
+		y = y + width/2
 
 		location := data.Location{
 			Coordinate: data.Coordinate{
@@ -247,10 +258,13 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 			length = loc.Width
 		}
 
-		if s.Rounding {
-			x = math.Round(x)
-			y = math.Round(y)
-		}
+		// rounding to grid size
+		x = util.RoundToGrid(x, s.GridSize)
+		y = util.RoundToGrid(y, s.GridSize)
+
+		// convert x,y from bottom-left to center
+		x = x + length/2
+		y = y + width/2
 
 		location := data.Location{
 			Coordinate: data.Coordinate{
@@ -270,7 +284,7 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 		sliceLocations[i] = location
 	}
 
-	// add fixed location to mapLocations
+	// add fixed location to mapLocations - fixed location has been transformed to center already
 	for i := 0; i < len(s.FixedLocations); i++ {
 		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
 		sliceLocations[i+len(nonFixedLocations)] = s.FixedLocations[i]
@@ -386,6 +400,12 @@ func ReadLocationsFromFile(filePath string) (locations map[string]data.Location,
 			},
 			IsFixed:  isFixed,
 			Rotation: false,
+		}
+
+		// if it is a fixed location, transform x,y from bottom-left to center
+		if isFixed {
+			newLocation.Coordinate.X = newLocation.Coordinate.X + newLocation.Length/2
+			newLocation.Coordinate.Y = newLocation.Coordinate.Y + newLocation.Width/2
 		}
 
 		if isFixed {

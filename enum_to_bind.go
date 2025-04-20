@@ -9,6 +9,7 @@ import (
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
+	"golang-moaha-construction/internal/objectives/conslay_grid"
 	"golang-moaha-construction/internal/objectives/objectives"
 )
 
@@ -21,7 +22,7 @@ var AllProblemsType = []struct {
 		TSName: "ContinuousConstructionLayout",
 	},
 	{
-		Value:  "Grid Construction Layout",
+		Value:  conslay_grid.GridConsLayoutName,
 		TSName: "GridConstructionLayout",
 	},
 	{
@@ -53,6 +54,10 @@ var AllObjectivesType = []struct {
 	{
 		Value:  objectives.SafetyHazardObjectiveType,
 		TSName: "SafetyHazardObjective",
+	},
+	{
+		Value:  objectives.ConstructionCostObjectiveType,
+		TSName: "ConstructionCostObjective",
 	},
 }
 
