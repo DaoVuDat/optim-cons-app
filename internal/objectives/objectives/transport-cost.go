@@ -9,14 +9,14 @@ import (
 const TransportCostObjectiveType data.ObjectiveType = "Transport Cost Objective"
 
 type TransportCostConfigs struct {
-	InteractionMatrix [][]float64
+	InteractionMatrix data.TwoDimensionalMatrix
 	AlphaTCPenalty    float64
 	Phases            [][]string
 	FilePath          string
 }
 
 type TransportCostObjective struct {
-	InteractionMatrix [][]float64
+	InteractionMatrix data.TwoDimensionalMatrix
 	AlphaTCPenalty    float64
 	Phases            [][]string
 	FilePath          string
@@ -35,12 +35,14 @@ func CreateTransportCostObjectiveFromConfig(transportCostConfigs TransportCostCo
 func (obj *TransportCostObjective) Eval(locations map[string]data.Location) float64 {
 	result := 0.0
 
+	calculatedMap := make(map[string]struct{})
+
 	for _, phases := range obj.Phases {
 
 		for i := 0; i < len(phases); i++ {
 			facilityNameI := phases[i]
 			facilityI := locations[facilityNameI]
-			idxI, err := facilityI.ConvertToIdx()
+			idxI, err := obj.InteractionMatrix.GetIdxFromName(facilityNameI)
 			if err != nil {
 				return 0
 			}
@@ -51,12 +53,17 @@ func (obj *TransportCostObjective) Eval(locations map[string]data.Location) floa
 				}
 				facilityNameJ := phases[j]
 				facilityJ := locations[facilityNameJ]
-				idxJ, err := facilityJ.ConvertToIdx()
+				idxJ, err := obj.InteractionMatrix.GetIdxFromName(facilityNameJ)
 				if err != nil {
 					return 0
 				}
 
-				result += obj.InteractionMatrix[idxI][idxJ] * data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
+				if _, ok := calculatedMap[facilityNameI+facilityNameJ]; ok {
+					continue
+				}
+
+				result += obj.InteractionMatrix.Matrix[idxI][idxJ] * data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)
+				calculatedMap[facilityNameI+facilityNameJ] = struct{}{}
 			}
 		}
 	}
@@ -68,18 +75,28 @@ func (obj *TransportCostObjective) GetAlphaPenalty() float64 {
 	return obj.AlphaTCPenalty
 }
 
-func ReadInteractionTransportCostDataFromFile(filePath string) ([][]float64, error) {
+func ReadInteractionTransportCostDataFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 	dataFile, err := excelize.OpenFile(filePath)
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
 	rows, err := dataFile.GetRows("Sheet1")
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
-	interactionMatrix := make([][]float64, len(rows)-1)
+	facilitiesName := make([]string, len(rows)-1)
+
+	for idx, cell := range rows[0] {
+		// skip the first column
+		if idx == 0 {
+			continue
+		}
+		facilitiesName[idx-1] = cell
+	}
+
+	interactionMatrix := data.CreateTwoDimensionalMatrix(facilitiesName)
 
 	for idx, row := range rows {
 		// skip header
@@ -87,20 +104,22 @@ func ReadInteractionTransportCostDataFromFile(filePath string) ([][]float64, err
 			continue
 		}
 
-		arr := make([]float64, len(rows)-1)
 		for i, cell := range row {
 			if i == 0 || i == idx {
 				continue
 			}
 
 			// skip the first column
-			arr[i-1], err = strconv.ParseFloat(cell, 64)
+			val, err := strconv.ParseFloat(cell, 64)
 			if err != nil {
-				return nil, err
+				return data.TwoDimensionalMatrix{}, err
 			}
 
+			// add to new matrix
+			if err := interactionMatrix.SetCellValueFromNames(rows[0][idx], rows[0][i], val); err != nil {
+				return data.TwoDimensionalMatrix{}, err
+			}
 		}
-		interactionMatrix[idx-1] = arr
 	}
 
 	return interactionMatrix, nil

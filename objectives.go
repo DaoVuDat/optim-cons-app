@@ -317,10 +317,10 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				tc := obj.(*objectives.TransportCostObjective)
 
 				res.TransportCost = struct {
-					InteractionMatrix         [][]float64 `json:"interactionMatrix"`
-					AlphaTransportCostPenalty float64     `json:"alphaTransportCostPenalty"`
-					Phases                    [][]string  `json:"phases"`
-					FilePath                  string      `json:"filePath"`
+					InteractionMatrix         data.TwoDimensionalMatrix `json:"interactionMatrix"`
+					AlphaTransportCostPenalty float64                   `json:"alphaTransportCostPenalty"`
+					Phases                    [][]string                `json:"phases"`
+					FilePath                  string                    `json:"filePath"`
 				}{
 					InteractionMatrix:         tc.InteractionMatrix,
 					AlphaTransportCostPenalty: tc.AlphaTCPenalty,
@@ -331,10 +331,10 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				sh := obj.(*objectives.SafetyHazardObjective)
 
 				res.SafetyHazard = struct {
-					SEMatrix                 [][]float64 `json:"seMatrix"`
-					AlphaSafetyHazardPenalty float64     `json:"alphaSafetyHazardPenalty"`
-					Phases                   [][]string  `json:"phases"`
-					FilePath                 string      `json:"filePath"`
+					SEMatrix                 data.TwoDimensionalMatrix `json:"seMatrix"`
+					AlphaSafetyHazardPenalty float64                   `json:"alphaSafetyHazardPenalty"`
+					Phases                   [][]string                `json:"phases"`
+					FilePath                 string                    `json:"filePath"`
 				}{
 					SEMatrix:                 sh.SEMatrix,
 					AlphaSafetyHazardPenalty: sh.AlphaSHPenalty,

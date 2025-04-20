@@ -11,6 +11,12 @@ export namespace algorithms {
 
 export namespace data {
 	
+	export enum ConstraintType {
+	    Overlap = "Overlap",
+	    OutOfBound = "OutOfBound",
+	    CoverInCraneRadius = "CoverInCraneRadius",
+	    InclusiveZone = "InclusiveZone",
+	}
 	export enum ProblemName {
 	    ContinuousConstructionLayout = "Continuous Construction Layout",
 	    GridConstructionLayout = "Grid Construction Layout",
@@ -22,12 +28,6 @@ export namespace data {
 	    RiskObjective = "Risk Objective",
 	    TransportCostObjective = "Transport Cost Objective",
 	    SafetyHazardObjective = "Safety Hazard Objective",
-	}
-	export enum ConstraintType {
-	    Overlap = "Overlap",
-	    OutOfBound = "OutOfBound",
-	    CoverInCraneRadius = "CoverInCraneRadius",
-	    InclusiveZone = "InclusiveZone",
 	}
 
 }

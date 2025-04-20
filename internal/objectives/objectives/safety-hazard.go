@@ -9,14 +9,14 @@ import (
 const SafetyHazardObjectiveType data.ObjectiveType = "Safety Hazard Objective"
 
 type SafetyHazardConfigs struct {
-	SEMatrix       [][]float64
+	SEMatrix       data.TwoDimensionalMatrix
 	AlphaSHPenalty float64
 	Phases         [][]string
 	FilePath       string
 }
 
 type SafetyHazardObjective struct {
-	SEMatrix       [][]float64
+	SEMatrix       data.TwoDimensionalMatrix
 	AlphaSHPenalty float64
 	Phases         [][]string
 	FilePath       string
@@ -35,12 +35,14 @@ func CreateSafetyHazardObjectiveFromConfig(hsConfigs SafetyHazardConfigs) (*Safe
 func (obj *SafetyHazardObjective) Eval(locations map[string]data.Location) float64 {
 	result := 0.0
 
+	calculatedMap := make(map[string]struct{})
+
 	for _, phases := range obj.Phases {
 
 		for i := 0; i < len(phases); i++ {
 			facilityNameI := phases[i]
 			facilityI := locations[facilityNameI]
-			idxI, err := facilityI.ConvertToIdx()
+			idxI, err := obj.SEMatrix.GetIdxFromName(facilityNameI)
 			if err != nil {
 				return 0
 			}
@@ -51,12 +53,17 @@ func (obj *SafetyHazardObjective) Eval(locations map[string]data.Location) float
 				}
 				facilityNameJ := phases[j]
 				facilityJ := locations[facilityNameJ]
-				idxJ, err := facilityJ.ConvertToIdx()
+				idxJ, err := obj.SEMatrix.GetIdxFromName(facilityNameJ)
 				if err != nil {
 					return 0
 				}
 
-				result += (-data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)) / obj.SEMatrix[idxI][idxJ]
+				if _, ok := calculatedMap[facilityNameI+facilityNameJ]; ok {
+					continue
+				}
+
+				result += (-data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)) / obj.SEMatrix.Matrix[idxI][idxJ]
+				calculatedMap[facilityNameI+facilityNameJ] = struct{}{}
 			}
 		}
 	}
@@ -68,18 +75,28 @@ func (obj *SafetyHazardObjective) GetAlphaPenalty() float64 {
 	return obj.AlphaSHPenalty
 }
 
-func ReadSafetyAndEnvDataFromFile(filePath string) ([][]float64, error) {
+func ReadSafetyAndEnvDataFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 	dataFile, err := excelize.OpenFile(filePath)
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
 	rows, err := dataFile.GetRows("Sheet1")
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
-	interactionMatrix := make([][]float64, len(rows)-1)
+	facilitiesName := make([]string, len(rows)-1)
+
+	for idx, cell := range rows[0] {
+		// skip the first column
+		if idx == 0 {
+			continue
+		}
+		facilitiesName[idx-1] = cell
+	}
+
+	interactionMatrix := data.CreateTwoDimensionalMatrix(facilitiesName)
 
 	for idx, row := range rows {
 		// skip header
@@ -87,20 +104,23 @@ func ReadSafetyAndEnvDataFromFile(filePath string) ([][]float64, error) {
 			continue
 		}
 
-		arr := make([]float64, len(rows)-1)
 		for i, cell := range row {
 			if i == 0 || i == idx {
 				continue
 			}
 
 			// skip the first column
-			arr[i-1], err = strconv.ParseFloat(cell, 64)
+			val, err := strconv.ParseFloat(cell, 64)
 			if err != nil {
-				return nil, err
+				return data.TwoDimensionalMatrix{}, err
+			}
+
+			// add to new matrix
+			if err := interactionMatrix.SetCellValueFromNames(rows[0][idx], rows[0][i], val); err != nil {
+				return data.TwoDimensionalMatrix{}, err
 			}
 
 		}
-		interactionMatrix[idx-1] = arr
 	}
 
 	return interactionMatrix, nil
