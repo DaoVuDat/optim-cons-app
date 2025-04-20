@@ -211,6 +211,7 @@ func TestRiskObjective_Eval(t *testing.T) {
 			if util.RoundTo(result, 2) != test.expected {
 				t.Errorf("expected result to be %f, got %f", test.expected, result)
 			}
+			
 		})
 	}
 }

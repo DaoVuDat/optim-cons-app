@@ -368,8 +368,8 @@ func TestHoistingObjective_Eval(t *testing.T) {
 
 	// calculate result
 	for _, test := range testTable {
-		craneLocations := make([]Crane, 0)
-		craneLocations = append(craneLocations, Crane{
+		craneLocations := make([]data.Crane, 0)
+		craneLocations = append(craneLocations, data.Crane{
 			Location:     test.locations["TF14"],
 			BuildingName: []string{"TF8", "TF9", "TF10"},
 			Radius:       40,

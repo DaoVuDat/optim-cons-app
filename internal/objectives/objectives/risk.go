@@ -12,7 +12,7 @@ import (
 const RiskObjectiveType data.ObjectiveType = "Risk Objective"
 
 type RiskConfigs struct {
-	HazardInteractionMatrix [][]float64
+	HazardInteractionMatrix data.TwoDimensionalMatrix
 	Delta                   float64
 	AlphaRiskPenalty        float64
 	Phases                  [][]string
@@ -20,15 +20,11 @@ type RiskConfigs struct {
 }
 
 type RiskObjective struct {
-	HazardInteractionMatrix [][]float64
+	HazardInteractionMatrix data.TwoDimensionalMatrix
 	Delta                   float64
 	AlphaRiskPenalty        float64
 	Phases                  [][]string
 	FilePath                string
-}
-
-func CreateRiskObjective() (*RiskObjective, error) {
-	return &RiskObjective{}, nil
 }
 
 func CreateRiskObjectiveFromConfig(riskConfigs RiskConfigs) (*RiskObjective, error) {
@@ -51,12 +47,12 @@ func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 	results := 0.0
 
 	for _, phases := range obj.Phases {
-		hij := util.CopySliceOfSlice(obj.HazardInteractionMatrix)
+		hij := util.CopySliceOfSlice(obj.HazardInteractionMatrix.Matrix)
 
 		for i := 0; i < len(phases); i++ {
 			facilityNameI := phases[i]
 			facilityI := locations[facilityNameI]
-			idxI, err := facilityI.ConvertToIdx()
+			idxI, err := obj.HazardInteractionMatrix.GetIdxFromName(facilityNameI)
 			if err != nil {
 				log.Fatal(err)
 				return 0
@@ -66,7 +62,7 @@ func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 			for j := 0; j < len(phases); j++ {
 				facilityNameJ := phases[j]
 				facilityJ := locations[facilityNameJ]
-				idxJ, err := facilityJ.ConvertToIdx()
+				idxJ, err := obj.HazardInteractionMatrix.GetIdxFromName(facilityNameJ)
 				if err != nil {
 					log.Fatal(err)
 					return 0
@@ -98,8 +94,7 @@ func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 		phaseResult := 0.0
 		for i := 0; i < len(phases); i++ {
 			facilityNameI := phases[i]
-			facilityI := locations[facilityNameI]
-			idxI, err := facilityI.ConvertToIdx()
+			idxI, err := obj.HazardInteractionMatrix.GetIdxFromName(facilityNameI)
 			if err != nil {
 				log.Fatal(err)
 				return 0
@@ -107,8 +102,7 @@ func (obj *RiskObjective) Eval(locations map[string]data.Location) float64 {
 
 			for j := 0; j < len(phases); j++ {
 				facilityNameJ := phases[j]
-				facilityJ := locations[facilityNameJ]
-				idxJ, err := facilityJ.ConvertToIdx()
+				idxJ, err := obj.HazardInteractionMatrix.GetIdxFromName(facilityNameJ)
 				if err != nil {
 					log.Fatal(err)
 					return 0
@@ -134,18 +128,28 @@ func (obj *RiskObjective) GetAlphaPenalty() float64 {
 	return obj.AlphaRiskPenalty
 }
 
-func ReadRiskHazardInteractionDataFromFile(filePath string) ([][]float64, error) {
+func ReadRiskHazardInteractionDataFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 	dataFile, err := excelize.OpenFile(filePath)
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
 	rows, err := dataFile.GetRows("Sheet1")
 	if err != nil {
-		return nil, err
+		return data.TwoDimensionalMatrix{}, err
 	}
 
-	hazardInteraction := make([][]float64, len(rows)-1)
+	facilitiesName := make([]string, len(rows)-1)
+
+	for idx, cell := range rows[0] {
+		// skip the first column
+		if idx == 0 {
+			continue
+		}
+		facilitiesName[idx-1] = cell
+	}
+
+	hazardInteractionNew := data.CreateTwoDimensionalMatrix(facilitiesName)
 
 	for idx, row := range rows {
 		// skip header
@@ -161,13 +165,18 @@ func ReadRiskHazardInteractionDataFromFile(filePath string) ([][]float64, error)
 
 			if i == idx {
 				arr[i-1], err = strconv.ParseFloat(cell, 64)
+
 				if err != nil {
-					return nil, err
+					return data.TwoDimensionalMatrix{}, err
+				}
+
+				// Set to new matrix
+				if err := hazardInteractionNew.SetCellValueFromNames(rows[0][i], rows[0][i], arr[i-1]); err != nil {
+					return data.TwoDimensionalMatrix{}, err
 				}
 			}
 
 		}
-		hazardInteraction[idx-1] = arr
 	}
-	return hazardInteraction, nil
+	return hazardInteractionNew, nil
 }
