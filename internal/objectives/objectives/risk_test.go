@@ -189,7 +189,7 @@ func TestRiskObjective_Eval(t *testing.T) {
 		},
 	}
 
-	hazardInteraction, err := ReadRiskHazardInteractionDataFromFile("../../../data/conslay/risk_data.xlsx")
+	hazardInteraction, err := ReadRiskHazardInteractionDataFromFile("../../../data/conslay/continuous/risk_data.xlsx")
 
 	// Hoisting Objective Configs
 	riskConfigs := RiskConfigs{
@@ -211,7 +211,7 @@ func TestRiskObjective_Eval(t *testing.T) {
 			if util.RoundTo(result, 2) != test.expected {
 				t.Errorf("expected result to be %f, got %f", test.expected, result)
 			}
-			
+
 		})
 	}
 }

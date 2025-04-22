@@ -1,6 +1,7 @@
 package data
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -18,13 +19,14 @@ type Coordinate struct {
 }
 
 type Location struct {
-	Coordinate Coordinate
-	Rotation   bool
-	Length     float64
-	Width      float64
-	IsFixed    bool
-	Symbol     string
-	Name       string
+	Coordinate  Coordinate
+	Rotation    bool
+	Length      float64
+	Width       float64
+	IsFixed     bool
+	Symbol      string
+	Name        string
+	IsLocatedAt string
 }
 
 func (loc Location) ConvertToIdx() (int, error) {
@@ -38,6 +40,18 @@ func (loc Location) ConvertToIdx() (int, error) {
 
 	// convert back to 0 index-based
 	return idx - 1, nil
+}
+
+func (loc Location) ConvertToIdxRegex() (int, error) {
+	re := regexp.MustCompile(`-?\d+`)
+	match := re.FindString(loc.Symbol)
+
+	idx, err := strconv.Atoi(match)
+	if err != nil {
+		return 0, err
+	}
+
+	return idx, nil
 }
 
 type Crane struct {

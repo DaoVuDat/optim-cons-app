@@ -30,7 +30,7 @@ func TestSafetyObjective_Eval(t *testing.T) {
 		},
 	}
 
-	safetyProximity, err := ReadSafetyProximityDataFromFile("../../../data/conslay/safety_data.xlsx")
+	safetyProximity, err := ReadSafetyProximityDataFromFile("../../../data/conslay/continuous/safety_data.xlsx")
 
 	// Safety Objective Configs
 	safetyConfig := SafetyConfigs{

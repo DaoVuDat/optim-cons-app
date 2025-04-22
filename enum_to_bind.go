@@ -10,6 +10,7 @@ import (
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
 	"golang-moaha-construction/internal/objectives/conslay_grid"
+	"golang-moaha-construction/internal/objectives/conslay_predetermined"
 	"golang-moaha-construction/internal/objectives/objectives"
 )
 
@@ -26,7 +27,7 @@ var AllProblemsType = []struct {
 		TSName: "GridConstructionLayout",
 	},
 	{
-		Value:  "Predetermined Construction Layout",
+		Value:  conslay_predetermined.PredeterminedConsLayoutName,
 		TSName: "PredeterminedConstructionLayout",
 	},
 }
@@ -80,6 +81,10 @@ var AllConstraintsType = []struct {
 	{
 		Value:  constraints.ConstraintInclusiveZone,
 		TSName: "InclusiveZone",
+	},
+	{
+		Value:  constraints.ConstraintSize,
+		TSName: "Size",
 	},
 }
 
