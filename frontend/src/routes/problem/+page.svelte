@@ -4,7 +4,7 @@
   import {problemList, problemStore, type ProblemWithLabel} from "$lib/stores/problem.svelte.js";
   import continuousProblemConfigComponent from "$lib/components/problem-configs/continuous-config.svelte";
   import gridProblemConfigComponent from "$lib/components/problem-configs/grid-config.svelte";
-  import PredeterminatedConfig from "$lib/components/problem-configs/predeterminated-config.svelte";
+  import PredeterminedConfig from "$lib/components/problem-configs/predetermined-config.svelte";
   import {goto} from "$app/navigation";
   import {CreateProblem} from "$lib/wailsjs/go/main/App";
   import {main, data as dataType} from "$lib/wailsjs/go/models";
@@ -13,7 +13,7 @@
   const configComponents = {
     [dataType.ProblemName.ContinuousConstructionLayout]: continuousProblemConfigComponent,
     [dataType.ProblemName.GridConstructionLayout]: gridProblemConfigComponent,
-    [dataType.ProblemName.PredeterminedConstructionLayout]: PredeterminatedConfig,
+    [dataType.ProblemName.PredeterminedConstructionLayout]: PredeterminedConfig,
   }
 
   const component = $derived.by(() => {

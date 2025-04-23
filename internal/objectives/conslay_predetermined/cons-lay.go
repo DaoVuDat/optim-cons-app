@@ -2,37 +2,38 @@ package conslay_predetermined
 
 import (
 	"errors"
+	"fmt"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
-	"math"
-	"slices"
-	"sort"
 	"strings"
 )
 
 const PredeterminedConsLayoutName data.ProblemName = "Predetermined Construction Layout"
 
-// ConsLay is a structure that represents a problem instance of a continuous construction layout problem.
-// x, y are the coordinates of the location at bottom-left corner.
 type ConsLay struct {
-	Dimensions        int
-	UpperBound        []float64
-	LowerBound        []float64
-	FixedLocations    []data.Location
-	NonFixedLocations []data.Location
-	Locations         map[string]data.Location
-	Objectives        map[data.ObjectiveType]data.Objectiver
-	Constraints       map[data.ConstraintType]data.Constrainter
-	Phases            [][]string
+	Dimensions            int
+	UpperBound            []float64
+	LowerBound            []float64
+	NumberOfFacilities    int
+	NumberOfLocations     int
+	FixedFacilitiesName   []LocFac
+	Objectives            map[data.ObjectiveType]data.Objectiver
+	Constraints           map[data.ConstraintType]data.Constrainter
+	Phases                [][]string
+	AvailableLocationsIdx []string
+}
+
+type LocFac struct {
+	LocName string `json:"locName"`
+	FacName string `json:"facName"`
 }
 
 type ConsLayConfigs struct {
-	Locations         map[string]data.Location
-	NonFixedLocations []data.Location
-	FixedLocations    []data.Location
-	Phases            [][]string
-	Rounding          bool
-	GridSize          int
+	NumberOfLocations   int
+	NumberOfFacilities  int
+	FixedFacilitiesName []LocFac
+	Phases              [][]string
+	Rounding            bool
 }
 
 func (s *ConsLay) Type() data.TypeProblem {
@@ -41,24 +42,20 @@ func (s *ConsLay) Type() data.TypeProblem {
 
 func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 
-	if consLayConfigs.GridSize <= 0 {
-		return nil, errors.New("grid size must be greater than 0")
-	}
-
 	consLay := &ConsLay{
-		Locations:         consLayConfigs.Locations,
-		FixedLocations:    consLayConfigs.FixedLocations,
-		NonFixedLocations: consLayConfigs.NonFixedLocations,
-		Phases:            consLayConfigs.Phases,
-		Objectives:        make(map[data.ObjectiveType]data.Objectiver),
-		Constraints:       make(map[data.ConstraintType]data.Constrainter),
+		NumberOfLocations:   consLayConfigs.NumberOfLocations,
+		NumberOfFacilities:  consLayConfigs.NumberOfFacilities,
+		FixedFacilitiesName: consLayConfigs.FixedFacilitiesName,
+		Phases:              consLayConfigs.Phases,
+		Objectives:          make(map[data.ObjectiveType]data.Objectiver),
+		Constraints:         make(map[data.ConstraintType]data.Constrainter),
 	}
 
 	// Find the x, y, r of Non-fixed Locations
-	dimensions := len(consLay.NonFixedLocations)
+	dimensions := consLay.NumberOfLocations - consLay.NumberOfFacilities - len(consLay.FixedFacilitiesName)
 	upperBound := make([]float64, dimensions)
 	lowerBound := make([]float64, dimensions)
-	for i := 0; i < len(consLay.NonFixedLocations); i++ {
+	for i := 0; i < dimensions; i++ {
 		upperBound[i] = 1.0
 		lowerBound[i] = 0
 	}
@@ -67,74 +64,92 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	consLay.UpperBound = upperBound
 	consLay.LowerBound = lowerBound
 
+	mapLocationsToRemove := make(map[string]struct{})
+	for _, v := range consLay.FixedFacilitiesName {
+		mapLocationsToRemove[v.LocName] = struct{}{}
+	}
+
+	// calculate the available locations
+	availableLocations := make([]string, consLay.Dimensions)
+	availableLocCounter := 0
+	for i := 0; i < consLay.NumberOfLocations; i++ {
+		curLoc := fmt.Sprintf("L%d", i+1)
+		if _, ok := mapLocationsToRemove[curLoc]; !ok {
+			availableLocations[availableLocCounter] = curLoc
+			availableLocCounter++
+		}
+	}
+
 	return consLay, nil
 }
 
 func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64) {
-	// add x, y, r to non-fixed locations
-	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
-	mapLocations := make(map[string]data.Location, len(s.Locations))
-
-	for i := 0; i < len(nonFixedLocations); i++ {
-		loc := s.NonFixedLocations[i]
-
-		location := data.Location{
-			IsFixed: false,
-			Symbol:  loc.Symbol,
-			Name:    loc.Name,
-		}
-
-		nonFixedLocations[i] = location
-		mapLocations[loc.Symbol] = location
-	}
-
-	// add fixed location to mapLocations
-	for i := 0; i < len(s.FixedLocations); i++ {
-		mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
-	}
-
-	// checking constraints
-	penalty = make(map[data.ConstraintType]float64)
-	for k, v := range s.Constraints {
-		penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
-	}
-
-	// calculate objectives and add penalty to them
-	values = make([]float64, len(s.Objectives))
-	valuesName := make([]data.ObjectiveType, len(s.Objectives))
-	valuesWithKey = make(map[data.ObjectiveType]float64, len(s.Objectives))
-
-	i := 0
-	for k := range s.Objectives {
-		valuesName[i] = k
-		i++
-	}
-
-	// sort values name
-	sort.Slice(valuesName, func(i, j int) bool {
-		return valuesName[i] < valuesName[j]
-	})
-
-	// sort values in alphabetical order
-	for k, v := range s.Objectives {
-		idx, ok := slices.BinarySearch(valuesName, k)
-		if !ok {
-			panic("objective not found")
-		}
-		val := v.Eval(mapLocations)
-
-		// add penalty to objective value
-		for _, penaltyAlpha := range penalty {
-			val += penaltyAlpha * v.GetAlphaPenalty()
-		}
-
-		values[idx] = val
-
-		// add value to valuesWithKey
-		valuesWithKey[k] = val
-	}
-
-	return values, valuesWithKey, penalty
+	panic(1)
+	//// TODO START
+	//nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
+	//mapLocations := make(map[string]data.Location, len(s.Locations))
+	//
+	//for i := 0; i < len(nonFixedLocations); i++ {
+	//	loc := s.NonFixedLocations[i]
+	//
+	//	location := data.Location{
+	//		IsFixed: false,
+	//		Symbol:  loc.Symbol,
+	//		Name:    loc.Name,
+	//	}
+	//
+	//	nonFixedLocations[i] = location
+	//	mapLocations[loc.Symbol] = location
+	//}
+	//
+	//// add fixed location to mapLocations
+	//for i := 0; i < len(s.FixedLocations); i++ {
+	//	mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
+	//}
+	//// TODO END
+	//
+	//// checking constraints
+	//penalty = make(map[data.ConstraintType]float64)
+	//for k, v := range s.Constraints {
+	//	penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
+	//}
+	//
+	//// calculate objectives and add penalty to them
+	//values = make([]float64, len(s.Objectives))
+	//valuesName := make([]data.ObjectiveType, len(s.Objectives))
+	//valuesWithKey = make(map[data.ObjectiveType]float64, len(s.Objectives))
+	//
+	//i := 0
+	//for k := range s.Objectives {
+	//	valuesName[i] = k
+	//	i++
+	//}
+	//
+	//// sort values name
+	//sort.Slice(valuesName, func(i, j int) bool {
+	//	return valuesName[i] < valuesName[j]
+	//})
+	//
+	//// sort values in alphabetical order
+	//for k, v := range s.Objectives {
+	//	idx, ok := slices.BinarySearch(valuesName, k)
+	//	if !ok {
+	//		panic("objective not found")
+	//	}
+	//	val := v.Eval(mapLocations)
+	//
+	//	// add penalty to objective value
+	//	for _, penaltyAlpha := range penalty {
+	//		val += penaltyAlpha * v.GetAlphaPenalty()
+	//	}
+	//
+	//	values[idx] = val
+	//
+	//	// add value to valuesWithKey
+	//	valuesWithKey[k] = val
+	//}
+	//
+	//return values, valuesWithKey, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
@@ -215,7 +230,7 @@ func (s *ConsLay) GetCranesLocations() []data.Crane {
 }
 
 func (s *ConsLay) GetLocations() map[string]data.Location {
-	return s.Locations
+	return nil
 }
 
 // Constraints Utility Functions

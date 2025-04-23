@@ -3,14 +3,30 @@
   import {type IOptions, objectiveStore} from "$lib/stores/objectives.svelte";
   import {stepStore} from "$lib/stores/steps.svelte";
   import {toast} from "@zerodevx/svelte-toast";
-
+  import {data} from "$lib/wailsjs/go/models";
 
   const handleClick = (option: IOptions) => {
     objectiveStore.selectObjectiveOption = option
   }
 
   const handleChange = (option: IOptions) => {
-    console.log(option.isChecked)
+
+    if (option.isChecked &&
+      option.value === data.ObjectiveType.ConstructionCostObjective &&
+      objectiveStore.objectives.selectedObjectives.length > 0) {
+      toast.push("Construction cost must be solved independently.");
+      option.isChecked = false
+      return
+    }
+
+    if (option.isChecked &&
+      option.value !== data.ObjectiveType.ConstructionCostObjective &&
+      objectiveStore.objectives.selectedObjectives.find(o => o.objectiveType === data.ObjectiveType.ConstructionCostObjective)) {
+      toast.push("Construction Cost must be solved independently.");
+      option.isChecked = false
+      return
+    }
+
     if (option.isChecked && objectiveStore.objectives.selectedObjectives.length >= 3) {
       toast.push("Maximum of 3 objectives allowed.");
       option.isChecked = false
@@ -19,7 +35,6 @@
 
 
     objectiveStore.selectObjective(option)
-
   }
 
   $inspect(objectiveStore.objectives.selectedObjectives, objectiveStore.objectiveList)

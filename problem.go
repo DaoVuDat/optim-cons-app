@@ -6,16 +6,20 @@ import (
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
 	"golang-moaha-construction/internal/objectives/conslay_grid"
+	"golang-moaha-construction/internal/objectives/conslay_predetermined"
 )
 
 type ProblemInput struct {
-	ProblemName      data.ProblemName `json:"problemName"`
-	LayoutLength     *float64         `json:"layoutLength"`
-	LayoutWidth      *float64         `json:"layoutWidth"`
-	FacilitiesFile   *string          `json:"facilitiesFilePath"`
-	PhasesFile       *string          `json:"phasesFilePath"`
-	GridSize         *int             `json:"gridSize"`
-	PredeterminedLoc *string          `json:"predeterminedLoc"`
+	ProblemName        data.ProblemName                `json:"problemName"`
+	LayoutLength       *float64                        `json:"layoutLength"`
+	LayoutWidth        *float64                        `json:"layoutWidth"`
+	FacilitiesFile     *string                         `json:"facilitiesFilePath"`
+	PhasesFile         *string                         `json:"phasesFilePath"`
+	GridSize           *int                            `json:"gridSize"`
+	PredeterminedLoc   *string                         `json:"predeterminedLoc"`
+	NumberOfLocations  *int                            `json:"numberOfLocations"`
+	NumberOfFacilities *int                            `json:"numberOfFacilities"`
+	FixedFacilities    *[]conslay_predetermined.LocFac `json:"fixedFacilities"`
 }
 
 func (a *App) CreateProblem(
@@ -24,7 +28,6 @@ func (a *App) CreateProblem(
 
 	a.problemName = problemInput.ProblemName
 
-	// TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
 	switch problemInput.ProblemName {
 	case conslay_continuous.ContinuousConsLayoutName:
 		consLayoutConfigs := conslay_continuous.ConsLayConfigs{
@@ -85,6 +88,26 @@ func (a *App) CreateProblem(
 		consLayoutConfigs.Phases = phases
 
 		consLayObj, err := conslay_grid.CreateConsLayFromConfig(consLayoutConfigs)
+		if err != nil {
+			return err
+		}
+
+		a.problem = consLayObj
+		return nil
+	case conslay_predetermined.PredeterminedConsLayoutName:
+		numberOfLocations := *problemInput.NumberOfLocations
+		numberOfFacilities := *problemInput.NumberOfFacilities
+		fixedFacilities := *problemInput.FixedFacilities
+
+		consLayoutConfigs := conslay_predetermined.ConsLayConfigs{
+			NumberOfLocations:   numberOfLocations,
+			NumberOfFacilities:  numberOfFacilities,
+			FixedFacilitiesName: fixedFacilities,
+			Phases:              nil,
+			Rounding:            false,
+		}
+
+		consLayObj, err := conslay_predetermined.CreateConsLayFromConfig(consLayoutConfigs)
 		if err != nil {
 			return err
 		}

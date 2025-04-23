@@ -6,9 +6,10 @@ import {
   type ISafetyConfig, type ISafetyHazardConfig, type ITransportCostConfig, riskConfig,
   safetyConfig, safetyHazardConfig, transportCostConfig
 } from "$lib/stores/objectives";
+import {constructionCostConfig, type IConstructionCostConfig} from "$lib/stores/objectives/construction-cost.svelte";
 
 type IConfigType = IHoistingConfig | IRiskConfig | ISafetyConfig
-  | ITransportCostConfig | ISafetyHazardConfig
+  | ITransportCostConfig | ISafetyHazardConfig | IConstructionCostConfig
 
 interface IObjectives {
   selectedObjectives: {
@@ -21,7 +22,6 @@ export interface IOptions {
   label: string;
   value: data.ObjectiveType;
   isChecked: boolean;
-  content: string;
 }
 
 export type ObjectiveConfigMap = {
@@ -30,6 +30,7 @@ export type ObjectiveConfigMap = {
   [data.ObjectiveType.SafetyObjective]: ISafetyConfig;
   [data.ObjectiveType.SafetyHazardObjective]: ISafetyHazardConfig;
   [data.ObjectiveType.TransportCostObjective]: ITransportCostConfig;
+  [data.ObjectiveType.ConstructionCostObjective]: IConstructionCostConfig;
 }
 
 class ObjectiveStore {
@@ -43,31 +44,31 @@ class ObjectiveStore {
       label: 'Risk',
       value: data.ObjectiveType.RiskObjective,
       isChecked: false,
-      content: "What is Risk Objective and How to calculate it?"
     },
     {
       label: 'Hoisting',
       value: data.ObjectiveType.HoistingObjective,
       isChecked: false,
-      content: "What is Hoisting and How to calculate it?"
     },
     {
       label: 'Safety',
       value: data.ObjectiveType.SafetyObjective,
       isChecked: false,
-      content: "What is Safety Objective and How to calculate it?"
     },
     {
       label: 'Safety Hazard',
       value: data.ObjectiveType.SafetyHazardObjective,
       isChecked: false,
-      content: "What is Safety Hazard Objective and How to calculate it?"
     },
     {
       label: 'Transportation Cost',
       value: data.ObjectiveType.TransportCostObjective,
       isChecked: false,
-      content: "What is Transportation Cost and How to calculate it?"
+    },
+    {
+      label: 'Construction Cost',
+      value: data.ObjectiveType.ConstructionCostObjective,
+      isChecked: false,
     }
   ])
 
@@ -102,6 +103,8 @@ class ObjectiveStore {
         return safetyHazardConfig as ObjectiveConfigMap[T]
       case data.ObjectiveType.TransportCostObjective:
         return transportCostConfig as ObjectiveConfigMap[T]
+      case data.ObjectiveType.ConstructionCostObjective:
+        return constructionCostConfig as ObjectiveConfigMap[T]
     }
   }
 

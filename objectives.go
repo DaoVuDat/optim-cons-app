@@ -395,3 +395,6 @@ type safetyHazardConfig struct {
 	SEMatrixFilePath         string  `json:"SEMatrixFilePath"`
 	AlphaSafetyHazardPenalty float64 `json:"AlphaSafetyHazardPenalty"`
 }
+
+type constructionCostConfig struct {
+}
