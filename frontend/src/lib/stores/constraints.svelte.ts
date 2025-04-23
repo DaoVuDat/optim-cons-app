@@ -7,8 +7,9 @@ import {
   type IOverlapConfig, outOfBoundConfig, overlapConfig
 } from "$lib/stores/constraints";
 import {objectiveStore} from "$lib/stores/objectives.svelte";
+import {type ISizeConfig, sizeConfig} from "$lib/stores/constraints/size.svelte";
 
-type IConfigType = IOutOfBoundConfig | IOverlapConfig | ICoverInCraneRadiusConfig | IInclusiveZoneConfig
+type IConfigType = IOutOfBoundConfig | IOverlapConfig | ICoverInCraneRadiusConfig | IInclusiveZoneConfig | ISizeConfig
 
 interface IConstraint {
   selectedConstraints: {
@@ -28,6 +29,7 @@ export type ConstraintConfigMap = {
   [data.ConstraintType.InclusiveZone]: IInclusiveZoneConfig;
   [data.ConstraintType.Overlap]: IOverlapConfig;
   [data.ConstraintType.OutOfBound]: IOutOfBoundConfig;
+  [data.ConstraintType.Size]: ISizeConfig;
 }
 
 class ConstraintsStore {
@@ -97,6 +99,8 @@ class ConstraintsStore {
         return inclusiveZoneConfig as ConstraintConfigMap[T]
       case data.ConstraintType.CoverInCraneRadius:
         return coverInCraneRadiusConfig as ConstraintConfigMap[T]
+      case data.ConstraintType.Size:
+        return sizeConfig as ConstraintConfigMap[T]
     }
   }
 

@@ -7,12 +7,13 @@
     content: Snippet
     moreButtons?: Snippet
     buttonText?: string
+    mainActionButton?: () => void
   }
 
   let {
     isModalOpen = $bindable(),
     content, moreButtons,
-    buttonText
+    buttonText, mainActionButton
   }: Props = $props();
 
 </script>
@@ -25,7 +26,10 @@
       {#if moreButtons}
         {@render moreButtons()}
       {/if}
-      <button class="btn" onclick={()=>isModalOpen = false}>{buttonText ?? 'OK'}</button>
+      <button class="btn" onclick={()=>{
+        mainActionButton?.()
+        isModalOpen = false
+      }}>{buttonText ?? 'OK'}</button>
     </div>
   </div>
 </div>
