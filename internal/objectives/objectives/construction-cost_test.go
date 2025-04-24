@@ -127,6 +127,104 @@ func createInputLocation(caseNumber int) map[string]data.Location {
 		}
 
 		return locations
+	case 2:
+		locations := make(map[string]data.Location)
+
+		locations["TF1"] = data.Location{
+			Symbol:      "TF1",
+			IsLocatedAt: "L10",
+		}
+
+		locations["TF2"] = data.Location{
+			Symbol:      "TF2",
+			IsLocatedAt: "L5",
+		}
+
+		locations["TF3"] = data.Location{
+			Symbol:      "TF3",
+			IsLocatedAt: "L6",
+		}
+
+		locations["TF4"] = data.Location{
+			Symbol:      "TF4",
+			IsLocatedAt: "L7",
+		}
+
+		locations["TF5"] = data.Location{
+			Symbol:      "TF5",
+			IsLocatedAt: "L9",
+		}
+
+		locations["TF6"] = data.Location{
+			Symbol:      "TF6",
+			IsLocatedAt: "L8",
+		}
+
+		locations["TF7"] = data.Location{
+			Symbol:      "TF7",
+			IsLocatedAt: "L11",
+		}
+
+		locations["TF8"] = data.Location{
+			Symbol:      "TF8",
+			IsLocatedAt: "L12",
+		}
+
+		locations["TF9"] = data.Location{
+			Symbol:      "TF9",
+			IsLocatedAt: "L13",
+		}
+
+		return locations
+	case 3:
+		locations := make(map[string]data.Location)
+
+		locations["TF1"] = data.Location{
+			Symbol:      "TF1",
+			IsLocatedAt: "L9",
+		}
+
+		locations["TF2"] = data.Location{
+			Symbol:      "TF2",
+			IsLocatedAt: "L8",
+		}
+
+		locations["TF3"] = data.Location{
+			Symbol:      "TF3",
+			IsLocatedAt: "L4",
+		}
+
+		locations["TF4"] = data.Location{
+			Symbol:      "TF4",
+			IsLocatedAt: "L7",
+		}
+
+		locations["TF5"] = data.Location{
+			Symbol:      "TF5",
+			IsLocatedAt: "L5",
+		}
+
+		locations["TF6"] = data.Location{
+			Symbol:      "TF6",
+			IsLocatedAt: "L6",
+		}
+
+		locations["TF7"] = data.Location{
+			Symbol:      "TF7",
+			IsLocatedAt: "L11",
+		}
+
+		locations["TF8"] = data.Location{
+			Symbol:      "TF8",
+			IsLocatedAt: "L12",
+		}
+
+		locations["TF9"] = data.Location{
+			Symbol:      "TF9",
+			IsLocatedAt: "L13",
+		}
+
+		return locations
 	default:
 		return nil
 	}
@@ -206,14 +304,14 @@ func TestConstructionCostObjective_Eval(t *testing.T) {
 	}{
 		{
 			locations: createInputLocation(0),
-			expected:  15160,
+			expected:  15094,
 			name:      "Li and Love's results",
 		},
-		//{
-		//	locations: createInputLocation(1),
-		//	expected:  12320,
-		//	name:      "best optimal solution",
-		//},
+		{
+			locations: createInputLocation(1),
+			expected:  12320,
+			name:      "best optimal solution",
+		},
 	}
 
 	freqMatrix, err := ReadMatrixFromFile("../../../data/conslay/predetermined/frequency_data.xlsx")
@@ -231,6 +329,50 @@ func TestConstructionCostObjective_Eval(t *testing.T) {
 			ccObj, err := CreateConstructionCostObjectiveFromConfig(ConstructionCostConfigs{
 				FrequencyMatrix: freqMatrix,
 				DistanceMatrix:  distanceMatrix,
+				FullRun:         true,
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			result := ccObj.Eval(tt.locations)
+			if math.Abs(tt.expected-result) > 1e-9 {
+				t.Errorf("expected result to be %f, got %f", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestConstructionCostObjectiveFacLessLoc_Eval(t *testing.T) {
+	testTable := []struct {
+		locations map[string]data.Location
+		expected  float64
+		name      string
+	}{
+		{
+			locations: createInputLocation(2),
+			expected:  831.94,
+			name:      "kaveh2018 (1)",
+		},
+	}
+
+	freqMatrix, err := ReadMatrixFromFile("../../../data/conslay/predetermined/frequency_1_data.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	distanceMatrix, err := ReadMatrixFromFile("../../../data/conslay/predetermined/distance_1_data.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, tt := range testTable {
+		t.Run(tt.name, func(t *testing.T) {
+			ccObj, err := CreateConstructionCostObjectiveFromConfig(ConstructionCostConfigs{
+				FrequencyMatrix: freqMatrix,
+				DistanceMatrix:  distanceMatrix,
+				FullRun:         false,
 			})
 
 			if err != nil {

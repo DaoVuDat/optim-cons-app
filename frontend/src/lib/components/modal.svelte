@@ -22,7 +22,6 @@
   <div class="modal-box w-11/12 max-w-5xl">
     {@render content()}
     <div class="modal-action">
-      <!-- 🔵 set false on click -->
       {#if moreButtons}
         {@render moreButtons()}
       {/if}

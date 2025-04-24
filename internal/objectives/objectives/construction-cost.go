@@ -1,7 +1,6 @@
 package objectives
 
 import (
-	"fmt"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"log"
@@ -15,6 +14,7 @@ const ConstructionCostObjectiveType data.ObjectiveType = "Construction Cost Obje
 type ConstructionCostConfigs struct {
 	FrequencyMatrix              data.TwoDimensionalMatrix
 	DistanceMatrix               data.TwoDimensionalMatrix
+	FullRun                      bool
 	Delta                        float64
 	AlphaConstructionCostPenalty float64
 	Phases                       [][]string
@@ -24,6 +24,7 @@ type ConstructionCostConfigs struct {
 type ConstructionCostObjective struct {
 	FrequencyMatrix              data.TwoDimensionalMatrix
 	DistanceMatrix               data.TwoDimensionalMatrix
+	FullRun                      bool
 	Delta                        float64
 	AlphaConstructionCostPenalty float64
 	Phases                       [][]string
@@ -38,6 +39,7 @@ func CreateConstructionCostObjectiveFromConfig(ccConfigs ConstructionCostConfigs
 		AlphaConstructionCostPenalty: ccConfigs.AlphaConstructionCostPenalty,
 		Phases:                       ccConfigs.Phases,
 		FilePath:                     ccConfigs.FilePath,
+		FullRun:                      ccConfigs.FullRun,
 	}
 	return ccObj, nil
 }
@@ -54,11 +56,28 @@ func (obj *ConstructionCostObjective) Eval(locations map[string]data.Location) f
 		return idxi - idxj
 	})
 
-	for i := 0; i < len(slicesLocations); i++ {
+	var maxI, maxJ int
+	if obj.FullRun {
+		maxI = len(slicesLocations)
+		maxJ = len(slicesLocations)
+	} else {
+		maxI = len(slicesLocations) - 1
+		maxJ = len(slicesLocations)
+	}
+
+	for i := 0; i < maxI; i++ {
 		locI := slicesLocations[i]
 		iLocatedAt := locI.IsLocatedAt
 		iSymbol := locI.Symbol
-		for j := 0; j < len(slicesLocations); j++ {
+
+		var startJ int
+		if obj.FullRun {
+			startJ = 0
+		} else {
+			startJ = i + 1
+		}
+
+		for j := startJ; j < maxJ; j++ {
 			locJ := slicesLocations[j]
 			jLocatedAt := locJ.IsLocatedAt
 			jSymbol := locJ.Symbol
@@ -73,12 +92,10 @@ func (obj *ConstructionCostObjective) Eval(locations map[string]data.Location) f
 				log.Fatal(err)
 				return 0
 			}
-			fmt.Println("==")
-			fmt.Printf("Freq(i = %s, j = %s) = %f\n", iSymbol, jSymbol, fref)
-			fmt.Printf("Dist(i = %s, j = %s) = %f\n", iLocatedAt, jLocatedAt, distance)
-			fmt.Println("\t\t", fref*distance)
+
 			results += fref * distance
 		}
+
 	}
 
 	return results

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
 	"golang-moaha-construction/internal/objectives/conslay_grid"
@@ -16,7 +15,6 @@ type ProblemInput struct {
 	FacilitiesFile     *string                         `json:"facilitiesFilePath"`
 	PhasesFile         *string                         `json:"phasesFilePath"`
 	GridSize           *int                            `json:"gridSize"`
-	PredeterminedLoc   *string                         `json:"predeterminedLoc"`
 	NumberOfLocations  *int                            `json:"numberOfLocations"`
 	NumberOfFacilities *int                            `json:"numberOfFacilities"`
 	FixedFacilities    *[]conslay_predetermined.LocFac `json:"fixedFacilities"`
@@ -98,13 +96,10 @@ func (a *App) CreateProblem(
 		numberOfLocations := *problemInput.NumberOfLocations
 		numberOfFacilities := *problemInput.NumberOfFacilities
 		fixedFacilities := *problemInput.FixedFacilities
-
 		consLayoutConfigs := conslay_predetermined.ConsLayConfigs{
 			NumberOfLocations:   numberOfLocations,
 			NumberOfFacilities:  numberOfFacilities,
 			FixedFacilitiesName: fixedFacilities,
-			Phases:              nil,
-			Rounding:            false,
 		}
 
 		consLayObj, err := conslay_predetermined.CreateConsLayFromConfig(consLayoutConfigs)
@@ -120,9 +115,7 @@ func (a *App) CreateProblem(
 }
 
 func (a *App) ProblemInfo() (any, error) {
-	fmt.Println("Problem Info", a.problemName)
 	// type casting to concrete problem
-	// TODO: add GRID problem and PREDETERMINATED LOCATIONS problem
 	switch a.problemName {
 	case conslay_continuous.ContinuousConsLayoutName:
 		problemInfo := a.problem.(*conslay_continuous.ConsLay)
@@ -175,6 +168,25 @@ func (a *App) ProblemInfo() (any, error) {
 			Name:              a.problemName,
 			Phases:            problemInfo.Phases,
 			GridSize:          problemInfo.GridSize,
+		}, nil
+	case conslay_predetermined.PredeterminedConsLayoutName:
+		problemInfo := a.problem.(*conslay_predetermined.ConsLay)
+		return struct {
+			Name                data.ProblemName               `json:"problemName"`
+			LowerBound          []float64                      `json:"lowerBound"`
+			UpperBound          []float64                      `json:"upperBound"`
+			Dimensions          int                            `json:"dimensions"`
+			NumberOfLocations   int                            `json:"locations"`
+			NumberOfFacilities  int                            `json:"fixedLocations"`
+			FixedFacilitiesName []conslay_predetermined.LocFac `json:"fixedFacilitiesName"`
+		}{
+			Name:                a.problemName,
+			LowerBound:          problemInfo.LowerBound,
+			UpperBound:          problemInfo.UpperBound,
+			Dimensions:          problemInfo.Dimensions,
+			NumberOfLocations:   problemInfo.NumberOfLocations,
+			NumberOfFacilities:  problemInfo.NumberOfFacilities,
+			FixedFacilitiesName: problemInfo.FixedFacilitiesName,
 		}, nil
 	default:
 		return nil, errors.New("not implemented")

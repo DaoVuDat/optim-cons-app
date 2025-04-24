@@ -149,7 +149,6 @@ export namespace main {
 	    facilitiesFilePath?: string;
 	    phasesFilePath?: string;
 	    gridSize?: number;
-	    predeterminedLoc?: string;
 	    numberOfLocations?: number;
 	    numberOfFacilities?: number;
 	    fixedFacilities?: conslay_predetermined.LocFac[];
@@ -166,7 +165,6 @@ export namespace main {
 	        this.facilitiesFilePath = source["facilitiesFilePath"];
 	        this.phasesFilePath = source["phasesFilePath"];
 	        this.gridSize = source["gridSize"];
-	        this.predeterminedLoc = source["predeterminedLoc"];
 	        this.numberOfLocations = source["numberOfLocations"];
 	        this.numberOfFacilities = source["numberOfFacilities"];
 	        this.fixedFacilities = this.convertValues(source["fixedFacilities"], conslay_predetermined.LocFac);

@@ -10,10 +10,8 @@
 
   const handleOpenModal = () => {
     if (config.fixedFacilities.length === config.locationNames.length) {
-      console.log(true)
       fixedFacilities = config.fixedFacilities
     } else {
-      console.log(false)
       fixedFacilities = Array.from({length: config.value.numberOfLocations ?? 0}, (_, i) => ({
         LocName: `L${i + 1}`,
         FacilityName: ''

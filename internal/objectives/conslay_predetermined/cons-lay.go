@@ -52,7 +52,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	}
 
 	// Find the x, y, r of Non-fixed Locations
-	dimensions := consLay.NumberOfLocations - consLay.NumberOfFacilities - len(consLay.FixedFacilitiesName)
+	dimensions := consLay.NumberOfLocations - len(consLay.FixedFacilitiesName)
 	upperBound := make([]float64, dimensions)
 	lowerBound := make([]float64, dimensions)
 	for i := 0; i < dimensions; i++ {
@@ -79,6 +79,8 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 			availableLocCounter++
 		}
 	}
+
+	consLay.AvailableLocationsIdx = availableLocations
 
 	return consLay, nil
 }

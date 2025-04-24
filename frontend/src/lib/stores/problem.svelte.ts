@@ -2,7 +2,7 @@ import {
   continuousProblemConfig, gridProblemConfig,
   type IContinuousConfig,
   type IGridConfig,
-  type IPredeterminatedConfig, predeterminedProblemConfig
+  type IPredeterminedConfig, predeterminedProblemConfig
 } from "$lib/stores/problems";
 import {data} from "$lib/wailsjs/go/models";
 
@@ -21,7 +21,7 @@ export const problemList: ProblemWithLabel[] = [
     value: data.ProblemName.GridConstructionLayout,
   },
   {
-    label: "Pre-determinated locations",
+    label: "Pre-determined locations",
     value: data.ProblemName.PredeterminedConstructionLayout
   }
 ]
@@ -29,7 +29,7 @@ export const problemList: ProblemWithLabel[] = [
 export type ProblemConfigMap = {
   [data.ProblemName.ContinuousConstructionLayout]: IContinuousConfig;
   [data.ProblemName.GridConstructionLayout]: IGridConfig;
-  [data.ProblemName.PredeterminedConstructionLayout]: IPredeterminatedConfig;
+  [data.ProblemName.PredeterminedConstructionLayout]: IPredeterminedConfig;
 }
 
 class ProblemStore {
@@ -42,7 +42,7 @@ class ProblemStore {
       case data.ProblemName.GridConstructionLayout:
         return gridProblemConfig as ProblemConfigMap[T]
       case data.ProblemName.PredeterminedConstructionLayout:
-        return predeterminedProblemConfig as ProblemConfigMap[T]
+        return predeterminedProblemConfig.value as ProblemConfigMap[T]
     }
   }
 
