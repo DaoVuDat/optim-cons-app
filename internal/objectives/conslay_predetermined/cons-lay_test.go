@@ -2,6 +2,8 @@ package conslay_predetermined
 
 import (
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/objectives"
+	"golang-moaha-construction/internal/util"
 	"log"
 	"slices"
 	"testing"
@@ -62,7 +64,7 @@ func inputCase(caseNumber int) ([]float64, map[string]data.Location) {
 	}
 }
 
-func TestConsLay_Eval(t *testing.T) {
+func TestConsLay_MappingLocations(t *testing.T) {
 	inputValues, expectedMapLocations := inputCase(0)
 
 	config := ConsLayConfigs{
@@ -122,4 +124,59 @@ func TestConsLay_Eval(t *testing.T) {
 		}
 	}
 
+}
+
+func TestConsLay_Eval(t *testing.T) {
+	inputValues, _ := inputCase(0)
+	expectedValue := 831.94
+
+	freqMatrix, err := objectives.ReadMatrixFromFile("../../../data/conslay/predetermined/frequency_1_data.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	distanceMatrix, err := objectives.ReadMatrixFromFile("../../../data/conslay/predetermined/distance_1_data.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ccObj, err := objectives.CreateConstructionCostObjectiveFromConfig(objectives.ConstructionCostConfigs{
+		FrequencyMatrix: freqMatrix,
+		DistanceMatrix:  distanceMatrix,
+		FullRun:         false,
+	})
+
+	config := ConsLayConfigs{
+		NumberOfLocations:  13,
+		NumberOfFacilities: 9,
+		FixedFacilitiesName: []LocFac{
+			{
+				LocName: "L11",
+				FacName: "TF7",
+			},
+			{
+				LocName: "L12",
+				FacName: "TF8",
+			},
+			{
+				LocName: "L13",
+				FacName: "TF9",
+			},
+		},
+	}
+
+	obj, err := CreateConsLayFromConfig(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = obj.AddObjective(objectives.ConstructionCostObjectiveType, ccObj)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	values, _, _ := obj.Eval(inputValues)
+	if util.RoundTo(values[0], 2) != expectedValue {
+		t.Errorf("expected result to be %f, got %f", expectedValue, values[0])
+	}
 }

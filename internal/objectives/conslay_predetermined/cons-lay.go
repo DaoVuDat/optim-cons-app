@@ -6,6 +6,9 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/util"
+	"math"
+	"slices"
+	"sort"
 	"strings"
 )
 
@@ -117,72 +120,51 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 }
 
 func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64) {
-	panic(1)
-	//// TODO START
-	//nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
-	//mapLocations := make(map[string]data.Location, len(s.Locations))
-	//
-	//for i := 0; i < len(nonFixedLocations); i++ {
-	//	loc := s.NonFixedLocations[i]
-	//
-	//	location := data.Location{
-	//		IsFixed: false,
-	//		Symbol:  loc.Symbol,
-	//		Name:    loc.Name,
-	//	}
-	//
-	//	nonFixedLocations[i] = location
-	//	mapLocations[loc.Symbol] = location
-	//}
-	//
-	//// add fixed location to mapLocations
-	//for i := 0; i < len(s.FixedLocations); i++ {
-	//	mapLocations[s.FixedLocations[i].Symbol] = s.FixedLocations[i]
-	//}
-	//// TODO END
-	//
-	//// checking constraints
-	//penalty = make(map[data.ConstraintType]float64)
-	//for k, v := range s.Constraints {
-	//	penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
-	//}
-	//
-	//// calculate objectives and add penalty to them
-	//values = make([]float64, len(s.Objectives))
-	//valuesName := make([]data.ObjectiveType, len(s.Objectives))
-	//valuesWithKey = make(map[data.ObjectiveType]float64, len(s.Objectives))
-	//
-	//i := 0
-	//for k := range s.Objectives {
-	//	valuesName[i] = k
-	//	i++
-	//}
-	//
-	//// sort values name
-	//sort.Slice(valuesName, func(i, j int) bool {
-	//	return valuesName[i] < valuesName[j]
-	//})
-	//
-	//// sort values in alphabetical order
-	//for k, v := range s.Objectives {
-	//	idx, ok := slices.BinarySearch(valuesName, k)
-	//	if !ok {
-	//		panic("objective not found")
-	//	}
-	//	val := v.Eval(mapLocations)
-	//
-	//	// add penalty to objective value
-	//	for _, penaltyAlpha := range penalty {
-	//		val += penaltyAlpha * v.GetAlphaPenalty()
-	//	}
-	//
-	//	values[idx] = val
-	//
-	//	// add value to valuesWithKey
-	//	valuesWithKey[k] = val
-	//}
-	//
-	//return values, valuesWithKey, penalty
+
+	mapLocations := s.MappingLocations(input)
+
+	// checking constraints
+	penalty = make(map[data.ConstraintType]float64)
+	for k, v := range s.Constraints {
+		penalty[k] = math.Pow(v.Eval(mapLocations), v.GetPowerPenalty()) * v.GetAlphaPenalty()
+	}
+
+	// calculate objectives and add penalty to them
+	values = make([]float64, len(s.Objectives))
+	valuesName := make([]data.ObjectiveType, len(s.Objectives))
+	valuesWithKey = make(map[data.ObjectiveType]float64, len(s.Objectives))
+
+	i := 0
+	for k := range s.Objectives {
+		valuesName[i] = k
+		i++
+	}
+
+	// sort values name
+	sort.Slice(valuesName, func(i, j int) bool {
+		return valuesName[i] < valuesName[j]
+	})
+
+	// sort values in alphabetical order
+	for k, v := range s.Objectives {
+		idx, ok := slices.BinarySearch(valuesName, k)
+		if !ok {
+			panic("objective not found")
+		}
+		val := v.Eval(mapLocations)
+
+		// add penalty to objective value
+		for _, penaltyAlpha := range penalty {
+			val += penaltyAlpha * v.GetAlphaPenalty()
+		}
+
+		values[idx] = val
+
+		// add value to valuesWithKey
+		valuesWithKey[k] = val
+	}
+
+	return values, valuesWithKey, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
