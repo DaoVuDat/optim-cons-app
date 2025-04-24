@@ -30,6 +30,13 @@ export namespace conslay_predetermined {
 
 export namespace data {
 	
+	export enum ConstraintType {
+	    Overlap = "Overlap",
+	    OutOfBound = "OutOfBound",
+	    CoverInCraneRadius = "CoverInCraneRadius",
+	    InclusiveZone = "InclusiveZone",
+	    Size = "Size",
+	}
 	export enum ProblemName {
 	    ContinuousConstructionLayout = "Continuous Construction Layout",
 	    GridConstructionLayout = "Grid Construction Layout",
@@ -43,24 +50,17 @@ export namespace data {
 	    SafetyHazardObjective = "Safety Hazard Objective",
 	    ConstructionCostObjective = "Construction Cost Objective",
 	}
-	export enum ConstraintType {
-	    Overlap = "Overlap",
-	    OutOfBound = "OutOfBound",
-	    CoverInCraneRadius = "CoverInCraneRadius",
-	    InclusiveZone = "InclusiveZone",
-	    Size = "Size",
-	}
 
 }
 
 export namespace main {
 	
+	export enum CommandType {
+	    ExportResult = "ExportResult",
+	}
 	export enum EventType {
 	    ProgressEvent = "ProgressEvent",
 	    ResultEvent = "ResultEvent",
-	}
-	export enum CommandType {
-	    ExportResult = "ExportResult",
 	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;
@@ -95,6 +95,7 @@ export namespace main {
 	    overlap?: any;
 	    coverInCraneRadius?: any;
 	    inclusiveZone?: any;
+	    size?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new ConstraintsConfigResponse(source);
@@ -106,6 +107,7 @@ export namespace main {
 	        this.overlap = source["overlap"];
 	        this.coverInCraneRadius = source["coverInCraneRadius"];
 	        this.inclusiveZone = source["inclusiveZone"];
+	        this.size = source["size"];
 	    }
 	}
 	export class ObjectiveConfigResponse {
@@ -114,6 +116,7 @@ export namespace main {
 	    safety?: any;
 	    transportCost?: any;
 	    safetyHazard?: any;
+	    constructionCost?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new ObjectiveConfigResponse(source);
@@ -126,6 +129,7 @@ export namespace main {
 	        this.safety = source["safety"];
 	        this.transportCost = source["transportCost"];
 	        this.safetyHazard = source["safetyHazard"];
+	        this.constructionCost = source["constructionCost"];
 	    }
 	}
 	export class ObjectiveInput {

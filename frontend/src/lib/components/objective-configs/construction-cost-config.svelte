@@ -43,7 +43,7 @@
       <input type="number" class="input input-lg" placeholder="100" bind:value={config.AlphaCCPenalty}/>
     </fieldset>
     <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
-      <legend class="fieldset-legend text-lg">General QAP</legend>
+      <legend class="fieldset-legend text-lg text-nowrap">General QAP</legend>
       <label class="label">
         <input type="checkbox" bind:checked={config.GeneralQAP} class="toggle toggle-large checked:bg-[#422AD5] checked:text-white" />
         <span class="ml-8 text-base text-black">{config.GeneralQAP ? 'Full-matrix formulation' : 'Half-matrix formulation'}</span>

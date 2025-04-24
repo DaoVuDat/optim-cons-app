@@ -171,14 +171,16 @@ func (a *App) ProblemInfo() (any, error) {
 		}, nil
 	case conslay_predetermined.PredeterminedConsLayoutName:
 		problemInfo := a.problem.(*conslay_predetermined.ConsLay)
+
 		return struct {
 			Name                data.ProblemName               `json:"problemName"`
 			LowerBound          []float64                      `json:"lowerBound"`
 			UpperBound          []float64                      `json:"upperBound"`
 			Dimensions          int                            `json:"dimensions"`
-			NumberOfLocations   int                            `json:"locations"`
-			NumberOfFacilities  int                            `json:"fixedLocations"`
+			NumberOfLocations   int                            `json:"numberOfLocations"`
+			NumberOfFacilities  int                            `json:"numberOfFacilities"`
 			FixedFacilitiesName []conslay_predetermined.LocFac `json:"fixedFacilitiesName"`
+			AvailableLocations  []string                       `json:"availableLocations"`
 		}{
 			Name:                a.problemName,
 			LowerBound:          problemInfo.LowerBound,
@@ -187,6 +189,7 @@ func (a *App) ProblemInfo() (any, error) {
 			NumberOfLocations:   problemInfo.NumberOfLocations,
 			NumberOfFacilities:  problemInfo.NumberOfFacilities,
 			FixedFacilitiesName: problemInfo.FixedFacilitiesName,
+			AvailableLocations:  problemInfo.AvailableLocationsIdx,
 		}, nil
 	default:
 		return nil, errors.New("not implemented")

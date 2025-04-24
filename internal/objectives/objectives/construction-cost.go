@@ -18,7 +18,8 @@ type ConstructionCostConfigs struct {
 	Delta                        float64
 	AlphaConstructionCostPenalty float64
 	Phases                       [][]string
-	FilePath                     string
+	FrequencyFilePath            string
+	DistanceFilePath             string
 }
 
 type ConstructionCostObjective struct {
@@ -28,7 +29,8 @@ type ConstructionCostObjective struct {
 	Delta                        float64
 	AlphaConstructionCostPenalty float64
 	Phases                       [][]string
-	FilePath                     string
+	FrequencyFilePath            string
+	DistanceFilePath             string
 }
 
 func CreateConstructionCostObjectiveFromConfig(ccConfigs ConstructionCostConfigs) (*ConstructionCostObjective, error) {
@@ -38,7 +40,8 @@ func CreateConstructionCostObjectiveFromConfig(ccConfigs ConstructionCostConfigs
 		Delta:                        ccConfigs.Delta,
 		AlphaConstructionCostPenalty: ccConfigs.AlphaConstructionCostPenalty,
 		Phases:                       ccConfigs.Phases,
-		FilePath:                     ccConfigs.FilePath,
+		FrequencyFilePath:            ccConfigs.FrequencyFilePath,
+		DistanceFilePath:             ccConfigs.DistanceFilePath,
 		FullRun:                      ccConfigs.FullRun,
 	}
 	return ccObj, nil

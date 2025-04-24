@@ -8,6 +8,7 @@ import {
 } from "$lib/stores/constraints";
 import {objectiveStore} from "$lib/stores/objectives.svelte";
 import {type ISizeConfig, sizeConfig} from "$lib/stores/constraints/size.svelte";
+import {problemStore} from "$lib/stores/problem.svelte";
 
 type IConfigType = IOutOfBoundConfig | IOverlapConfig | ICoverInCraneRadiusConfig | IInclusiveZoneConfig | ISizeConfig
 
@@ -58,14 +59,30 @@ class ConstraintsStore {
       label: 'Inclusive zone',
       value: data.ConstraintType.InclusiveZone,
       isChecked: false,
+    },
+    {
+      label: 'Size',
+      value: data.ConstraintType.Size,
+      isChecked: false,
     }
   ])
 
   validConstraintList = $derived.by<IConstraintOptions[]>(() => {
-    // filtering the "cover in crane radius"
-    const selectedObjectives = objectiveStore.objectives.selectedObjectives.map(selectedObjective => selectedObjective.objectiveType)
-    return this.constraintList.filter(cons => cons.value !== data.ConstraintType.CoverInCraneRadius ||
-      selectedObjectives.includes(data.ObjectiveType.HoistingObjective))
+    if (problemStore.selectedProblem?.value === data.ProblemName.PredeterminedConstructionLayout) {
+      let constraints = []
+      constraints.push(this.constraintList.find(cons => cons.value === data.ConstraintType.Size)!)
+
+      return constraints
+    } else {
+      // filtering the "cover in crane radius"
+      const selectedObjectives = objectiveStore.objectives.selectedObjectives.map(selectedObjective => selectedObjective.objectiveType)
+      return this.constraintList
+          .filter(cons => cons.value !== data.ConstraintType.Size) // fitering the Size constraint ( for predetermined problem)
+          .filter(cons => cons.value !== data.ConstraintType.CoverInCraneRadius ||
+          selectedObjectives.includes(data.ObjectiveType.HoistingObjective))
+    }
+
+
   })
 
   clearConstraint = () => {

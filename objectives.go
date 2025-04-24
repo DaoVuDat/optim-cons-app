@@ -9,14 +9,9 @@ import (
 
 func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
-	// TODO: add Config for each objective
-	//switch a.problemName {
-	//case conslay_continuous.ContinuousConsLayoutName:
-	//problem := a.problem.(*conslay_continuous.ConsLay)
 	problem := a.problem
 
 	// remove old objective first
-	//problem.Objectives = make(map[data.ObjectiveType]data.Objectiver)
 	_ = problem.InitializeObjectives()
 
 	for _, obj := range objs {
@@ -216,23 +211,59 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 			if err != nil {
 				return err
 			}
+
+		case objectives.ConstructionCostObjectiveType:
+			configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
+			if err != nil {
+				return err
+			}
+
+			var ccCfg constructionCostConfig
+			err = sonic.Unmarshal(configBytes, &ccCfg)
+			if err != nil {
+				return err
+			}
+
+			frequencyMatrix, err := objectives.ReadMatrixFromFile(ccCfg.FrequencyMatrixFilePath)
+			if err != nil {
+				return err
+			}
+
+			distanceMatrix, err := objectives.ReadMatrixFromFile(ccCfg.DistanceMatrixFilePath)
+			if err != nil {
+				return err
+			}
+
+			ccObj, err := objectives.CreateConstructionCostObjectiveFromConfig(objectives.ConstructionCostConfigs{
+				FrequencyMatrix:              frequencyMatrix,
+				DistanceMatrix:               distanceMatrix,
+				FullRun:                      ccCfg.GeneralQAP,
+				Delta:                        1,
+				AlphaConstructionCostPenalty: ccCfg.AlphaConstructionCostPenalty,
+				FrequencyFilePath:            ccCfg.FrequencyMatrixFilePath,
+				DistanceFilePath:             ccCfg.DistanceMatrixFilePath,
+			})
+			if err != nil {
+				return err
+			}
+
+			err = problem.AddObjective(obj.ObjectiveName, ccObj)
+			if err != nil {
+				return err
+			}
 		}
 	}
-
-	//	return nil
-	//default:
-	//	return errors.New("not implemented")
-	//}
 
 	return nil
 }
 
 type ObjectiveConfigResponse struct {
-	Risk          any `json:"risk,omitempty"`
-	Hoisting      any `json:"hoisting,omitempty"`
-	Safety        any `json:"safety,omitempty"`
-	TransportCost any `json:"transportCost,omitempty"`
-	SafetyHazard  any `json:"safetyHazard,omitempty"`
+	Risk             any `json:"risk,omitempty"`
+	Hoisting         any `json:"hoisting,omitempty"`
+	Safety           any `json:"safety,omitempty"`
+	TransportCost    any `json:"transportCost,omitempty"`
+	SafetyHazard     any `json:"safetyHazard,omitempty"`
+	ConstructionCost any `json:"constructionCost,omitempty"`
 }
 
 func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
@@ -340,14 +371,25 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				Phases:                   sh.Phases,
 				FilePath:                 sh.FilePath,
 			}
+		case objectives.ConstructionCostObjectiveType:
+			cc := obj.(*objectives.ConstructionCostObjective)
+			
+			res.ConstructionCost = struct {
+				AlphaCCPenalty          float64 `json:"alphaCCPenalty"`
+				FrequencyMatrixFilePath string  `json:"frequencyMatrixFilePath"`
+				DistanceMatrixFilePath  string  `json:"distanceMatrixFilePath"`
+				GeneralQAP              bool    `json:"generalQAP"`
+			}{
+				AlphaCCPenalty:          cc.AlphaConstructionCostPenalty,
+				FrequencyMatrixFilePath: cc.FrequencyFilePath,
+				DistanceMatrixFilePath:  cc.DistanceFilePath,
+				GeneralQAP:              cc.FullRun,
+			}
 		}
 
 	}
 
 	return res, nil
-	//default:
-	//	return nil, errors.New("not implemented")
-	//}
 }
 
 type ObjectiveInput struct {
@@ -397,4 +439,8 @@ type safetyHazardConfig struct {
 }
 
 type constructionCostConfig struct {
+	AlphaConstructionCostPenalty float64 `json:"AlphaCCPenalty"`
+	FrequencyMatrixFilePath      string  `json:"FrequencyMatrixFilePath"`
+	DistanceMatrixFilePath       string  `json:"DistanceMatrixFilePath"`
+	GeneralQAP                   bool    `json:"GeneralQAP"`
 }

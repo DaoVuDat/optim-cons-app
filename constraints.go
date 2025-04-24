@@ -9,11 +9,8 @@ import (
 
 func (a *App) AddConstraints(cons []ConstraintInput) error {
 
-	//switch a.problemName {
-	//case conslay_continuous.ContinuousConsLayoutName:
 	problem := a.problem
 
-	// remove old constraints first
 	_ = problem.InitializeConstraints()
 
 	for _, con := range cons {
@@ -154,7 +151,32 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			if err != nil {
 				return err
 			}
+
+		case constraints.ConstraintSize:
+			configBytes, err := sonic.Marshal(con.ConstraintConfig)
+			if err != nil {
+				return err
+			}
+
+			var sizeCfg sizeConfig
+			err = sonic.Unmarshal(configBytes, &sizeCfg)
+			if err != nil {
+				return err
+			}
+
+			sizeConstraint := constraints.CreateSizeConstraint(
+				sizeCfg.SmallLocations,
+				sizeCfg.LargeFacilities,
+				sizeCfg.AlphaSizePenalty,
+				sizeCfg.PowerDifferencePenalty,
+			)
+
+			err = problem.AddConstraint(con.ConstraintName, sizeConstraint)
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil
@@ -166,13 +188,11 @@ type ConstraintsConfigResponse struct {
 	Overlap            any `json:"overlap,omitempty"`
 	CoverInCraneRadius any `json:"coverInCraneRadius,omitempty"`
 	InclusiveZone      any `json:"inclusiveZone,omitempty"`
+	Size               any `json:"size,omitempty"`
 }
 
 func (a *App) ConstraintsInfo() (*ConstraintsConfigResponse, error) {
 	res := &ConstraintsConfigResponse{}
-
-	//switch a.problemName {
-	//case conslay_continuous.ContinuousConsLayoutName:
 
 	problemInfo := a.problem
 
@@ -239,13 +259,23 @@ func (a *App) ConstraintsInfo() (*ConstraintsConfigResponse, error) {
 				Cranes:                         coverInCrane.Cranes,
 			}
 
+		case constraints.ConstraintSize:
+			size := obj.(*constraints.SizeConstraint)
+			res.Size = struct {
+				AlphaSizePenalty       float64  `json:"alphaSizePenalty"`
+				PowerDifferencePenalty float64  `json:"powerDifferencePenalty"`
+				SmallLocations         []string `json:"smallLocations"`
+				LargeFacilities        []string `json:"largeFacilities"`
+			}{
+				AlphaSizePenalty:       size.AlphaSizePenalty,
+				PowerDifferencePenalty: size.PowerSizePenalty,
+				SmallLocations:         size.SmallLocations,
+				LargeFacilities:        size.LargeFacilities,
+			}
 		}
 	}
 
 	return res, nil
-	//default:
-	//	return nil, errors.New("not implemented")
-	//}
 }
 
 type ConstraintInput struct {
@@ -276,4 +306,11 @@ type inclusiveZoneConfig struct {
 		BuildingNames string  `json:"BuildingNames"`
 		Size          float64 `json:"Size"`
 	} `json:"Zones"`
+}
+
+type sizeConfig struct {
+	AlphaSizePenalty       float64  `json:"AlphaSizePenalty"`
+	PowerDifferencePenalty float64  `json:"PowerDifferencePenalty"`
+	SmallLocations         []string `json:"SmallLocations"`
+	LargeFacilities        []string `json:"LargeFacilities"`
 }
