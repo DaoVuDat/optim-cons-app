@@ -9,6 +9,7 @@
   import overlapConfigComponent  from "$lib/components/constraint-configs/overlap-config.svelte"
   import coverInCraneRadiusConfigComponent from "$lib/components/constraint-configs/cover-in-crane-radius-config.svelte"
   import inclusiveZoneConfigComponent from "$lib/components/constraint-configs/inclusive-zone-config.svelte"
+  import sizeConfigComponent from "$lib/components/constraint-configs/size-config.svelte"
   import {
     AddConstraints,
   } from "$lib/wailsjs/go/main/App";
@@ -20,6 +21,7 @@
     [dataType.ConstraintType.Overlap]: overlapConfigComponent,
     [dataType.ConstraintType.InclusiveZone]: inclusiveZoneConfigComponent,
     [dataType.ConstraintType.CoverInCraneRadius]: coverInCraneRadiusConfigComponent,
+    [dataType.ConstraintType.Size]: sizeConfigComponent,
   }
 
   let selectedConstraint = $state<dataType.ConstraintType>()

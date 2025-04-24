@@ -7,6 +7,7 @@
   import safetyConfigComponent from "$lib/components/objective-configs/safety-config.svelte";
   import safetyHazardConfigComponent from "$lib/components/objective-configs/safety-hazard-config.svelte";
   import transportCostConfigComponent from "$lib/components/objective-configs/transport-cost-config.svelte";
+  import constructionCostConfigComponent from "$lib/components/objective-configs/construction-cost-config.svelte";
   import {goto} from "$app/navigation";
   import {main, data as dataType} from "$lib/wailsjs/go/models";
   import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
@@ -20,6 +21,7 @@
     [dataType.ObjectiveType.SafetyObjective]: safetyConfigComponent,
     [dataType.ObjectiveType.TransportCostObjective]: transportCostConfigComponent,
     [dataType.ObjectiveType.SafetyHazardObjective]: safetyHazardConfigComponent,
+    [dataType.ObjectiveType.ConstructionCostObjective]: constructionCostConfigComponent
   }
 
   let selectedObjective = $state<dataType.ObjectiveType>()
