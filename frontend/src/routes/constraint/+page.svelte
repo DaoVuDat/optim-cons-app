@@ -1,89 +1,91 @@
 <script lang="ts">
-  import clsx from "clsx";
-  import {stepStore} from "$lib/stores/steps.svelte.js";
-  import {goto} from "$app/navigation";
-  import {main, data as dataType} from "$lib/wailsjs/go/models";
-  import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
-  import type {Facility} from "$lib/stores/problems/problem";
-  import outOfBoundConfigComponent from "$lib/components/constraint-configs/out-of-bound-config.svelte"
-  import overlapConfigComponent  from "$lib/components/constraint-configs/overlap-config.svelte"
-  import coverInCraneRadiusConfigComponent from "$lib/components/constraint-configs/cover-in-crane-radius-config.svelte"
-  import inclusiveZoneConfigComponent from "$lib/components/constraint-configs/inclusive-zone-config.svelte"
-  import sizeConfigComponent from "$lib/components/constraint-configs/size-config.svelte"
-  import {
-    AddConstraints,
-  } from "$lib/wailsjs/go/main/App";
+    import clsx from "clsx";
+    import {stepStore} from "$lib/stores/steps.svelte.js";
+    import {goto} from "$app/navigation";
+    import {main, data as dataType} from "$lib/wailsjs/go/models";
+    import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
+    import type {Facility} from "$lib/stores/problems/problem";
+    import outOfBoundConfigComponent from "$lib/components/constraint-configs/out-of-bound-config.svelte"
+    import overlapConfigComponent from "$lib/components/constraint-configs/overlap-config.svelte"
+    import coverInCraneRadiusConfigComponent
+        from "$lib/components/constraint-configs/cover-in-crane-radius-config.svelte"
+    import inclusiveZoneConfigComponent from "$lib/components/constraint-configs/inclusive-zone-config.svelte"
+    import sizeConfigComponent from "$lib/components/constraint-configs/size-config.svelte"
+    import {
+        AddConstraints,
+    } from "$lib/wailsjs/go/main/App";
 
-  import {constraintsStore} from "$lib/stores/constraints.svelte";
+    import {constraintsStore} from "$lib/stores/constraints.svelte";
 
-  const configComponents = {
-    [dataType.ConstraintType.OutOfBound]: outOfBoundConfigComponent,
-    [dataType.ConstraintType.Overlap]: overlapConfigComponent,
-    [dataType.ConstraintType.InclusiveZone]: inclusiveZoneConfigComponent,
-    [dataType.ConstraintType.CoverInCraneRadius]: coverInCraneRadiusConfigComponent,
-    [dataType.ConstraintType.Size]: sizeConfigComponent,
-  }
-
-  let selectedConstraint = $state<dataType.ConstraintType>()
-
-  const component = $derived.by(() => {
-    if (selectedConstraint) {
-      return configComponents[selectedConstraint]
+    const configComponents = {
+        [dataType.ConstraintType.OutOfBound]: outOfBoundConfigComponent,
+        [dataType.ConstraintType.Overlap]: overlapConfigComponent,
+        [dataType.ConstraintType.InclusiveZone]: inclusiveZoneConfigComponent,
+        [dataType.ConstraintType.CoverInCraneRadius]: coverInCraneRadiusConfigComponent,
+        [dataType.ConstraintType.Size]: sizeConfigComponent,
     }
-  })
 
-  let loading = $state<boolean>(false)
+    let selectedConstraint = $state<dataType.ConstraintType>()
 
-  const handleClick = (obj: dataType.ConstraintType) => {
-    selectedConstraint = obj;
-  }
-
-  const handleNext = async () => {
-    loading = true
-
-    // Do loading data objective configs
-    if (constraintsStore.constraints.selectedConstraints.length > 0) {
-      const constraintsInput = constraintsStore.constraints.selectedConstraints.map<main.ConstraintInput>(con => {
-        return {
-          constraintName: con.constraintType,
-          constraintConfig: con.config,
+    const component = $derived.by(() => {
+        if (selectedConstraint) {
+            return configComponents[selectedConstraint]
         }
-      })
+    })
 
-      await AddConstraints(constraintsInput)
+    let loading = $state<boolean>(false)
+
+    const handleClick = (obj: dataType.ConstraintType) => {
+        selectedConstraint = obj;
     }
 
-    loading = false
+    const handleNext = async () => {
+        loading = true
 
-    await goto('/algorithm')
-    stepStore.nextStep()
-  }
+        // Do loading data objective configs
+        if (constraintsStore.constraints.selectedConstraints.length > 0) {
+            const constraintsInput = constraintsStore.constraints.selectedConstraints.map<main.ConstraintInput>(con => {
+                return {
+                    constraintName: con.constraintType,
+                    constraintConfig: con.config,
+                }
+            })
 
-  let {data}: PageProps = $props();
+            await AddConstraints(constraintsInput)
+        }
 
-  let facilities = $state<Facility[] | undefined>(undefined)
+        loading = false
 
-  if (data.problemInfo.problemName === dataType.ProblemName.ContinuousConstructionLayout ||
-    data.problemInfo.problemName === dataType.ProblemName.GridConstructionLayout) {
-    // convert map to array
-    facilities = Object.values(data.problemInfo.locations)
-  }
+        await goto('/algorithm')
+        stepStore.nextStep()
+    }
 
-  // Hack + make config "reactive"
-  const noTypeCheck = (x: any) => {
-    if (x) {
-      return x
-    } else
-      return {}
-  };
+    let {data}: PageProps = $props();
+
+    let facilities = $state<Facility[] | undefined>(undefined)
+
+
+    if (data.problemInfo.problemName === dataType.ProblemName.ContinuousConstructionLayout ||
+        data.problemInfo.problemName === dataType.ProblemName.GridConstructionLayout) {
+        // convert map to array
+        facilities = Object.values(data.problemInfo.locations)
+    }
+
+    // Hack + make config "reactive"
+    const noTypeCheck = (x: any) => {
+        if (x) {
+            return x
+        } else
+            return {}
+    };
 
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
-<!--  <section class="mt-8 text-black">-->
-<!--    <h1 class="text-5xl font-bold">Data configuration</h1>-->
-<!--  </section>-->
+  <!--  <section class="mt-8 text-black">-->
+  <!--    <h1 class="text-5xl font-bold">Data configuration</h1>-->
+  <!--  </section>-->
 
 
   <!-- Content -->
@@ -108,7 +110,9 @@
       {#if selectedConstraint}
         {@const Component = component}
         <Component {...noTypeCheck({
-          facilities
+            facilities,
+            numberOfLocations: data.problemInfo.numberOfLocations,
+            numberOfFacilities: data.problemInfo.numberOfFacilities,
         })}/>
       {:else}
         <p>Please select constraint</p>

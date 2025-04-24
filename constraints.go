@@ -153,6 +153,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			}
 
 		case constraints.ConstraintSize:
+
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
 				return err
@@ -180,7 +181,6 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 	}
 
 	return nil
-
 }
 
 type ConstraintsConfigResponse struct {
@@ -260,6 +260,7 @@ func (a *App) ConstraintsInfo() (*ConstraintsConfigResponse, error) {
 			}
 
 		case constraints.ConstraintSize:
+
 			size := obj.(*constraints.SizeConstraint)
 			res.Size = struct {
 				AlphaSizePenalty       float64  `json:"alphaSizePenalty"`

@@ -1,54 +1,57 @@
 <script lang="ts">
-  import Modal from "$lib/components/modal.svelte"
-  import {sizeConfig} from "$lib/stores/constraints/size.svelte";
+    import Modal from "$lib/components/modal.svelte"
+    import {sizeConfig} from "$lib/stores/constraints/size.svelte";
 
-  interface Props {
-    numberOfLocations: number
-    numberOfFacilities: number
-  }
-
-  const {numberOfLocations, numberOfFacilities}: Props = $props()
-
-  const config = sizeConfig
-
-  let isOpenModalSmallLocations = $state<boolean>(false)
-  let isOpenModalLargeFacilities = $state<boolean>(false)
-
-  const locationNames = $derived.by(() => {
-    let names: string[] = []
-
-    for (let i = 0; i < numberOfLocations; i++) {
-      names.push(`L${i+1}`)
+    interface Props {
+        numberOfLocations: number
+        numberOfFacilities: number
     }
 
-    return names
-  })
+    const {numberOfLocations, numberOfFacilities}: Props = $props()
 
-  const facilityNames = $derived.by(() => {
-    let names: string[] = []
-    for (let i = 0; i < numberOfFacilities; i++) {
-      names.push(`TF${i+1}`)
+    const config = sizeConfig
+
+    let isOpenModalSmallLocations = $state<boolean>(false)
+    let isOpenModalLargeFacilities = $state<boolean>(false)
+
+    const locationNames = $derived.by(() => {
+        console.log("derived locs", numberOfLocations)
+        let names: string[] = []
+
+        for (let i = 0; i < numberOfLocations; i++) {
+            names.push(`L${i + 1}`)
+        }
+
+        return names
+    })
+
+    const facilityNames = $derived.by(() => {
+        console.log("derived fac", numberOfFacilities)
+        let names: string[] = []
+        for (let i = 0; i < numberOfFacilities; i++) {
+            names.push(`TF${i + 1}`)
+        }
+        return names
+    })
+
+
+    const addSmallLocation = (name: string) => {
+        sizeConfig.SmallLocations.push(name)
     }
-    return names
-  })
 
+    const removeSmallLocation = (name: string) => {
+        sizeConfig.SmallLocations.splice(sizeConfig.SmallLocations.indexOf(name), 1)
+    }
 
-  const addSmallLocation = (name: string) => {
-    sizeConfig.SmallLocations.push(name)
-  }
+    const addLargeFacility = (name: string) => {
+        sizeConfig.LargeFacilities.push(name)
+    }
 
-  const removeSmallLocation = (name: string) => {
-    sizeConfig.SmallLocations.splice(sizeConfig.SmallLocations.indexOf(name), 1)
-  }
+    const removeLargeFacility = (name: string) => {
+        sizeConfig.LargeFacilities.splice(sizeConfig.LargeFacilities.indexOf(name), 1)
+    }
 
-  const addLargeFacility = (name: string) => {
-    sizeConfig.LargeFacilities.push(name)
-  }
-
-  const removeLargeFacility = (name: string) => {
-    sizeConfig.LargeFacilities.splice(sizeConfig.LargeFacilities.indexOf(name), 1)
-  }
-
+    $inspect(locationNames, facilityNames)
 </script>
 
 
@@ -60,7 +63,7 @@
     </fieldset>
     <fieldset class="fieldset flex flex-col">
       <legend class="fieldset-legend text-lg ">Alpha (for Penalty):</legend>
-      <input type="number" class="input input-lg" placeholder="20000" bind:value={config.AlphaInclusiveZonePenalty}/>
+      <input type="number" class="input input-lg" placeholder="20000" bind:value={config.AlphaSizePenalty}/>
     </fieldset>
 
 
@@ -99,7 +102,6 @@
                         <fieldset class="fieldset flex flex-col">
                           <legend class="fieldset-legend text-base">Select location:</legend>
                           <select class="select select-sm" bind:value={sizeConfig.SmallLocations[idx]}>
-                            <option disabled selected></option>
                             {#each locationNames as name (name)}
                               <option value={name}>{name}</option>
                             {/each}
@@ -159,7 +161,6 @@
                         <fieldset class="fieldset flex flex-col">
                           <legend class="fieldset-legend text-base">Select facility:</legend>
                           <select class="select select-sm" bind:value={sizeConfig.LargeFacilities[idx]}>
-                            <option disabled selected></option>
                             {#each facilityNames as name (name)}
                               <option value={name}>{name}</option>
                             {/each}

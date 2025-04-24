@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/util"
 	"strings"
 )
 
@@ -21,6 +22,9 @@ type ConsLay struct {
 	Constraints           map[data.ConstraintType]data.Constrainter
 	Phases                [][]string
 	AvailableLocationsIdx []string
+	FacilitiesToBeFound   []string
+	LocationNames         []string
+	FacilityNames         []string
 }
 
 type LocFac struct {
@@ -50,6 +54,33 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		Objectives:          make(map[data.ObjectiveType]data.Objectiver),
 		Constraints:         make(map[data.ConstraintType]data.Constrainter),
 	}
+
+	mapLocatedFacilities := make(map[string]struct{}, consLay.NumberOfLocations)
+
+	for _, v := range consLay.FixedFacilitiesName {
+		mapLocatedFacilities[v.FacName] = struct{}{}
+	}
+
+	locNames := make([]string, consLay.NumberOfLocations)
+	for i := 0; i < consLay.NumberOfLocations; i++ {
+		locNames[i] = fmt.Sprintf("L%d", i+1)
+	}
+
+	consLay.LocationNames = locNames
+
+	facNames := make([]string, consLay.NumberOfFacilities)
+	var facilitiesToBeFound []string
+
+	for i := 0; i < consLay.NumberOfFacilities; i++ {
+		facName := fmt.Sprintf("TF%d", i+1)
+		facNames[i] = facName
+		if _, ok := mapLocatedFacilities[facName]; !ok {
+			facilitiesToBeFound = append(facilitiesToBeFound, facName)
+		}
+	}
+
+	consLay.FacilityNames = facNames
+	consLay.FacilitiesToBeFound = facilitiesToBeFound
 
 	// Find the x, y, r of Non-fixed Locations
 	dimensions := consLay.NumberOfLocations - len(consLay.FixedFacilitiesName)
@@ -238,6 +269,37 @@ func (s *ConsLay) GetLocations() map[string]data.Location {
 // Constraints Utility Functions
 
 // Readers Utility Functions
+
+func (s *ConsLay) MappingLocations(input []float64) map[string]data.Location {
+
+	_, sortedIdx := util.SortWithIdx(input)
+
+	// take the number of non-fixed facilities
+	sortedIdx = sortedIdx[:(s.NumberOfFacilities - len(s.FixedFacilitiesName))]
+
+	mapLocations := make(map[string]data.Location, s.NumberOfFacilities)
+
+	// setup fixed facilities
+	for _, v := range s.FixedFacilitiesName {
+		mapLocations[v.FacName] = data.Location{
+			Symbol:      v.FacName,
+			IsLocatedAt: v.LocName,
+		}
+	}
+
+	// setup non-fixed facilities
+	for i, v := range sortedIdx {
+		loc := s.AvailableLocationsIdx[v]
+		fac := s.FacilitiesToBeFound[i]
+
+		mapLocations[fac] = data.Location{
+			Symbol:      fac,
+			IsLocatedAt: loc,
+		}
+	}
+
+	return mapLocations
+}
 
 func ReadPhasesFromFile(filePath string) ([][]string, error) {
 

@@ -30,6 +30,14 @@ export namespace conslay_predetermined {
 
 export namespace data {
 	
+	export enum ObjectiveType {
+	    SafetyObjective = "Safety Objective",
+	    HoistingObjective = "Hoisting Objective",
+	    RiskObjective = "Risk Objective",
+	    TransportCostObjective = "Transport Cost Objective",
+	    SafetyHazardObjective = "Safety Hazard Objective",
+	    ConstructionCostObjective = "Construction Cost Objective",
+	}
 	export enum ConstraintType {
 	    Overlap = "Overlap",
 	    OutOfBound = "OutOfBound",
@@ -42,25 +50,17 @@ export namespace data {
 	    GridConstructionLayout = "Grid Construction Layout",
 	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
 	}
-	export enum ObjectiveType {
-	    SafetyObjective = "Safety Objective",
-	    HoistingObjective = "Hoisting Objective",
-	    RiskObjective = "Risk Objective",
-	    TransportCostObjective = "Transport Cost Objective",
-	    SafetyHazardObjective = "Safety Hazard Objective",
-	    ConstructionCostObjective = "Construction Cost Objective",
-	}
 
 }
 
 export namespace main {
 	
-	export enum CommandType {
-	    ExportResult = "ExportResult",
-	}
 	export enum EventType {
 	    ProgressEvent = "ProgressEvent",
 	    ResultEvent = "ResultEvent",
+	}
+	export enum CommandType {
+	    ExportResult = "ExportResult",
 	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;

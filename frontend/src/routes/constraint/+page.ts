@@ -5,7 +5,6 @@ export const load: PageLoad = async ({ params }) => {
   // get locations from problems
 
   const data = await ProblemInfo()
-  const objectives = await ObjectivesInfo()
   // get the list of locations if it is not predetermined problem
 
   return {
