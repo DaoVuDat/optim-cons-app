@@ -12,4 +12,5 @@ export interface Facility {
     IsFixed:    boolean
     Symbol:     string
     Name:       string
+    IsLocatedAt: string
 }

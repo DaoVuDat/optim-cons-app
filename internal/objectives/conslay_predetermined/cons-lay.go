@@ -219,7 +219,33 @@ func (s *ConsLay) GetPhases() [][]string {
 
 func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, []data.Location, []data.Crane, error) {
 
-	return nil, nil, nil, nil
+	_, sortedIdx := util.SortWithIdx(input)
+
+	// take the number of non-fixed facilities
+	sortedIdx = sortedIdx[:(s.NumberOfFacilities - len(s.FixedFacilitiesName))]
+
+	mapLocations := make(map[string]data.Location, s.NumberOfFacilities)
+
+	// setup fixed facilities
+	for _, v := range s.FixedFacilitiesName {
+		mapLocations[v.FacName] = data.Location{
+			Symbol:      v.FacName,
+			IsLocatedAt: v.LocName,
+		}
+	}
+
+	// setup non-fixed facilities
+	for i, v := range sortedIdx {
+		loc := s.AvailableLocationsIdx[v]
+		fac := s.FacilitiesToBeFound[i]
+
+		mapLocations[fac] = data.Location{
+			Symbol:      fac,
+			IsLocatedAt: loc,
+		}
+	}
+
+	return mapLocations, nil, nil, nil
 }
 
 func (s *ConsLay) GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error) {

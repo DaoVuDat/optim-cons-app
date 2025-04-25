@@ -333,9 +333,14 @@
     {#if graphData}
       <div class="grid grid-rows-2 grid-cols-{numberOfGridCols} gap-1 flex-2/3">
         {#each Object.entries(graphData.ValuesWithKey) as [k, v]}
-          <p> <span class="font-bold text-base">
-            {k.replace(/objective/gi, "")}:
-          </span> <span class="text-sm">{roundNDecimal(v, 3)}</span></p>
+          <p>
+              <span class="font-bold text-base text-gray-700">
+                {k.replace(/objective/gi, "")}:
+              </span>
+            <span class="text-sm text-gray-600">
+                {roundNDecimal(v, 3)}
+              </span>
+          </p>
         {/each}
       </div>
     {/if}

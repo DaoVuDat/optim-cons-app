@@ -111,8 +111,8 @@
         {@const Component = component}
         <Component {...noTypeCheck({
             facilities,
-            numberOfLocations: data.problemInfo.numberOfLocations,
-            numberOfFacilities: data.problemInfo.numberOfFacilities,
+            numberOfLocations: data.problemInfo?.numberOfLocations,
+            numberOfFacilities: data.problemInfo?.numberOfFacilities
         })}/>
       {:else}
         <p>Please select constraint</p>

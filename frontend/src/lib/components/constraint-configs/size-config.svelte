@@ -15,7 +15,6 @@
     let isOpenModalLargeFacilities = $state<boolean>(false)
 
     const locationNames = $derived.by(() => {
-        console.log("derived locs", numberOfLocations)
         let names: string[] = []
 
         for (let i = 0; i < numberOfLocations; i++) {
@@ -26,7 +25,6 @@
     })
 
     const facilityNames = $derived.by(() => {
-        console.log("derived fac", numberOfFacilities)
         let names: string[] = []
         for (let i = 0; i < numberOfFacilities; i++) {
             names.push(`TF${i + 1}`)
@@ -51,7 +49,6 @@
         sizeConfig.LargeFacilities.splice(sizeConfig.LargeFacilities.indexOf(name), 1)
     }
 
-    $inspect(locationNames, facilityNames)
 </script>
 
 

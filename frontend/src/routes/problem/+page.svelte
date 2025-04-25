@@ -99,7 +99,7 @@
   <section class="mt-8 px-24 grid grid-cols-12 gap-4 w-[1400px] auto-rows-min">
     <div
         class="h-[560px] bg-base-100 px-2 py-4 card shadow-md rounded-lg col-span-4 flex flex-col space-y-2 overflow-y-auto">
-      {#each problemList as prob (prob)}
+      {#each problemStore.validProblemList as prob (prob)}
         <button class={clsx("p-4 rounded h-12 flex justify-between items-center cursor-pointer text-left",
         problemStore.selectedProblem?.value === prob.value ? 'bg-[#422AD5] text-white' : '')}
                 onclick={() => handleClick(prob)}>

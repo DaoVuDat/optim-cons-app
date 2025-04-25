@@ -30,6 +30,11 @@ export namespace conslay_predetermined {
 
 export namespace data {
 	
+	export enum ProblemName {
+	    ContinuousConstructionLayout = "Continuous Construction Layout",
+	    GridConstructionLayout = "Grid Construction Layout",
+	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
+	}
 	export enum ObjectiveType {
 	    SafetyObjective = "Safety Objective",
 	    HoistingObjective = "Hoisting Objective",
@@ -44,11 +49,6 @@ export namespace data {
 	    CoverInCraneRadius = "CoverInCraneRadius",
 	    InclusiveZone = "InclusiveZone",
 	    Size = "Size",
-	}
-	export enum ProblemName {
-	    ContinuousConstructionLayout = "Continuous Construction Layout",
-	    GridConstructionLayout = "Grid Construction Layout",
-	    PredeterminedConstructionLayout = "Predetermined Construction Layout",
 	}
 
 }

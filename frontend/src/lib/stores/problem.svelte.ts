@@ -5,6 +5,7 @@ import {
   type IPredeterminedConfig, predeterminedProblemConfig
 } from "$lib/stores/problems";
 import {data} from "$lib/wailsjs/go/models";
+import {objectiveStore} from "$lib/stores/objectives.svelte";
 
 export interface ProblemWithLabel {
   label: string
@@ -34,6 +35,15 @@ export type ProblemConfigMap = {
 
 class ProblemStore {
   selectedProblem = $state<ProblemWithLabel>()
+
+  validProblemList = $derived.by<ProblemWithLabel[]>(() => {
+    if (objectiveStore.objectives.selectedObjectives.find(
+        o => o.objectiveType === data.ObjectiveType.ConstructionCostObjective)) {
+      return problemList.filter(prob => prob.value === data.ProblemName.PredeterminedConstructionLayout)
+    } else {
+      return problemList.filter(prob => prob.value !== data.ProblemName.PredeterminedConstructionLayout)
+    }
+  })
 
   getConfig = <T extends data.ProblemName>(prob: T) : ProblemConfigMap[T]=> {
     switch (prob) {
