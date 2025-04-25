@@ -62,6 +62,10 @@ func (obj *SafetyHazardObjective) Eval(locations map[string]data.Location) float
 					continue
 				}
 
+				if obj.SEMatrix.Matrix[idxI][idxJ] == 0 {
+					continue
+				}
+
 				result += (-data.Distance2D(facilityI.Coordinate, facilityJ.Coordinate)) / obj.SEMatrix.Matrix[idxI][idxJ]
 				calculatedMap[facilityNameI+facilityNameJ] = struct{}{}
 			}

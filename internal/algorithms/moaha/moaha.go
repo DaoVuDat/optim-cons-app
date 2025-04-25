@@ -188,7 +188,6 @@ func (a *MOAHAAlgorithm) Run() error {
 
 func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
 	dimensions := a.ObjectiveFunction.GetDimension()
-
 	// initialization
 	a.initialization()
 

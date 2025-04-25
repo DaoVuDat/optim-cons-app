@@ -375,7 +375,8 @@ func ReadLocationsFromFile(filePath string) (locations map[string]data.Location,
 				}
 				width = val
 			case 4:
-				if strings.Contains(cell, "-") {
+				cell = strings.TrimSpace(cell)
+				if strings.Contains(cell, "-") || cell == "" {
 					isFixed = false
 					break
 				}
@@ -385,7 +386,8 @@ func ReadLocationsFromFile(filePath string) (locations map[string]data.Location,
 				}
 				x = val
 			case 5:
-				if strings.Contains(cell, "-") {
+				cell = strings.TrimSpace(cell)
+				if strings.Contains(cell, "-") || cell == "" {
 					isFixed = false
 					break
 				}
