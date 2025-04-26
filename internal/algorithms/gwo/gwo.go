@@ -40,9 +40,6 @@ func Create(
 	configs Config,
 ) (*GWOAlgorithm, error) {
 
-	convergence := make([]float64, configs.NumberOfIter)
-	agents := make([]*objectives.Result, configs.NumberOfAgents)
-
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
 	}
@@ -51,10 +48,13 @@ func Create(
 		NumberOfAgents:    configs.NumberOfAgents,
 		NumberOfIter:      configs.NumberOfIter,
 		AParam:            configs.AParam,
-		Convergence:       convergence,
 		ObjectiveFunction: problem,
-		Agents:            agents,
 	}, nil
+}
+
+func (g *GWOAlgorithm) reset() {
+	g.Agents = make([]*objectives.Result, g.NumberOfAgents)
+	g.Convergence = make([]float64, g.NumberOfIter)
 }
 
 func (g *GWOAlgorithm) Type() data.TypeProblem {
@@ -62,6 +62,7 @@ func (g *GWOAlgorithm) Type() data.TypeProblem {
 }
 
 func (g *GWOAlgorithm) Run() error {
+	g.reset()
 
 	// initialization
 	g.initialization()
@@ -133,6 +134,7 @@ func (g *GWOAlgorithm) Run() error {
 }
 
 func (g *GWOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
+	g.reset()
 
 	// initialization
 	g.initialization()

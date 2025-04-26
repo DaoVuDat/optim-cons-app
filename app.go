@@ -15,12 +15,12 @@ import (
 
 // App struct
 type App struct {
-	ctx            context.Context
-	problemName    data.ProblemName
-	problem        objectives.Problem
-	algorithmName  algorithms.AlgorithmType
-	algorithm      algorithms.Algorithm
-	objectiveNames []string
+	ctx                context.Context
+	problemName        data.ProblemName
+	problem            objectives.Problem
+	algorithmName      algorithms.AlgorithmType
+	algorithm          algorithms.Algorithm
+	numberOfObjectives int
 }
 
 // NewApp creates a new App application struct
@@ -119,8 +119,10 @@ func (a *App) SaveFile(commandType CommandType) error {
 				ProblemInfo:     problemInfo,
 				ObjectivesInfo:  objectivesInfo,
 			},
-			Results:  results,
-			FilePath: selection,
+			Results:       results,
+			FilePath:      selection,
+			ProblemName:   a.problemName,
+			AlgorithmName: a.algorithmName,
 		})
 
 		if err != nil {

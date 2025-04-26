@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/bytedance/sonic"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
@@ -123,31 +124,40 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			if err != nil {
 				return err
 			}
+			fmt.Println("Cover In Crane Config")
+			fmt.Println(coverInCraneCfg.CraneLocations)
+			cranesLocation := make([]data.Crane, len(coverInCraneCfg.CraneLocations))
 
-			cranes := make([]data.Crane, len(problem.GetCranesLocations()))
+			for i, craneLocation := range coverInCraneCfg.CraneLocations {
 
-			for i, crane := range problem.GetCranesLocations() {
+				facilitiesName := strings.Split(craneLocation.BuildingNames, " ")
+
 				var location data.Location
 
-				if loc, ok := problem.GetLocations()[crane.CraneSymbol]; ok {
+				if loc, ok := problem.GetLocations()[craneLocation.Name]; ok {
 					location = loc
 				}
 
-				cranes[i] = data.Crane{
+				cranesLocation[i] = data.Crane{
 					Location:     location,
-					BuildingName: crane.BuildingName,
-					Radius:       crane.Radius,
-					CraneSymbol:  crane.CraneSymbol,
+					CraneSymbol:  craneLocation.Name,
+					BuildingName: facilitiesName,
+					Radius:       craneLocation.Radius,
 				}
 			}
 
 			coverRangeConstraint := constraints.CreateCoverRangeCraneConstraint(
-				cranes,
+				cranesLocation,
 				problem.GetPhases(),
 				coverInCraneCfg.AlphaCoverInCraneRadiusPenalty,
 				coverInCraneCfg.PowerDifferencePenalty,
 			)
 			err = problem.AddConstraint(con.ConstraintName, coverRangeConstraint)
+			if err != nil {
+				return err
+			}
+
+			err = problem.SetCranesLocations(cranesLocation)
 			if err != nil {
 				return err
 			}
@@ -297,6 +307,11 @@ type overlapConfig struct {
 type coverInCraneRadiusConfig struct {
 	AlphaCoverInCraneRadiusPenalty float64 `json:"AlphaCoverInCraneRadiusPenalty"`
 	PowerDifferencePenalty         float64 `json:"PowerDifferencePenalty"`
+	CraneLocations                 []struct {
+		Name          string  `json:"Name"`
+		BuildingNames string  `json:"BuildingNames"`
+		Radius        float64 `json:"Radius"`
+	}
 }
 
 type inclusiveZoneConfig struct {

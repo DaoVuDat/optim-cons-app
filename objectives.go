@@ -14,6 +14,8 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 	// remove old objective first
 	_ = problem.InitializeObjectives()
 
+	a.numberOfObjectives = len(objs)
+
 	for _, obj := range objs {
 		switch obj.ObjectiveName {
 		case objectives.SafetyObjectiveType:
@@ -115,8 +117,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 			if err != nil {
 				return err
 			}
-			//problem.CraneLocations = cranesLocation
-			_ = problem.SetCranesLocations(cranesLocation)
+
 		case objectives.RiskObjectiveType:
 			configBytes, err := sonic.Marshal(obj.ObjectiveConfig)
 			if err != nil {
@@ -373,7 +374,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 			}
 		case objectives.ConstructionCostObjectiveType:
 			cc := obj.(*objectives.ConstructionCostObjective)
-			
+
 			res.ConstructionCost = struct {
 				AlphaCCPenalty          float64 `json:"alphaCCPenalty"`
 				FrequencyMatrixFilePath string  `json:"frequencyMatrixFilePath"`

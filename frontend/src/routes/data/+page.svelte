@@ -13,6 +13,8 @@
   import type {PageProps} from "../../../.svelte-kit/types/src/routes/data/$types";
   import type {Facility} from "$lib/stores/problems/problem";
   import {CreateObjectives} from "$lib/wailsjs/go/main/App";
+  import {toast} from "@zerodevx/svelte-toast";
+  import {errorOpts, infoOpts, successOpts} from "$lib/utils/toast-opts";
 
 
   const configComponents = {
@@ -40,22 +42,39 @@
 
   const handleNext = async () => {
     loading = true
+    toast.push("Loading data...", {
+      theme: infoOpts
+    })
 
-    // Do loading data objective configs
-    if (objectiveStore.objectives.selectedObjectives.length > 0) {
-      const objectivesInput = objectiveStore.objectives.selectedObjectives.map<main.ObjectiveInput>(objective => {
-        return {
-          objectiveName: objective.objectiveType,
-          objectiveConfig: objective.config,
-        }
+    try {
+      // Do loading data objective configs
+      if (objectiveStore.objectives.selectedObjectives.length > 0) {
+        const objectivesInput = objectiveStore.objectives.selectedObjectives.map<main.ObjectiveInput>(objective => {
+          return {
+            objectiveName: objective.objectiveType,
+            objectiveConfig: objective.config,
+          }
+        })
+
+        await CreateObjectives(objectivesInput)
+      }
+      await goto('/constraint')
+      stepStore.nextStep()
+    } catch (err: unknown) {
+      toast.pop(0)
+
+      toast.push(err as string, {
+        theme: errorOpts
       })
 
-      await CreateObjectives(objectivesInput)
-    }
-    loading = false
+    } finally {
+      toast.pop(0)
+      toast.push("Loaded data!", {
+        theme: successOpts
+      })
+      loading = false
 
-    await goto('/constraint')
-    stepStore.nextStep()
+    }
   }
 
   let {data}: PageProps = $props();
@@ -80,9 +99,9 @@
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
-<!--  <section class="mt-8 text-black">-->
-<!--    <h1 class="text-5xl font-bold">Data configuration</h1>-->
-<!--  </section>-->
+  <!--  <section class="mt-8 text-black">-->
+  <!--    <h1 class="text-5xl font-bold">Data configuration</h1>-->
+  <!--  </section>-->
 
 
   <!-- Content -->

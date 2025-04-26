@@ -36,20 +36,17 @@ func Create(
 	configs Configs,
 ) (*MOAHAAlgorithm, error) {
 
-	convergence := make([]float64, configs.NumIterations)
-	agents := make([]*objectives.Result, configs.NumAgents)
-
-	archive := make([]*objectives.Result, 0, configs.ArchiveSize)
-
 	return &MOAHAAlgorithm{
 		NumberOfAgents:    configs.NumAgents,
 		NumberOfIter:      configs.NumIterations,
-		Convergence:       convergence,
 		ObjectiveFunction: problem,
-		Agents:            agents,
-		Archive:           archive,
 		ArchiveSize:       configs.ArchiveSize,
 	}, nil
+}
+
+func (a *MOAHAAlgorithm) reset() {
+	a.Agents = make([]*objectives.Result, a.NumberOfAgents)
+	a.Archive = make([]*objectives.Result, 0, a.ArchiveSize)
 }
 
 func (a *MOAHAAlgorithm) Type() data.TypeProblem {
@@ -58,6 +55,8 @@ func (a *MOAHAAlgorithm) Type() data.TypeProblem {
 
 func (a *MOAHAAlgorithm) Run() error {
 	dimensions := a.ObjectiveFunction.GetDimension()
+
+	a.reset()
 
 	// initialization
 	a.initialization()
@@ -188,6 +187,9 @@ func (a *MOAHAAlgorithm) Run() error {
 
 func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
 	dimensions := a.ObjectiveFunction.GetDimension()
+
+	a.reset()
+
 	// initialization
 	a.initialization()
 

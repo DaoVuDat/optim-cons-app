@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/algorithms"
+	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/objectives/conslay_predetermined"
 	"reflect"
 	"regexp"
 	"strings"
@@ -23,14 +25,13 @@ type Summary struct {
 	ObjectivesInfo  any
 }
 
-type ResultSummary struct {
-	Idx int
-}
-
 type Options struct {
-	Summary  Summary
-	Results  algorithms.Result
-	FilePath string
+	Summary            Summary
+	Results            algorithms.Result
+	FilePath           string
+	ProblemName        data.ProblemName
+	AlgorithmName      algorithms.AlgorithmType
+	NumberOfObjectives int
 }
 
 func WriteXlsxResult(option Options) error {
@@ -187,12 +188,25 @@ func WriteXlsxResult(option Options) error {
 		return err
 	}
 
-	err = generateSheet1Info(f, option.Summary)
+	err = generateSheet1Info(f, option.Summary, option.AlgorithmName)
 	if err != nil {
 		return err
 	}
 
-	err = generateSheet2Results(f, option.Results)
+	if option.ProblemName == conslay_predetermined.PredeterminedConsLayoutName {
+		err = generateSheet2ResultsPredetermined(f, option.Results)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = generateSheet2Results(f, option.Results)
+		if err != nil {
+			return err
+		}
+	}
+
+	// pareto
+	err = generateSheet3Graph(f, option.Results, option.NumberOfObjectives)
 	if err != nil {
 		return err
 	}
@@ -207,7 +221,7 @@ func WriteXlsxResult(option Options) error {
 
 // Sheet 1 - Summary
 
-func generateSheet1Info(f *excelize.File, summary Summary) error {
+func generateSheet1Info(f *excelize.File, summary Summary, algorithmName algorithms.AlgorithmType) error {
 	const SheetName = "Summary"
 
 	// Starting point
@@ -226,14 +240,14 @@ func generateSheet1Info(f *excelize.File, summary Summary) error {
 		return err
 	}
 
-	rowCount = sectionAlgorithm(f, summary.AlgorithmInfo, SheetName, rowCount, columnCount)
+	rowCount = sectionAlgorithm(f, summary.AlgorithmInfo, algorithmName, SheetName, rowCount, columnCount)
 	rowCount = sectionProblem(f, summary.ProblemInfo, SheetName, rowCount, columnCount)
 	rowCount = sectionObjectives(f, summary.ObjectivesInfo, SheetName, rowCount, columnCount)
 	rowCount = sectionConstraints(f, summary.ConstraintsInfo, SheetName, rowCount, columnCount)
 	return nil
 }
 
-func sectionAlgorithm(f *excelize.File, algorithm any, sheetName string, rowCount int, colCount int) int {
+func sectionAlgorithm(f *excelize.File, algorithm any, algorithmName algorithms.AlgorithmType, sheetName string, rowCount int, colCount int) int {
 	// Add header
 	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
 	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
@@ -245,6 +259,9 @@ func sectionAlgorithm(f *excelize.File, algorithm any, sheetName string, rowCoun
 	val := reflect.ValueOf(algorithm)
 	val = val.Elem() // for pointer
 	typ := val.Type()
+
+	writeContentWithValue(f, colCount, rowCount, sheetName, "Name", algorithmName)
+	rowCount++
 
 	// Loop through fields
 	for i := 0; i < val.NumField(); i++ {
@@ -294,14 +311,12 @@ func sectionProblem(f *excelize.File, problem any, sheetName string, rowCount in
 
 		// Only exported fields (unexported fields can't be accessed)
 		if field.PkgPath == "" {
-			fmt.Println("field name", field.Name)
 			switch field.Name {
 			case "LayoutLength":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Layout length", value.Float())
 			case "LayoutWidth":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Layout width", value.Float())
 			case "GridSize":
-				fmt.Println("Grid Size", value.Int())
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Grid size", value.Int())
 			case "Locations":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of locations", value.Len())
@@ -309,9 +324,18 @@ func sectionProblem(f *excelize.File, problem any, sheetName string, rowCount in
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of fixed locations", value.Len())
 			case "NonFixedLocations":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of non-fixed locations", value.Len())
+			case "NumberOfFacilities":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of facilities", value.Int())
+			case "NumberOfLocations":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of locations", value.Int())
+			case "FixedFacilitiesName":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of located facilities", value.Len())
 			case "Name":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Name", value.String())
 			case "Phases":
+				if value.Len() == 0 {
+					break
+				}
 				// Add sub-header
 				cell, _ = excelize.CoordinatesToCellName(colCount, rowCount)
 				endCell, _ = excelize.CoordinatesToCellName(colCount+1, rowCount)
@@ -386,6 +410,10 @@ func sectionObjectives(f *excelize.File, objectives any, sheetName string, rowCo
 			case "TransportCost":
 				if !value.IsZero() {
 					rowCount = transportCostInfo(f, value.Interface(), sheetName, rowCount, colCount)
+				}
+			case "ConstructionCost":
+				if !value.IsZero() {
+					rowCount = constructionCostInfo(f, value.Interface(), sheetName, rowCount, colCount)
 				}
 			default:
 				continue
@@ -629,6 +657,42 @@ func transportCostInfo(f *excelize.File, transportCost any, sheetName string, ro
 	return rowCount
 }
 
+func constructionCostInfo(f *excelize.File, transportCost any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Construction Cost")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+
+	val := reflect.ValueOf(transportCost)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "AlphaCCPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			case "FrequencyMatrixFilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Frequency Matrix file path", value.String())
+			case "DistanceMatrixFilePath":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Distance Matrix file path", value.String())
+			case "GeneralQAP":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "General QAP", value.Bool())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
 func sectionConstraints(f *excelize.File, constraints any, sheetName string, rowCount int, colCount int) int {
 	// Add header
 	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
@@ -665,7 +729,10 @@ func sectionConstraints(f *excelize.File, constraints any, sheetName string, row
 			case "InclusiveZone":
 				if !value.IsZero() {
 					rowCount = inclusiveZoneInfo(f, value.Interface(), sheetName, rowCount, colCount)
-
+				}
+			case "Size":
+				if !value.IsZero() {
+					rowCount = sizeInfo(f, value.Interface(), sheetName, rowCount, colCount)
 				}
 			default:
 				continue
@@ -832,6 +899,7 @@ func inclusiveZoneInfo(f *excelize.File, inclusive any, sheetName string, rowCou
 }
 
 func coverCraneInfo(f *excelize.File, craneInfo any, sheetName string, rowCount int, colCount int) int {
+	fmt.Println(craneInfo)
 	// Add sub-header
 	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
 	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
@@ -887,12 +955,68 @@ func coverCraneInfo(f *excelize.File, craneInfo any, sheetName string, rowCount 
 						default:
 							continue
 						}
-						rowCount = startRow + 2
+						rowCount = startRow + 3
 					}
 				}
 			case "PowerCoverInCraneRadiusPenalty":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
 			case "AlphaCoverInCraneRadiusPenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
+			default:
+				continue
+			}
+			rowCount++
+		}
+	}
+
+	return rowCount
+}
+
+func sizeInfo(f *excelize.File, inclusive any, sheetName string, rowCount int, colCount int) int {
+	// Add sub-header
+	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+	_ = f.MergeCell(sheetName, cell, endCell)
+	_ = f.SetCellValue(sheetName, cell, "Size")
+	_ = f.SetCellStyle(sheetName, cell, cell, subHeaderStyle)
+	rowCount++
+	val := reflect.ValueOf(inclusive)
+	typ := val.Type()
+	// Loop through fields
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		value := val.Field(i)
+		// Only exported fields (unexported fields can't be accessed)
+		if field.PkgPath == "" {
+			switch field.Name {
+			case "SmallLocations":
+				cell, _ = excelize.CoordinatesToCellName(colCount, rowCount)
+				_ = f.SetCellValue(sheetName, cell, "Small locations")
+				_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+				names := make([]string, 0)
+				for nameIdx := 0; nameIdx < value.Len(); nameIdx++ {
+					elem := value.Index(nameIdx)
+					names = append(names, elem.String())
+				}
+
+				cell, _ = excelize.CoordinatesToCellName(colCount+1, rowCount)
+				_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
+				_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+			case "LargeFacilities":
+				cell, _ = excelize.CoordinatesToCellName(colCount, rowCount)
+				_ = f.SetCellValue(sheetName, cell, "Large facilities")
+				_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+				names := make([]string, 0)
+				for nameIdx := 0; nameIdx < value.Len(); nameIdx++ {
+					elem := value.Index(nameIdx)
+					names = append(names, elem.String())
+				}
+				cell, _ = excelize.CoordinatesToCellName(colCount+1, rowCount)
+				_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
+				_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+			case "PowerDifferencePenalty":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Power difference (for penalty)", value.Float())
+			case "AlphaSizePenalty":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha (for penalty)", value.Float())
 			default:
 				continue
@@ -910,6 +1034,274 @@ var locationHeader = []string{"Name", "Symbol", "x", "y", "Rotated", "Length", "
 
 func generateSheet2Results(f *excelize.File, results algorithms.Result) error {
 	const SheetName = "Results"
+
+	// Starting point
+	rowCount := 2
+	columnCount := 2
+	index, err := f.NewSheet(SheetName)
+	if err != nil {
+		return err
+	}
+
+	f.SetActiveSheet(index)
+	err = f.SetColWidth(SheetName, "A", "A", 5)
+	err = f.SetColWidth(SheetName, "B", "B", 40)
+	err = f.SetColWidth(SheetName, "C", "J", 20)
+	if err != nil {
+		return err
+	}
+
+	val := reflect.ValueOf(results)
+	//typ := val.Type()
+
+	resultField := val.FieldByName("Result")
+	if resultField.IsValid() {
+		// Iterate through the slice
+		for i := 0; i < resultField.Len(); i++ {
+			algResult := resultField.Index(i)
+			cell, _ := excelize.CoordinatesToCellName(1, rowCount)
+			_ = f.SetCellValue(SheetName, cell, fmt.Sprintf("#%d", i+1))
+			_ = f.SetCellStyle(SheetName, cell, cell, contentBoldStyle)
+
+			// Access the ValuesWithKey map
+			valuesWithKey := algResult.FieldByName("ValuesWithKey")
+			if valuesWithKey.IsValid() {
+				//fmt.Printf("  ValuesWithKey has %d entries\n", valuesWithKey.Len())
+				cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+				_ = f.SetCellValue(SheetName, cell, "Objectives")
+				_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+
+				// Get map keys
+				mapKeys := valuesWithKey.MapKeys()
+				for keyIdx, key := range mapKeys {
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, re.ReplaceAllString(key.String(), ""))
+					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount+1)
+					_ = f.SetCellValue(SheetName, cell, valuesWithKey.MapIndex(key).Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+				}
+				rowCount += 3
+			}
+
+			// Access the Penalty map
+			penalty := algResult.FieldByName("Penalty")
+			if penalty.IsValid() {
+				//fmt.Printf("  Penalty has %d entries\n", penalty.Len())
+				cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+				_ = f.SetCellValue(SheetName, cell, "Penalty Constraints")
+				_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+				// Get map keys
+				mapKeys := penalty.MapKeys()
+				for keyIdx, key := range mapKeys {
+					//fmt.Printf("  Key: %s, Value: %f\n",
+					//	key.String(), penalty.MapIndex(key).Float())
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, key.String())
+					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount+1)
+					_ = f.SetCellValue(SheetName, cell, penalty.MapIndex(key).Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+				}
+				rowCount += 3
+			}
+
+			// Access the MapLocations map
+			sliceLocations := algResult.FieldByName("SliceLocations")
+			if sliceLocations.IsValid() {
+				//fmt.Printf("  SliceLocations has %d entries\n", sliceLocations.Len())
+				for headerIdx, header := range locationHeader {
+					cell, _ = excelize.CoordinatesToCellName(columnCount+headerIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, header)
+					_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+				}
+				rowCount++
+
+				for idx := 0; idx < sliceLocations.Len(); idx++ {
+					// Access the Location value
+					locValue := sliceLocations.Index(idx)
+					//fmt.Printf("    Location: %+v\n", locValue.Interface())
+					cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Name").String())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Symbol").String())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					coordField := locValue.FieldByName("Coordinate")
+					if coordField.IsValid() {
+						x := coordField.FieldByName("X").Float()
+						y := coordField.FieldByName("Y").Float()
+						//fmt.Printf("    Coordinates: (%f, %f)\n", x, y)
+
+						cell, _ = excelize.CoordinatesToCellName(columnCount+2, rowCount)
+						_ = f.SetCellValue(SheetName, cell, x)
+						_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+						cell, _ = excelize.CoordinatesToCellName(columnCount+3, rowCount)
+						_ = f.SetCellValue(SheetName, cell, y)
+						_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+					}
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+4, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Rotation").Bool())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+5, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Length").Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+6, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Width").Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+7, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("IsFixed").Bool())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					rowCount++
+				}
+			}
+			rowCount += 2
+		}
+	}
+
+	return nil
+}
+
+var locationHeaderPredetermined = []string{"Symbol", "Is Located At"}
+
+func generateSheet2ResultsPredetermined(f *excelize.File, results algorithms.Result) error {
+	const SheetName = "Results"
+	fmt.Println("Predetermined")
+	// Starting point
+	rowCount := 2
+	columnCount := 2
+	index, err := f.NewSheet(SheetName)
+	if err != nil {
+		return err
+	}
+
+	f.SetActiveSheet(index)
+	err = f.SetColWidth(SheetName, "A", "A", 5)
+	err = f.SetColWidth(SheetName, "B", "B", 40)
+	err = f.SetColWidth(SheetName, "C", "C", 20)
+	if err != nil {
+		return err
+	}
+
+	val := reflect.ValueOf(results)
+	//typ := val.Type()
+
+	resultField := val.FieldByName("Result")
+	if resultField.IsValid() {
+		// Iterate through the slice
+		for i := 0; i < resultField.Len(); i++ {
+			algResult := resultField.Index(i)
+			cell, _ := excelize.CoordinatesToCellName(1, rowCount)
+			_ = f.SetCellValue(SheetName, cell, fmt.Sprintf("#%d", i+1))
+			_ = f.SetCellStyle(SheetName, cell, cell, contentBoldStyle)
+
+			// Access the ValuesWithKey map
+			valuesWithKey := algResult.FieldByName("ValuesWithKey")
+			if valuesWithKey.IsValid() {
+				//fmt.Printf("  ValuesWithKey has %d entries\n", valuesWithKey.Len())
+				cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+				_ = f.SetCellValue(SheetName, cell, "Objectives")
+				_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+
+				// Get map keys
+				mapKeys := valuesWithKey.MapKeys()
+				for keyIdx, key := range mapKeys {
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, re.ReplaceAllString(key.String(), ""))
+					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount+1)
+					_ = f.SetCellValue(SheetName, cell, valuesWithKey.MapIndex(key).Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+				}
+				rowCount += 3
+			}
+
+			// Access the Penalty map
+			penalty := algResult.FieldByName("Penalty")
+			if penalty.IsValid() {
+				//fmt.Printf("  Penalty has %d entries\n", penalty.Len())
+				cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+				_ = f.SetCellValue(SheetName, cell, "Penalty Constraints")
+				_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+				// Get map keys
+				mapKeys := penalty.MapKeys()
+				for keyIdx, key := range mapKeys {
+					//fmt.Printf("  Key: %s, Value: %f\n",
+					//	key.String(), penalty.MapIndex(key).Float())
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, key.String())
+					_ = f.SetCellStyle(SheetName, cell, cell, subHeaderStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1+keyIdx, rowCount+1)
+					_ = f.SetCellValue(SheetName, cell, penalty.MapIndex(key).Float())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+				}
+				rowCount += 3
+			}
+
+			// Access the MapLocations map
+			sliceLocations := algResult.FieldByName("SliceLocations")
+			if sliceLocations.IsValid() {
+				//fmt.Printf("  SliceLocations has %d entries\n", sliceLocations.Len())
+				for headerIdx, header := range locationHeaderPredetermined {
+					cell, _ = excelize.CoordinatesToCellName(columnCount+headerIdx, rowCount)
+					_ = f.SetCellValue(SheetName, cell, header)
+					_ = f.SetCellStyle(SheetName, cell, cell, headerStyle)
+				}
+				rowCount++
+
+				for idx := 0; idx < sliceLocations.Len(); idx++ {
+					// Access the Location value
+					locValue := sliceLocations.Index(idx)
+					//fmt.Printf("    Location: %+v\n", locValue.Interface())
+					cell, _ = excelize.CoordinatesToCellName(columnCount, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("Symbol").String())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					cell, _ = excelize.CoordinatesToCellName(columnCount+1, rowCount)
+					_ = f.SetCellValue(SheetName, cell, locValue.FieldByName("IsLocatedAt").String())
+					_ = f.SetCellStyle(SheetName, cell, cell, contentStyle)
+
+					rowCount++
+				}
+			}
+			rowCount += 2
+		}
+	}
+
+	return nil
+}
+
+// Sheet 3 - Pareto
+
+func generateSheet3Graph(f *excelize.File, results algorithms.Result, numberOfObjectives int) error {
+	var SheetName string
+	if numberOfObjectives > 1 {
+		// add pareto
+		SheetName = "Convergence"
+	} else if numberOfObjectives == 1 {
+		// add convergence
+		SheetName = "Pareto"
+	} else {
+		return nil
+	}
 
 	// Starting point
 	rowCount := 2

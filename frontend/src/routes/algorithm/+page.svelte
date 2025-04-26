@@ -8,7 +8,9 @@
   import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
   import {algorithms, main} from "$lib/wailsjs/go/models";
   import {goto} from "$app/navigation";
-  import {ConstraintsInfo, CreateAlgorithm, ProblemInfo} from "$lib/wailsjs/go/main/App";
+  import {CreateAlgorithm} from "$lib/wailsjs/go/main/App";
+  import {toast} from "@zerodevx/svelte-toast";
+  import {infoOpts, successOpts} from "$lib/utils/toast-opts";
 
   const configComponents = {
     [algorithms.AlgorithmType.MOAHA]: moahaConfig,
@@ -31,21 +33,32 @@
 
   const handleNext = async () => {
     loading = true
-    
-    // Create Algo
-    if (algorithmsStore.selectedAlgorithm) {
+    toast.push("Configuring algorithm...", {
+      theme: infoOpts
+    })
+    try {
+      if (algorithmsStore.selectedAlgorithm) {
 
-      await CreateAlgorithm({
-        algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
-        algorithmName: algorithmsStore.selectedAlgorithm.value,
+        await CreateAlgorithm({
+          algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
+          algorithmName: algorithmsStore.selectedAlgorithm.value,
+        })
+      }
+
+
+      await goto('/optimize')
+
+      stepStore.nextStep()
+    } catch(err) {
+
+    } finally {
+      toast.pop(0)
+      toast.push("Configured algorithm!", {
+        theme: successOpts
       })
+      loading = false
     }
 
-    loading = false
-
-    await goto('/optimize')
-
-    stepStore.nextStep()
   }
 
 </script>

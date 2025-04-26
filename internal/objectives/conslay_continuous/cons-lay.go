@@ -112,7 +112,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[dat
 			Coordinate: data.Coordinate{
 				X: x,
 				Y: y,
-			},                  // update x, y
+			}, // update x, y
 			Rotation: rotation, // update r
 			Length:   length,   // change length and width if rotation is true
 			Width:    width,
@@ -256,7 +256,7 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 			Coordinate: data.Coordinate{
 				X: x,
 				Y: y,
-			},                  // update x, y
+			}, // update x, y
 			Rotation: rotation, // update r
 			Length:   length,   // change length and width if rotation is true
 			Width:    width,

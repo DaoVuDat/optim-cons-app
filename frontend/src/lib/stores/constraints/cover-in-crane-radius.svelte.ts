@@ -1,6 +1,8 @@
+import type {ISelectedCraneWithId} from "$lib/stores/objectives";
 
 
 export interface ICoverInCraneRadiusConfig {
+  CraneLocations: ISelectedCraneWithId[];
   AlphaCoverInCraneRadiusPenalty: number;
   PowerDifferencePenalty: number
 }
@@ -8,5 +10,6 @@ export interface ICoverInCraneRadiusConfig {
 
 export const coverInCraneRadiusConfig = $state<ICoverInCraneRadiusConfig>({
   AlphaCoverInCraneRadiusPenalty: 20000,
-  PowerDifferencePenalty: 1
+  PowerDifferencePenalty: 1,
+  CraneLocations: [],
 })

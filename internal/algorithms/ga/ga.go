@@ -35,8 +35,6 @@ type Config struct {
 }
 
 func Create(problem objectives.Problem, configs Config) (*GAAlgorithm, error) {
-	convergence := make([]float64, configs.Generation)
-	population := make([]*objectives.Result, configs.Chromosome)
 
 	// This implementation supports only one objective.
 	if problem.NumberOfObjectives() != 1 {
@@ -49,10 +47,13 @@ func Create(problem objectives.Problem, configs Config) (*GAAlgorithm, error) {
 		CrossoverRate:     configs.CrossoverRate,
 		MutationRate:      configs.MutationRate,
 		ElitismCount:      configs.ElitismCount,
-		Convergence:       convergence,
 		ObjectiveFunction: problem,
-		Population:        population,
 	}, nil
+}
+
+func (ga *GAAlgorithm) reset() {
+	ga.Convergence = make([]float64, ga.MaxIterations)
+	ga.Population = make([]*objectives.Result, ga.PopulationSize)
 }
 
 func (ga *GAAlgorithm) Type() data.TypeProblem {
@@ -60,6 +61,8 @@ func (ga *GAAlgorithm) Type() data.TypeProblem {
 }
 
 func (ga *GAAlgorithm) Run() error {
+	ga.reset()
+
 	ga.initialization()
 
 	bar := progressbar.Default(int64(ga.MaxIterations))
@@ -130,6 +133,8 @@ func (ga *GAAlgorithm) Run() error {
 }
 
 func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
+	ga.reset()
+
 	ga.initialization()
 
 	var wg sync.WaitGroup

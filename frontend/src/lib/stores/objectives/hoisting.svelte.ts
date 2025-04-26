@@ -27,9 +27,7 @@ export interface IHoistingConfig {
 
 
 export const hoistingConfig = $state<IHoistingConfig>({
-    CraneLocations: [
-
-    ],
+    CraneLocations: [],
     NumberOfFloors: 10,
     FloorHeight: 3.2,
     ZM: 2,

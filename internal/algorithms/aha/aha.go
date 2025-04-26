@@ -37,9 +37,6 @@ func Create(
 	configs Config,
 ) (*AHAAlgorithm, error) {
 
-	convergence := make([]float64, configs.NumberOfIter)
-	agents := make([]*objectives.Result, configs.NumberOfAgents)
-
 	if numberOfObjective != problem.NumberOfObjectives() {
 		return nil, objectives.ErrInvalidNumberOfObjectives
 	}
@@ -47,10 +44,13 @@ func Create(
 	return &AHAAlgorithm{
 		NumberOfAgents:    configs.NumberOfAgents,
 		NumberOfIter:      configs.NumberOfIter,
-		Convergence:       convergence,
 		ObjectiveFunction: problem,
-		Agents:            agents,
 	}, nil
+}
+
+func (a *AHAAlgorithm) reset() {
+	a.Agents = make([]*objectives.Result, a.NumberOfAgents)
+	a.Convergence = make([]float64, a.NumberOfIter)
 }
 
 func (a *AHAAlgorithm) Type() data.TypeProblem {
@@ -59,6 +59,8 @@ func (a *AHAAlgorithm) Type() data.TypeProblem {
 
 func (a *AHAAlgorithm) Run() error {
 	dimensions := a.ObjectiveFunction.GetDimension()
+
+	a.reset()
 
 	// initialization
 	a.initialization()
@@ -168,6 +170,8 @@ func (a *AHAAlgorithm) Run() error {
 
 func (a *AHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
 	dimensions := a.ObjectiveFunction.GetDimension()
+
+	a.reset()
 
 	// initialization
 	a.initialization()

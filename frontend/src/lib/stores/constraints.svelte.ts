@@ -78,8 +78,7 @@ class ConstraintsStore {
       const selectedObjectives = objectiveStore.objectives.selectedObjectives.map(selectedObjective => selectedObjective.objectiveType)
       return this.constraintList
           .filter(cons => cons.value !== data.ConstraintType.Size) // fitering the Size constraint ( for predetermined problem)
-          .filter(cons => cons.value !== data.ConstraintType.CoverInCraneRadius ||
-          selectedObjectives.includes(data.ObjectiveType.HoistingObjective))
+          
     }
 
 

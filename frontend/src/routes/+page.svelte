@@ -4,6 +4,7 @@
   import {stepStore} from "$lib/stores/steps.svelte";
   import {toast} from "@zerodevx/svelte-toast";
   import {data} from "$lib/wailsjs/go/models";
+  import {errorOpts} from "$lib/utils/toast-opts";
 
   const handleClick = (option: IOptions) => {
     objectiveStore.selectObjectiveOption = option
@@ -14,7 +15,9 @@
     if (option.isChecked &&
       option.value === data.ObjectiveType.ConstructionCostObjective &&
       objectiveStore.objectives.selectedObjectives.length > 0) {
-      toast.push("Construction cost must be solved independently.");
+      toast.push("Construction cost must be solved independently.", {
+        theme: errorOpts
+      });
       option.isChecked = false
       return
     }
@@ -22,13 +25,17 @@
     if (option.isChecked &&
       option.value !== data.ObjectiveType.ConstructionCostObjective &&
       objectiveStore.objectives.selectedObjectives.find(o => o.objectiveType === data.ObjectiveType.ConstructionCostObjective)) {
-      toast.push("Construction Cost must be solved independently.");
+      toast.push("Construction Cost must be solved independently.", {
+        theme: errorOpts,
+      });
       option.isChecked = false
       return
     }
 
     if (option.isChecked && objectiveStore.objectives.selectedObjectives.length >= 3) {
-      toast.push("Maximum of 3 objectives allowed.");
+      toast.push("Maximum of 3 objectives allowed.", {
+        theme: errorOpts
+      });
       option.isChecked = false
       return
     }
@@ -63,9 +70,9 @@
         </button>
       {/each}
     </div>
-    <div class="card p-4 bg-base-100 shadow-md rounded-lg col-span-8">{
-      objectiveStore.selectObjectiveOption?.content
-    }</div>
+    <div class="card p-4 bg-base-100 shadow-md rounded-lg col-span-8">
+      Content
+    </div>
   </section>
 
   <!-- Bottom Section -->

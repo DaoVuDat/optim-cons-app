@@ -245,7 +245,19 @@ func (s *ConsLay) GetLocationResult(input []float64) (map[string]data.Location, 
 		}
 	}
 
-	return mapLocations, nil, nil, nil
+	sliceLocations := make([]data.Location, s.NumberOfFacilities)
+
+	idx := 0
+	for _, v := range mapLocations {
+		sliceLocations[idx] = v
+		idx++
+	}
+
+	sort.Slice(sliceLocations, func(i, j int) bool {
+		return util.ExtractNumber(sliceLocations[i].Symbol) < util.ExtractNumber(sliceLocations[j].Symbol)
+	})
+
+	return mapLocations, sliceLocations, nil, nil
 }
 
 func (s *ConsLay) GetLayoutSize() (minX float64, maxX float64, minY float64, maxY float64, err error) {

@@ -9,6 +9,8 @@
   import {CreateProblem} from "$lib/wailsjs/go/main/App";
   import {main, data as dataType, conslay_predetermined} from "$lib/wailsjs/go/models";
   import {predeterminedProblemConfig} from "$lib/stores/problems";
+  import {toast} from "@zerodevx/svelte-toast";
+  import {errorOpts, infoOpts, successOpts} from "$lib/utils/toast-opts";
 
 
   const configComponents = {
@@ -31,59 +33,77 @@
 
   const handleNext = async () => {
     loading = true
-    if (problemStore.selectedProblem) {
-      switch (problemStore.selectedProblem!.value) {
-        case dataType.ProblemName.ContinuousConstructionLayout : {
-          const config = problemStore.getConfig(problemStore.selectedProblem.value)
+    toast.push("Setting up problem...", {
+      theme: infoOpts
+    })
+    try {
+      if (problemStore.selectedProblem) {
+        switch (problemStore.selectedProblem!.value) {
+          case dataType.ProblemName.ContinuousConstructionLayout : {
+            const config = problemStore.getConfig(problemStore.selectedProblem.value)
 
-          const problemInput = new main.ProblemInput ({
-            problemName: problemStore.selectedProblem!.value,
-            layoutLength: config.length,
-            layoutWidth: config.width,
-            facilitiesFilePath: config.facilitiesFilePath.value,
-            phasesFilePath: config.phasesFilePath.value
-          })
-          await CreateProblem(problemInput)
-          break
+            const problemInput = new main.ProblemInput({
+              problemName: problemStore.selectedProblem!.value,
+              layoutLength: config.length,
+              layoutWidth: config.width,
+              facilitiesFilePath: config.facilitiesFilePath.value,
+              phasesFilePath: config.phasesFilePath.value
+            })
+            await CreateProblem(problemInput)
+            break
+          }
+          case dataType.ProblemName.GridConstructionLayout : {
+            const config = problemStore.getConfig(problemStore.selectedProblem.value)
+
+            const problemInput = new main.ProblemInput({
+              problemName: problemStore.selectedProblem!.value,
+              layoutLength: config.length,
+              layoutWidth: config.width,
+              facilitiesFilePath: config.facilitiesFilePath.value,
+              phasesFilePath: config.phasesFilePath.value,
+              gridSize: config.gridSize,
+            })
+            await CreateProblem(problemInput)
+            break
+          }
+          case dataType.ProblemName.PredeterminedConstructionLayout:
+
+            const config = predeterminedProblemConfig
+            const fixedFacilities: conslay_predetermined.LocFac[] = config.fixedFacilities.filter(f => f.FacilityName).map((f) => ({
+              facName: f.FacilityName,
+              locName: f.LocName,
+            }))
+
+
+            const problemInput = new main.ProblemInput({
+              problemName: problemStore.selectedProblem!.value,
+              numberOfLocations: config.value.numberOfLocations,
+              numberOfFacilities: config.value.numberOfFacilities,
+              fixedFacilities: fixedFacilities,
+            })
+            await CreateProblem(problemInput)
+            break
         }
-        case dataType.ProblemName.GridConstructionLayout : {
-          const config = problemStore.getConfig(problemStore.selectedProblem.value)
-
-          const problemInput = new main.ProblemInput ({
-            problemName: problemStore.selectedProblem!.value,
-            layoutLength: config.length,
-            layoutWidth: config.width,
-            facilitiesFilePath: config.facilitiesFilePath.value,
-            phasesFilePath: config.phasesFilePath.value,
-            gridSize: config.gridSize,
-          })
-          await CreateProblem(problemInput)
-          break
-        }
-        case dataType.ProblemName.PredeterminedConstructionLayout:
-
-          const config = predeterminedProblemConfig
-          const fixedFacilities: conslay_predetermined.LocFac[] = config.fixedFacilities.filter(f => f.FacilityName).map((f) =>({
-            facName: f.FacilityName,
-            locName: f.LocName,
-          }))
 
 
-          const problemInput = new main.ProblemInput ({
-            problemName: problemStore.selectedProblem!.value,
-            numberOfLocations: config.value.numberOfLocations,
-            numberOfFacilities: config.value.numberOfFacilities,
-            fixedFacilities: fixedFacilities,
-          })
-          await CreateProblem(problemInput)
-
-          break
+        await goto('/data')
+        stepStore.nextStep()
       }
+    } catch (err) {
+      toast.pop(0)
+      toast.push(err as string, {
+        theme: errorOpts
+      })
+    } finally {
+      toast.pop(0)
+      
+      toast.push("Set up problem!", {
+        theme: successOpts
+      })
+      loading = false
     }
 
-    loading = false
-    await goto('/data')
-    stepStore.nextStep()
+
   }
 
 
