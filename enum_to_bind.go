@@ -6,6 +6,7 @@ import (
 	"golang-moaha-construction/internal/algorithms/ga"
 	"golang-moaha-construction/internal/algorithms/gwo"
 	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/algorithms/omoaha"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
@@ -107,6 +108,10 @@ var AllAlgorithmType = []struct {
 	{
 		Value:  gwo.NameType,
 		TSName: "GWO",
+	},
+	{
+		Value:  omoaha.NameType,
+		TSName: "oMOAHA",
 	},
 }
 

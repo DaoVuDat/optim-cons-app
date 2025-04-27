@@ -5,6 +5,7 @@ export namespace algorithms {
 	    AHA = "AHA",
 	    MOAHA = "MOAHA",
 	    GWO = "GWO",
+	    oMOAHA = "oMOAHA",
 	}
 
 }

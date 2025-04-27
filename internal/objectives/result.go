@@ -74,10 +74,12 @@ func MergeAgents(a []*Result, b []*Result) []*Result {
 	res := make([]*Result, len(a)+len(b))
 	for i := 0; i < len(a); i++ {
 		res[i] = a[i]
+		res[i].Idx = i
 	}
 
 	for i := 0; i < len(b); i++ {
 		res[i+len(a)] = b[i]
+		res[i+len(a)].Idx = i + len(a)
 	}
 
 	return res
@@ -201,6 +203,25 @@ type SortedDEDC struct {
 type SortedValue struct {
 	Value float64
 	Idx   int
+}
+
+func SplitToNPop(agents []*Result, nPop int, paretoFront [][]int) []*Result {
+
+	results := make([]*Result, nPop)
+
+	count := 0
+	for _, v := range paretoFront {
+		for _, idx := range v {
+			if count >= nPop {
+				break
+			}
+			results[count] = agents[idx].CopyAgent()
+			results[count].Idx = count
+			count++
+		}
+	}
+
+	return results
 }
 
 //// DECD Dynamic Elimination-based Crowding Distance

@@ -1,73 +1,75 @@
 <script lang="ts">
-  import clsx from "clsx";
-  import moahaConfig from '$lib/components/algo-configs/moaha-config.svelte'
-  import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
-  import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
-  import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
-  import {stepStore} from "$lib/stores/steps.svelte.js";
-  import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
-  import {algorithms, main} from "$lib/wailsjs/go/models";
-  import {goto} from "$app/navigation";
-  import {CreateAlgorithm} from "$lib/wailsjs/go/main/App";
-  import {toast} from "@zerodevx/svelte-toast";
-  import {infoOpts, successOpts} from "$lib/utils/toast-opts";
+    import clsx from "clsx";
+    import moahaConfig from '$lib/components/algo-configs/moaha-config.svelte'
+    import omoahaConfig from '$lib/components/algo-configs/omoaha-config.svelte'
+    import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
+    import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
+    import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
+    import {stepStore} from "$lib/stores/steps.svelte.js";
+    import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
+    import {algorithms, main} from "$lib/wailsjs/go/models";
+    import {goto} from "$app/navigation";
+    import {CreateAlgorithm} from "$lib/wailsjs/go/main/App";
+    import {toast} from "@zerodevx/svelte-toast";
+    import {infoOpts, successOpts} from "$lib/utils/toast-opts";
 
-  const configComponents = {
-    [algorithms.AlgorithmType.MOAHA]: moahaConfig,
-    [algorithms.AlgorithmType.AHA]: ahaConfig,
-    [algorithms.AlgorithmType.GWO]: gwoConfig,
-    [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
-  }
-
-  const component = $derived.by(() => {
-    if (algorithmsStore.getValidSelection()) {
-      return configComponents[algorithmsStore.selectedAlgorithm!.value]
+    const configComponents = {
+        [algorithms.AlgorithmType.MOAHA]: moahaConfig,
+        [algorithms.AlgorithmType.AHA]: ahaConfig,
+        [algorithms.AlgorithmType.GWO]: gwoConfig,
+        [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
+        [algorithms.AlgorithmType.oMOAHA]: omoahaConfig,
     }
-  })
 
-  const handleClick = (algo: AlgorithmWithLabel) => {
-    algorithmsStore.selectedAlgorithm = algo;
-  }
-
-  let loading = $state<boolean>(false)
-
-  const handleNext = async () => {
-    loading = true
-    toast.push("Configuring algorithm...", {
-      theme: infoOpts
+    const component = $derived.by(() => {
+        if (algorithmsStore.getValidSelection()) {
+            return configComponents[algorithmsStore.selectedAlgorithm!.value]
+        }
     })
-    try {
-      if (algorithmsStore.selectedAlgorithm) {
 
-        await CreateAlgorithm({
-          algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
-          algorithmName: algorithmsStore.selectedAlgorithm.value,
-        })
-      }
-
-
-      await goto('/optimize')
-
-      stepStore.nextStep()
-    } catch(err) {
-
-    } finally {
-      toast.pop(0)
-      toast.push("Configured algorithm!", {
-        theme: successOpts
-      })
-      loading = false
+    const handleClick = (algo: AlgorithmWithLabel) => {
+        algorithmsStore.selectedAlgorithm = algo;
     }
 
-  }
+    let loading = $state<boolean>(false)
+
+    const handleNext = async () => {
+        loading = true
+        toast.push("Configuring algorithm...", {
+            theme: infoOpts
+        })
+        try {
+            if (algorithmsStore.selectedAlgorithm) {
+
+                await CreateAlgorithm({
+                    algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
+                    algorithmName: algorithmsStore.selectedAlgorithm.value,
+                })
+            }
+
+
+            await goto('/optimize')
+
+            stepStore.nextStep()
+        } catch (err) {
+
+        } finally {
+            toast.pop(0)
+            toast.push("Configured algorithm!", {
+                theme: successOpts
+            })
+            loading = false
+        }
+
+    }
 
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
   <!-- Top Section -->
-<!--  <section class="mt-8 text-black">-->
-<!--    <h1 class="text-5xl font-bold">Select algorithm</h1>-->
-<!--  </section>-->
+  <!--  <section class="mt-8 text-black">-->
+  <!--    <h1 class="text-5xl font-bold">Select algorithm</h1>-->
+  <!--  </section>-->
 
 
   <!-- Content -->
@@ -82,7 +84,8 @@
         </button>
       {/each}
     </div>
-    <div class="h-[560px] card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
+    <div
+        class="h-[560px] card p-4 bg-base-100 shadow-md rounded-lg col-span-8 flex flex-col justify-center items-center">
       {#if algorithmsStore.getValidSelection()}
         {@const Component = component}
         <Component/>
@@ -107,7 +110,8 @@
         algorithmsStore.resetSelection()
     }}>Back</a>
     <button class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
-       onclick={handleNext}
-    >Next</button>
+            onclick={handleNext}
+    >Next
+    </button>
   </section>
 </div>

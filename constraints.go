@@ -85,7 +85,10 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			zones := make([]constraints.Zone, len(inclusiveCfg.Zones))
 
 			for i, zone := range inclusiveCfg.Zones {
-				facilitiesName := strings.Split(strings.ToUpper(zone.BuildingNames), " ")
+				facilitiesName := strings.Split(
+					strings.ToUpper(
+						strings.TrimSpace(zone.BuildingNames)),
+					" ")
 
 				var location data.Location
 
@@ -128,7 +131,10 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			for i, craneLocation := range coverInCraneCfg.CraneLocations {
 
-				facilitiesName := strings.Split(strings.ToUpper(craneLocation.BuildingNames), " ")
+				facilitiesName := strings.Split(
+					strings.ToUpper(
+						strings.TrimSpace(craneLocation.BuildingNames)),
+					" ")
 
 				var location data.Location
 

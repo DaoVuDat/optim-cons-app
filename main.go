@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/algorithms/omoaha"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
@@ -72,7 +72,7 @@ func constructionOptimization() {
 	}
 
 	// LOAD LOCATIONS
-	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/locations.xlsx")
+	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/continuous/locations.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func constructionOptimization() {
 	// LOAD PHASES
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
-	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/dynamicBuilding.xlsx")
+	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/continuous/dynamicBuilding.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +96,7 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
-	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/f1_hoisting_time_data.xlsx")
+	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/continuous/hoisting_time_data.xlsx")
 
 	if err != nil {
 		log.Fatal(err)
@@ -157,7 +157,7 @@ func constructionOptimization() {
 	hoistingObj.CraneLocations = craneLocations
 
 	// RISK
-	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/f2_risk_data.xlsx")
+	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/continuous/risk_data.xlsx")
 
 	// Hoisting Objective Configs
 	riskConfigs := objectives.RiskConfigs{
@@ -225,13 +225,13 @@ func constructionOptimization() {
 	err = consLayObj.AddConstraint(constraints.ConstraintsCoverInCraneRadius, coverRangeConstraint)
 
 	// MOAHA
-	moahaConfigs := moaha.Configs{
+	omoahaConfigs := omoaha.Configs{
 		NumAgents:     300,
 		NumIterations: 400,
 		ArchiveSize:   100,
 	}
 
-	algo, err := moaha.Create(consLayObj, moahaConfigs)
+	algo, err := omoaha.Create(consLayObj, omoahaConfigs)
 	if err != nil {
 		return
 	}

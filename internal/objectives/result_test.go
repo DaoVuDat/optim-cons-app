@@ -1,6 +1,7 @@
 package objectives
 
 import (
+	"fmt"
 	"testing"
 )
 

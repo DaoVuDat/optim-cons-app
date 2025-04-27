@@ -899,7 +899,6 @@ func inclusiveZoneInfo(f *excelize.File, inclusive any, sheetName string, rowCou
 }
 
 func coverCraneInfo(f *excelize.File, craneInfo any, sheetName string, rowCount int, colCount int) int {
-	fmt.Println(craneInfo)
 	// Add sub-header
 	cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
 	endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
@@ -1179,7 +1178,6 @@ var locationHeaderPredetermined = []string{"Symbol", "Is Located At"}
 
 func generateSheet2ResultsPredetermined(f *excelize.File, results algorithms.Result) error {
 	const SheetName = "Results"
-	fmt.Println("Predetermined")
 	// Starting point
 	rowCount := 2
 	columnCount := 2

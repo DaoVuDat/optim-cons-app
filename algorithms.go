@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang-moaha-construction/internal/algorithms"
@@ -10,6 +9,7 @@ import (
 	"golang-moaha-construction/internal/algorithms/ga"
 	"golang-moaha-construction/internal/algorithms/gwo"
 	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/algorithms/omoaha"
 )
 
 func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
@@ -62,8 +62,30 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 		}
 
 		a.algorithm = algo
-		fmt.Println("ALgorithm")
-		fmt.Println(algo)
+	case omoaha.NameType:
+		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
+		if err != nil {
+			return err
+		}
+
+		var config omoahaConfig
+		err = sonic.Unmarshal(configBytes, &config)
+		if err != nil {
+			return err
+		}
+
+		algo, err := omoaha.Create(a.problem, omoaha.Configs{
+			NumAgents:     config.NumberOfAgents,
+			NumIterations: config.NumberOfIterations,
+			ArchiveSize:   config.ArchiveSize,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		a.algorithm = algo
+
 	case ga.NameType:
 		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
 		if err != nil {
@@ -120,19 +142,7 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 }
 
 func (a *App) AlgorithmInfo() (any, error) {
-
-	switch a.algorithmName {
-	case aha.NameType:
-		return a.algorithm, nil
-	case moaha.NameType:
-		return a.algorithm, nil
-	case ga.NameType:
-		return a.algorithm, nil
-	case gwo.NameType:
-		return a.algorithm, nil
-	default:
-		return nil, errors.New("invalid algorithm name")
-	}
+	return a.algorithm, nil
 }
 func (a *App) RunAlgorithm() error {
 
@@ -194,6 +204,12 @@ type gaConfig struct {
 }
 
 type moahaConfig struct {
+	NumberOfIterations int `json:"iterations"`
+	NumberOfAgents     int `json:"population"`
+	ArchiveSize        int `json:"archiveSize"`
+}
+
+type omoahaConfig struct {
 	NumberOfIterations int `json:"iterations"`
 	NumberOfAgents     int `json:"population"`
 	ArchiveSize        int `json:"archiveSize"`
