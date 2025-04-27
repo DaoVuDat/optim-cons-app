@@ -74,10 +74,10 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 				hoistingTime[craneLocation.Name] = hoistingTimeForCrane
 
-				facilitiesName := strings.Split(craneLocation.BuildingNames, " ")
+				facilitiesName := strings.Split(strings.ToUpper(craneLocation.BuildingNames), " ")
 
 				cranesLocation[i] = data.Crane{
-					CraneSymbol:  craneLocation.Name,
+					CraneSymbol:  strings.ToUpper(craneLocation.Name),
 					BuildingName: facilitiesName,
 					Radius:       craneLocation.Radius,
 				}

@@ -4,7 +4,7 @@ import (
 	"golang-moaha-construction/internal/data"
 )
 
-func CopyArray[T int | float64](src []T) []T {
+func CopyArray[T int | float64 | string | data.ObjectiveType](src []T) []T {
 	dst := make([]T, len(src))
 	copy(dst, src)
 	return dst

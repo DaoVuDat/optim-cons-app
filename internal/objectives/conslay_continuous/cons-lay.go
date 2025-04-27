@@ -81,7 +81,11 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64) {
+func (s *ConsLay) Eval(input []float64) (
+	values []float64,
+	valuesWithKey map[data.ObjectiveType]float64,
+	key []data.ObjectiveType,
+	penalty map[data.ConstraintType]float64) {
 	// add x, y, r to non-fixed locations
 	nonFixedLocations := make([]data.Location, len(s.NonFixedLocations))
 	mapLocations := make(map[string]data.Location, len(s.Locations))
@@ -171,7 +175,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[dat
 		valuesWithKey[k] = val
 	}
 
-	return values, valuesWithKey, penalty
+	return values, valuesWithKey, valuesName, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {
@@ -347,7 +351,7 @@ func ReadLocationsFromFile(filePath string) (locations map[string]data.Location,
 			case 0:
 				name = cell
 			case 1:
-				symbol = cell
+				symbol = strings.ToUpper(cell)
 			case 2:
 				val, err := strconv.ParseFloat(cell, 64)
 				if err != nil {
@@ -430,7 +434,7 @@ func ReadPhasesFromFile(filePath string) ([][]string, error) {
 			case 1:
 				vals := strings.Split(cell, ",")
 				for eachTF := range vals {
-					vals[eachTF] = strings.TrimSpace(vals[eachTF])
+					vals[eachTF] = strings.ToUpper(strings.TrimSpace(vals[eachTF]))
 				}
 				phases = append(phases, vals)
 			}

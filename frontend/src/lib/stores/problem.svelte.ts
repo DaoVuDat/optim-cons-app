@@ -59,6 +59,10 @@ class ProblemStore {
   getValidSelection = () => {
     return this.selectedProblem
   }
+
+  resetSelection = () => {
+    this.selectedProblem = undefined
+  }
 }
 
 export const problemStore = new ProblemStore()

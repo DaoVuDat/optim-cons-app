@@ -148,7 +148,10 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="ml-4 btn" href="/" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="ml-4 btn" href="/" onclick={() => {
+        stepStore.prevStep()
+        problemStore.resetSelection()
+    }}>Back</a>
     <button class={clsx('ml-4 btn', problemStore.getValidSelection() ? '' : 'btn-disabled')}
             onclick={() => handleNext()}
     >Next

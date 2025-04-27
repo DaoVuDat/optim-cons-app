@@ -111,10 +111,11 @@ func (ga *GAAlgorithm) Run() error {
 					Idx:      idx,
 					Position: childPos,
 				}
-				value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(childPos)
+				value, valuesWithKey, keys, penalty := ga.ObjectiveFunction.Eval(childPos)
 				child.Value = value
 				child.ValuesWithKey = valuesWithKey
 				child.Penalty = penalty
+				child.Key = keys
 
 				newPopulation[idx] = child
 			}(i)
@@ -182,9 +183,10 @@ func (ga *GAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 					Idx:      idx,
 					Position: childPos,
 				}
-				value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(childPos)
+				value, valuesWithKey, keys, penalty := ga.ObjectiveFunction.Eval(childPos)
 				child.Value = value
 				child.Penalty = penalty
+				child.Key = keys
 				child.ValuesWithKey = valuesWithKey
 
 				newPopulation[idx] = child
@@ -233,9 +235,10 @@ func (ga *GAAlgorithm) initialization() {
 				Position: pos,
 			}
 
-			value, valuesWithKey, penalty := ga.ObjectiveFunction.Eval(pos)
+			value, valuesWithKey, keys, penalty := ga.ObjectiveFunction.Eval(pos)
 			newGene.Value = value
 			newGene.Penalty = penalty
+			newGene.Key = keys
 			newGene.ValuesWithKey = valuesWithKey
 
 			ga.Population[idx] = newGene
@@ -277,20 +280,21 @@ func (ga *GAAlgorithm) GetResults() algorithms.Result {
 		SliceLocations: sliceLoc,
 		Value:          ga.Best.Value,
 		Penalty:        ga.Best.Penalty,
+		Key:            ga.Best.Key,
 		Cranes:         cranes,
 		Phases:         ga.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  ga.Best.ValuesWithKey,
-		Convergence:    ga.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := ga.ObjectiveFunction.GetLayoutSize()
 
 	return algorithms.Result{
-		Result: results,
-		MinX:   minX,
-		MaxX:   maxX,
-		MinY:   minY,
-		MaxY:   maxY,
+		Result:      results,
+		MinX:        minX,
+		MaxX:        maxX,
+		MinY:        minY,
+		MaxY:        maxY,
+		Convergence: ga.Convergence,
 	}
 }
 

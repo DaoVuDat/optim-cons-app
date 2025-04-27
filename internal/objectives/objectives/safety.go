@@ -5,6 +5,7 @@ import (
 	"golang-moaha-construction/internal/data"
 	"log"
 	"strconv"
+	"strings"
 )
 
 const SafetyObjectiveType data.ObjectiveType = "Safety Objective"
@@ -93,7 +94,7 @@ func ReadSafetyProximityDataFromFile(filePath string) (data.TwoDimensionalMatrix
 		if idx == 0 {
 			continue
 		}
-		facilitiesName[idx-1] = cell
+		facilitiesName[idx-1] = strings.ToUpper(cell)
 	}
 
 	hazardInteractionNew := data.CreateTwoDimensionalMatrix(facilitiesName)

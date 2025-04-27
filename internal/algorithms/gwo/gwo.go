@@ -112,9 +112,10 @@ func (g *GWOAlgorithm) Run() error {
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
+				value, valuesWithKey, keys, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
 				g.Agents[agentIdx].Value = value
 				g.Agents[agentIdx].Penalty = penalty
+				g.Agents[agentIdx].Key = keys
 				g.Agents[agentIdx].ValuesWithKey = valuesWithKey
 			}(agentIdx)
 		}
@@ -183,9 +184,10 @@ func (g *GWOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 				g.outOfBoundaries(g.Agents[agentIdx].Position)
 
 				// evaluate
-				value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
+				value, valuesWithKey, keys, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Position)
 				g.Agents[agentIdx].Value = value
 				g.Agents[agentIdx].Penalty = penalty
+				g.Agents[agentIdx].Key = keys
 				g.Agents[agentIdx].ValuesWithKey = valuesWithKey
 			}(agentIdx)
 		}
@@ -254,9 +256,10 @@ func (g *GWOAlgorithm) initialization() {
 				Position: positions,
 			}
 
-			value, valuesWithKey, penalty := g.ObjectiveFunction.Eval(positions)
+			value, valuesWithKey, keys, penalty := g.ObjectiveFunction.Eval(positions)
 			newAgent.Value = value
 			newAgent.Penalty = penalty
+			newAgent.Key = keys
 			newAgent.ValuesWithKey = valuesWithKey
 
 			g.Agents[agentIdx] = newAgent
@@ -304,18 +307,19 @@ func (g *GWOAlgorithm) GetResults() algorithms.Result {
 		Value:          g.Alpha.Value,
 		Penalty:        g.Alpha.Penalty,
 		Cranes:         cranes,
+		Key:            g.Alpha.Key,
 		Phases:         g.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  g.Alpha.ValuesWithKey,
-		Convergence:    g.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := g.ObjectiveFunction.GetLayoutSize()
 
 	return algorithms.Result{
-		Result: results,
-		MinX:   minX,
-		MaxX:   maxX,
-		MinY:   minY,
-		MaxY:   maxY,
+		Result:      results,
+		MinX:        minX,
+		MaxX:        maxX,
+		MinY:        minY,
+		MaxY:        maxY,
+		Convergence: g.Convergence,
 	}
 }

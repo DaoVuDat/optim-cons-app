@@ -4,6 +4,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"strconv"
+	"strings"
 )
 
 const TransportCostObjectiveType data.ObjectiveType = "Transport Cost Objective"
@@ -93,7 +94,7 @@ func ReadInteractionTransportCostDataFromFile(filePath string) (data.TwoDimensio
 		if idx == 0 {
 			continue
 		}
-		facilitiesName[idx-1] = cell
+		facilitiesName[idx-1] = strings.ToUpper(cell)
 	}
 
 	interactionMatrix := data.CreateTwoDimensionalMatrix(facilitiesName)

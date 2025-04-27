@@ -12,17 +12,18 @@ type AlgorithmResult struct {
 	Value          []float64
 	Penalty        map[data.ConstraintType]float64
 	ValuesWithKey  map[data.ObjectiveType]float64
+	Key            []data.ObjectiveType
 	Cranes         []data.Crane
 	Phases         [][]string
-	Convergence    []float64
 }
 
 type Result struct {
-	Result []AlgorithmResult
-	MinX   float64
-	MinY   float64
-	MaxX   float64
-	MaxY   float64
+	Result      []AlgorithmResult
+	Convergence []float64
+	MinX        float64
+	MinY        float64
+	MaxX        float64
+	MaxY        float64
 }
 
 type Algorithm interface {

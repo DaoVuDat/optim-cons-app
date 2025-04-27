@@ -5,6 +5,7 @@ import (
 	"golang-moaha-construction/internal/data"
 	"math"
 	"strconv"
+	"strings"
 )
 
 const HoistingObjectiveType data.ObjectiveType = "Hoisting Objective"
@@ -170,7 +171,7 @@ func ReadHoistingTimeDataFromFile(filePath string) ([]HoistingTime, error) {
 			case 0:
 				name = cell
 			case 1:
-				facilitySymbol = cell
+				facilitySymbol = strings.ToUpper(cell)
 			case 2:
 				val, err := strconv.ParseFloat(cell, 64)
 				if err != nil {

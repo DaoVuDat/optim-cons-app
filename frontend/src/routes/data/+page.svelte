@@ -140,7 +140,10 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="ml-4 btn" href="/problem" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="ml-4 btn" href="/problem" onclick={() => {
+        stepStore.prevStep()
+        objectiveStore.resetSelection()
+    }}>Back</a>
     <button class='ml-4 btn'
             onclick={() => handleNext()}
     >Next

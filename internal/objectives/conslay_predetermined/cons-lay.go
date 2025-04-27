@@ -119,7 +119,11 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	return consLay, nil
 }
 
-func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64) {
+func (s *ConsLay) Eval(input []float64) (
+	values []float64,
+	valuesWithKey map[data.ObjectiveType]float64,
+	key []data.ObjectiveType,
+	penalty map[data.ConstraintType]float64) {
 
 	mapLocations := s.MappingLocations(input)
 
@@ -164,7 +168,7 @@ func (s *ConsLay) Eval(input []float64) (values []float64, valuesWithKey map[dat
 		valuesWithKey[k] = val
 	}
 
-	return values, valuesWithKey, penalty
+	return values, valuesWithKey, valuesName, penalty
 }
 
 func (s *ConsLay) GetUpperBound() []float64 {

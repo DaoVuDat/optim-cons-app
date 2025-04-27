@@ -138,9 +138,10 @@ func (a *AHAAlgorithm) Run() error {
 			}
 
 			// evaluate
-			value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
+			value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
 			a.Agents[maxIdx].Value = value
 			a.Agents[maxIdx].ValuesWithKey = valuesWithKey
+			a.Agents[maxIdx].Key = keys
 			a.Agents[maxIdx].Penalty = penalty
 
 			for i := range visitTable[maxIdx] {
@@ -246,10 +247,11 @@ func (a *AHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- a
 			}
 
 			// evaluate
-			value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
+			value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(a.Agents[maxIdx].Position)
 			a.Agents[maxIdx].Value = value
 			a.Agents[maxIdx].ValuesWithKey = valuesWithKey
 			a.Agents[maxIdx].Penalty = penalty
+			a.Agents[maxIdx].Key = keys
 
 			for i := range visitTable[maxIdx] {
 				visitTable[maxIdx][i] += 1
@@ -331,10 +333,11 @@ func (a *AHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][]f
 	a.outOfBoundaries(newPos)
 
 	newAgent := a.Agents[agentIdx].CopyAgent()
-	value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(newPos)
+	value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(newPos)
 	newAgent.Position = newPos
 	newAgent.Value = value
 	newAgent.Penalty = penalty
+	newAgent.Key = keys
 	newAgent.ValuesWithKey = valuesWithKey
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
@@ -375,10 +378,11 @@ func (a *AHAAlgorithm) territoryForaging(visitTable [][]float64, directVector []
 	a.outOfBoundaries(newPos)
 
 	newAgent := a.Agents[agentIdx].CopyAgent()
-	value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(newPos)
+	value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(newPos)
 	newAgent.Position = newPos
 	newAgent.Value = value
 	newAgent.Penalty = penalty
+	newAgent.Key = keys
 	newAgent.ValuesWithKey = valuesWithKey
 
 	if newAgent.Value[0] < a.Agents[agentIdx].Value[0] {
@@ -435,9 +439,10 @@ func (a *AHAAlgorithm) initialization() {
 				Position: positions,
 			}
 
-			value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(positions)
+			value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(positions)
 			newAgent.Value = value
 			newAgent.Penalty = penalty
+			newAgent.Key = keys
 			newAgent.ValuesWithKey = valuesWithKey
 
 			a.Agents[agentIdx] = newAgent
@@ -480,20 +485,21 @@ func (a *AHAAlgorithm) GetResults() algorithms.Result {
 		SliceLocations: sliceLoc,
 		Value:          a.BestResult.Value,
 		Penalty:        a.BestResult.Penalty,
+		Key:            a.BestResult.Key,
 		Cranes:         cranes,
 		Phases:         a.ObjectiveFunction.GetPhases(),
 		ValuesWithKey:  a.BestResult.ValuesWithKey,
-		Convergence:    a.Convergence,
 	}
 
 	minX, maxX, minY, maxY, _ := a.ObjectiveFunction.GetLayoutSize()
 
 	return algorithms.Result{
-		Result: results,
-		MinX:   minX,
-		MaxX:   maxX,
-		MinY:   minY,
-		MaxY:   maxY,
+		Result:      results,
+		MinX:        minX,
+		MaxX:        maxX,
+		MinY:        minY,
+		MaxY:        maxY,
+		Convergence: a.Convergence,
 	}
 }
 

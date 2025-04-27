@@ -141,11 +141,12 @@ func (a *MOAHAAlgorithm) Run() error {
 							(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
 				}
 				// evaluate
-				value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
+				value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
 
 				a.Agents[idx].Value = value
 				a.Agents[idx].ValuesWithKey = valuesWithKey
 				a.Agents[idx].Penalty = penalty
+				a.Agents[idx].Key = keys
 
 				for i := range visitTable[idx] {
 					visitTable[idx][i] += 1
@@ -264,11 +265,12 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 							(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
 				}
 				// evaluate
-				value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
+				value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(a.Agents[idx].Position)
 
 				a.Agents[idx].Value = value
 				a.Agents[idx].ValuesWithKey = valuesWithKey
 				a.Agents[idx].Penalty = penalty
+				a.Agents[idx].Key = keys
 
 				for i := range visitTable[idx] {
 					visitTable[idx][i] += 1
@@ -370,11 +372,12 @@ func (a *MOAHAAlgorithm) guidedForaging(visitTable [][]float64, directVector [][
 
 	newAgent := a.Agents[agentIdx].CopyAgent()
 
-	value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(newPos)
+	value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(newPos)
 	newAgent.Position = newPos
 	newAgent.Value = value
 	newAgent.ValuesWithKey = valuesWithKey
 	newAgent.Penalty = penalty
+	newAgent.Key = keys
 
 	// Sanity check the index of current agent
 	frontIdx := 0
@@ -450,11 +453,12 @@ func (a *MOAHAAlgorithm) territoryForaging(visitTable [][]float64, directVector 
 	a.outOfBoundaries(newPos)
 
 	newAgent := a.Agents[agentIdx].CopyAgent()
-	value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(newPos)
+	value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(newPos)
 	newAgent.Position = newPos
 	newAgent.Value = value
 	newAgent.ValuesWithKey = valuesWithKey
 	newAgent.Penalty = penalty
+	newAgent.Key = keys
 
 	// Sanity check the index of current agent
 	frontIdx := 0
@@ -537,10 +541,11 @@ func (a *MOAHAAlgorithm) initialization() {
 				Position: positions,
 			}
 
-			value, valuesWithKey, penalty := a.ObjectiveFunction.Eval(positions)
+			value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(positions)
 			newAgent.Value = value
 			newAgent.ValuesWithKey = valuesWithKey
 			newAgent.Penalty = penalty
+			newAgent.Key = keys
 
 			a.Agents[agentIdx] = newAgent
 		}(agentIdx)
@@ -572,6 +577,7 @@ func (a *MOAHAAlgorithm) GetResults() algorithms.Result {
 			MapLocations:   mapLoc,
 			SliceLocations: sliceLoc,
 			Value:          res.Value,
+			Key:            res.Key,
 			Penalty:        res.Penalty,
 			ValuesWithKey:  res.ValuesWithKey,
 			Cranes:         cranes,

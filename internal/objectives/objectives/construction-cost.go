@@ -7,6 +7,7 @@ import (
 	"maps"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 const ConstructionCostObjectiveType data.ObjectiveType = "Construction Cost Objective"
@@ -126,7 +127,7 @@ func ReadMatrixFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 		if idx == 0 {
 			continue
 		}
-		names[idx-1] = cell
+		names[idx-1] = strings.ToUpper(cell)
 	}
 
 	freqMatrix := data.CreateTwoDimensionalMatrix(names)

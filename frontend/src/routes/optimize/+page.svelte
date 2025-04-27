@@ -1,150 +1,169 @@
 <script lang="ts">
-  import {stepStore} from "$lib/stores/steps.svelte";
-  import {RunAlgorithm, SaveFile} from "$lib/wailsjs/go/main/App";
-  import {onDestroy, onMount} from "svelte";
-  import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
-  import {main, data as dataType} from "$lib/wailsjs/go/models";
-  import Graph from "$lib/components/graph.svelte";
-  import GraphSummary from "$lib/components/graph-summary.svelte";
-  import clsx from "clsx";
-  import type {ResultLocation, ResultLocationWithId} from "../../types/result";
-  import {objectiveStore} from "$lib/stores/objectives.svelte";
-  import {roundNDecimal} from "$lib/utils/rounding";
-  import {toast} from "@zerodevx/svelte-toast";
-  import {problemStore} from "$lib/stores/problem.svelte";
-  import {gridProblemConfig} from "$lib/stores/problems";
-  import PredeterminedResult from "$lib/components/predetermined-result.svelte";
-  import {errorOpts, infoOpts, successOpts} from "$lib/utils/toast-opts";
+    import {stepStore} from "$lib/stores/steps.svelte";
+    import {RunAlgorithm, SaveFile} from "$lib/wailsjs/go/main/App";
+    import {onDestroy, onMount} from "svelte";
+    import {EventsOff, EventsOn} from "$lib/wailsjs/runtime";
+    import {main, data as dataType} from "$lib/wailsjs/go/models";
+    import Graph from "$lib/components/graph.svelte";
+    import GraphSummary from "$lib/components/graph-summary.svelte";
+    import clsx from "clsx";
+    import type {ResultLocation, ResultLocationWithId} from "../../types/result";
+    import {objectiveStore} from "$lib/stores/objectives.svelte";
+    import {roundNDecimal} from "$lib/utils/rounding";
+    import {toast} from "@zerodevx/svelte-toast";
+    import {problemStore} from "$lib/stores/problem.svelte";
+    import {gridProblemConfig} from "$lib/stores/problems";
+    import PredeterminedResult from "$lib/components/predetermined-result.svelte";
+    import {errorOpts, infoOpts, successOpts} from "$lib/utils/toast-opts";
 
-  let summaryGraphCheck = $state<boolean>(false)
-  let progress = $state<number>(0)
-  let progressInfo = $state<string>("")
-  let layoutSize = $state<{
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-  }>({
-    maxX: 0,
-    minY: 0,
-    maxY: 0,
-    minX: 0,
-  })
-  let isMulti = $derived<boolean>(objectiveStore.objectives.selectedObjectives.length > 1)
-
-  let isLoading = $state<boolean>(false)
-
-  const handleOptimize = async () => {
-    isLoading = true
-    toast.push("Starting optimize...", {
-      theme: infoOpts
+    let summaryGraphCheck = $state<boolean>(false)
+    let progress = $state<number>(0)
+    let progressInfo = $state<string>("")
+    let layoutSize = $state<{
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+    }>({
+        maxX: 0,
+        minY: 0,
+        maxY: 0,
+        minX: 0,
     })
-    try {
-      await RunAlgorithm()
-    } catch (err) {
-      toast.pop(0)
+    let isMulti = $derived<boolean>(objectiveStore.objectives.selectedObjectives.length > 1)
 
-      toast.push(err as string, {
-        theme: errorOpts
-      })
+    let isLoading = $state<boolean>(false)
 
-    } finally {
-      isLoading = false
-    }
-  }
-
-  interface Progress {
-    progress: number
-  }
-
-  type MultiObjective = {
-    numberOfAgentsInArchive: number
-    type: 'multi'
-  } & Progress
-
-  type SingleObjective = {
-    bestFitness: number
-    type: 'single'
-
-  } & Progress
-
-
-  onMount(() => {
-    // Listen for the 'backendEvent' emitted from Go
-    EventsOn(main.EventType.ProgressEvent, (data: MultiObjective | SingleObjective) => {
-      if (data) {
-        // check the type of problem ( single or multiple )
-        if (data.type === 'multi') {
-          progress = Math.round(data.progress)
-          progressInfo = `${data.numberOfAgentsInArchive}`
-        } else if (data.type === 'single') {
-          progress = Math.round(data.progress)
-          progressInfo = `${roundNDecimal(data.bestFitness, 4)}`
-        }
-      }
-    });
-
-    EventsOn(main.EventType.ResultEvent, (data: {
-      Result: ResultLocation[]
-      Phases: string[][]
-      MinX: number
-      MaxX: number
-      MinY: number
-      MaxY: number
-    }) => {
-      if (data) {
-        results.length = 0 // clear the old results
-        results.push(...data.Result.map((r, idx) => ({
-          ...r,
-          Id: `${Math.random()}-${idx}`
-        })))
-
-        layoutSize = {
-          minX: data.MinX,
-          minY: data.MinY,
-          maxX: data.MaxX,
-          maxY: data.MaxY,
-        }
-
-        toast.push("Completed!", {
-          theme: successOpts
+    const handleOptimize = async () => {
+        isLoading = true
+        toast.push("Starting optimize...", {
+            theme: infoOpts
         })
-      }
-    });
-  })
+        try {
+            await RunAlgorithm()
+        } catch (err) {
+            toast.pop(0)
 
-  onDestroy(() => {
-    EventsOff(main.EventType.ProgressEvent)
-    EventsOff(main.EventType.ResultEvent)
-  })
+            toast.push(err as string, {
+                theme: errorOpts
+            })
 
-
-  let results = $state<ResultLocationWithId[]>([])
-  let selectedResult = $state<ResultLocationWithId | undefined>(undefined)
-
-  const handleSelectedResult = (result: ResultLocationWithId) => {
-    selectedResult = result
-  }
-
-  const handleExportResult = async () => {
-    await SaveFile(main.CommandType.ExportResult)
-  }
-
-  let gridConfig = $derived.by(() => {
-    if (problemStore.selectedProblem && problemStore.selectedProblem.value === dataType.ProblemName.GridConstructionLayout) {
-      return {
-        useGrid: true,
-        gridSize: gridProblemConfig.gridSize,
-      }
+        } finally {
+            isLoading = false
+        }
     }
 
-    return {
-      useGrid: false,
-      gridSize: 1
+    interface Progress {
+        progress: number
     }
-  })
 
-  $inspect(selectedResult)
+    type MultiObjective = {
+        numberOfAgentsInArchive: number
+        type: 'multi'
+    } & Progress
+
+    type SingleObjective = {
+        bestFitness: number
+        type: 'single'
+
+    } & Progress
+
+
+    onMount(() => {
+        // Listen for the 'backendEvent' emitted from Go
+        EventsOn(main.EventType.ProgressEvent, (data: MultiObjective | SingleObjective) => {
+            if (data) {
+                // check the type of problem ( single or multiple )
+                if (data.type === 'multi') {
+                    progress = Math.round(data.progress)
+                    progressInfo = `${data.numberOfAgentsInArchive}`
+                } else if (data.type === 'single') {
+                    progress = Math.round(data.progress)
+                    progressInfo = `${roundNDecimal(data.bestFitness, 4)}`
+                }
+            }
+        });
+
+        EventsOn(main.EventType.ResultEvent, (data: {
+            Result: ResultLocation[]
+            Phases: string[][]
+            MinX: number
+            MaxX: number
+            MinY: number
+            MaxY: number
+            Convergence: number[]
+        }) => {
+            if (data) {
+                results.length = 0 // clear the old results
+                results.push(...data.Result.map((r, idx) => ({
+                    ...r,
+                    Id: `${Math.random()}-${idx}`
+                })))
+
+                layoutSize = {
+                    minX: data.MinX,
+                    minY: data.MinY,
+                    maxX: data.MaxX,
+                    maxY: data.MaxY,
+                }
+
+                convergence = data.Convergence
+
+                toast.push("Completed!", {
+                    theme: successOpts
+                })
+            }
+        });
+    })
+
+    onDestroy(() => {
+        EventsOff(main.EventType.ProgressEvent)
+        EventsOff(main.EventType.ResultEvent)
+    })
+
+
+    let results = $state<ResultLocationWithId[]>([])
+    let convergence = $state<number[]>([])
+    let selectedResult = $state<ResultLocationWithId | undefined>(undefined)
+
+    const handleSelectedResult = (result: ResultLocationWithId) => {
+        selectedResult = result
+    }
+
+    const handleExportResult = async () => {
+        toast.push("Saving...", {
+            theme: infoOpts
+        })
+        try {
+            await SaveFile(main.CommandType.ExportResult)
+            toast.pop(0)
+            toast.push("Saved!", {
+                theme: successOpts
+            })
+        } catch (err) {
+            toast.pop(0)
+
+            toast.push(err as string, {
+                theme: errorOpts
+            })
+        }
+    }
+
+    let gridConfig = $derived.by(() => {
+        if (problemStore.selectedProblem && problemStore.selectedProblem.value === dataType.ProblemName.GridConstructionLayout) {
+            return {
+                useGrid: true,
+                gridSize: gridProblemConfig.gridSize,
+            }
+        }
+
+        return {
+            useGrid: false,
+            gridSize: 1
+        }
+    })
+
+    $inspect(selectedResult)
 </script>
 
 <div class="h-[calc(100vh-64px-64px)] w-full text-lg pt-4 flex flex-col justify-between items-center">
@@ -180,7 +199,7 @@
     <div class="max-h-full w-full px-2 py-4 col-start-5 row-start-1 col-span-8 row-span-3 card bg-base-100
      shadow-md rounded-lg flex justify-center items-center">
       {#if summaryGraphCheck}
-        <GraphSummary graphsData={results}/>
+        <GraphSummary graphsData={results} convergence={convergence}/>
       {:else}
         {#if (problemStore.selectedProblem?.value === dataType.ProblemName.PredeterminedConstructionLayout)}
           <PredeterminedResult graphData={selectedResult}/>
@@ -211,7 +230,10 @@
         <fieldset class="fieldset p-4 mb-2 bg-base-100 border border-base-300 rounded-box w-full">
           <legend class="fieldset-legend text-nowrap">Show Convergence</legend>
           <label class="fieldset-label">
-            <input type="checkbox" bind:checked={summaryGraphCheck} class="toggle" disabled={isLoading}/>
+            <input type="checkbox"
+                   bind:checked={summaryGraphCheck}
+                   class="toggle"
+                   disabled={isLoading}/>
             {#if summaryGraphCheck}
               Convergence curve
             {:else}

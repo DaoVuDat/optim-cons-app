@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/bytedance/sonic"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
@@ -86,7 +85,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			zones := make([]constraints.Zone, len(inclusiveCfg.Zones))
 
 			for i, zone := range inclusiveCfg.Zones {
-				facilitiesName := strings.Split(zone.BuildingNames, " ")
+				facilitiesName := strings.Split(strings.ToUpper(zone.BuildingNames), " ")
 
 				var location data.Location
 
@@ -124,13 +123,12 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println("Cover In Crane Config")
-			fmt.Println(coverInCraneCfg.CraneLocations)
+
 			cranesLocation := make([]data.Crane, len(coverInCraneCfg.CraneLocations))
 
 			for i, craneLocation := range coverInCraneCfg.CraneLocations {
 
-				facilitiesName := strings.Split(craneLocation.BuildingNames, " ")
+				facilitiesName := strings.Split(strings.ToUpper(craneLocation.BuildingNames), " ")
 
 				var location data.Location
 

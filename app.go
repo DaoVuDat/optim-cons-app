@@ -119,10 +119,11 @@ func (a *App) SaveFile(commandType CommandType) error {
 				ProblemInfo:     problemInfo,
 				ObjectivesInfo:  objectivesInfo,
 			},
-			Results:       results,
-			FilePath:      selection,
-			ProblemName:   a.problemName,
-			AlgorithmName: a.algorithmName,
+			Results:            results,
+			FilePath:           selection,
+			ProblemName:        a.problemName,
+			AlgorithmName:      a.algorithmName,
+			NumberOfObjectives: a.numberOfObjectives,
 		})
 
 		if err != nil {

@@ -11,7 +11,11 @@ var (
 )
 
 type Problem interface {
-	Eval(pos []float64) (values []float64, valuesWithKey map[data.ObjectiveType]float64, penalty map[data.ConstraintType]float64)
+	Eval(pos []float64) (
+		values []float64,
+		valuesWithKey map[data.ObjectiveType]float64,
+		key []data.ObjectiveType,
+		penalty map[data.ConstraintType]float64)
 	GetUpperBound() []float64
 	GetLowerBound() []float64
 	GetDimension() int

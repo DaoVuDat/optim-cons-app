@@ -67,6 +67,10 @@ class AlgorithmStore {
 
   selectedAlgorithm = $state<AlgorithmWithLabel>()
 
+  resetSelection = () => {
+    this.selectedAlgorithm = undefined
+  }
+
   getConfig = <T extends algorithms.AlgorithmType>(algo: T) : AlgorithmConfigMap[T]=> {
     switch (algo) {
       case algorithms.AlgorithmType.GeneticAlgorithm:

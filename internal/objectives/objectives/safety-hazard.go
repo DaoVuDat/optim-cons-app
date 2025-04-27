@@ -4,6 +4,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"strconv"
+	"strings"
 )
 
 const SafetyHazardObjectiveType data.ObjectiveType = "Safety Hazard Objective"
@@ -97,7 +98,7 @@ func ReadSafetyAndEnvDataFromFile(filePath string) (data.TwoDimensionalMatrix, e
 		if idx == 0 {
 			continue
 		}
-		facilitiesName[idx-1] = cell
+		facilitiesName[idx-1] = strings.ToUpper(cell)
 	}
 
 	interactionMatrix := data.CreateTwoDimensionalMatrix(facilitiesName)

@@ -102,7 +102,10 @@
 
   <!-- Bottom Section -->
   <section class="w-full text-end">
-    <a class="btn" href="/constraint" onclick={() => stepStore.prevStep()}>Back</a>
+    <a class="btn" href="/constraint" onclick={() => {
+        stepStore.prevStep()
+        algorithmsStore.resetSelection()
+    }}>Back</a>
     <button class={clsx('ml-4 btn', algorithmsStore.getValidSelection() ? '' : 'btn-disabled')}
        onclick={handleNext}
     >Next</button>

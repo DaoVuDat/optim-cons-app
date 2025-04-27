@@ -90,6 +90,10 @@ class ObjectiveStore {
 
   }
 
+  resetSelection = () => {
+    this.selectObjectiveOption = undefined
+  }
+
 
   getConfig = <T extends data.ObjectiveType>(type: T): ObjectiveConfigMap[T] => {
     switch (type) {
