@@ -7,6 +7,9 @@
   import clsx from "clsx";
   import type {CustomElementOption} from "echarts/types/src/chart/custom/CustomSeries";
   import {roundNDecimal} from "$lib/utils/rounding";
+  import {toast} from "@zerodevx/svelte-toast";
+  import {errorOpts, successOpts} from "$lib/utils/toast-opts";
+  import {SaveChartImage} from "$lib/wailsjs/go/main/App";
 
   interface LayoutSize {
     minX: number;
@@ -323,6 +326,34 @@
     }
   });
 
+  const exportChart = async () => {
+    if (chartInstance) {
+      const dataURL = chartInstance.getDataURL({
+        type: 'png',
+        pixelRatio: 2,
+        backgroundColor: '#fff'
+      });
+
+      try {
+        // Call the Wails backend to save the chart
+        const savedPath = await SaveChartImage(dataURL);
+
+        if (savedPath) {
+          // Show success notification using Svelte toast
+          toast.push(`Chart has been saved to: ${savedPath}`, {
+            theme: successOpts
+          });
+        }
+      } catch (error) {
+        console.error("Error saving chart:", error);
+        // Show error notification using Svelte toast
+        toast.push(`Error saving chart: ${error as string}`, {
+          theme: errorOpts
+        });
+      }
+    }
+  };
+
 </script>
 
 <div class="w-full h-full flex flex-col justify-center items-center">
@@ -344,20 +375,23 @@
         {/each}
       </div>
     {/if}
-    {#if phasesGraphData && phasesGraphData.length > 1}
-      <div class="join flex-1/3 justify-end">
-        <button class={clsx("join-item btn", {
-        "btn-disabled": selectedPhases === 0,
-    })} onclick={() => selectedPhases--}>«
-        </button>
-        <button class="join-item btn w-48">
-          {selectedPhases === phasesGraphData.length - 1 ? "All" : `Phase / Time Interval: ${selectedPhases + 1}`}
-        </button>
-        <button class={clsx("join-item btn", {
-        "btn-disabled":  !graphData ||  selectedPhases === phasesGraphData.length - 1,
-    })} onclick={() => selectedPhases++}>»
-        </button>
-      </div>
-    {/if}
+    <div class="flex items-center space-x-2">
+      <button class="btn btn-primary" onclick={exportChart}>Save Chart</button>
+      {#if phasesGraphData && phasesGraphData.length > 1}
+        <div class="join flex-1/3 justify-end">
+          <button class={clsx("join-item btn", {
+          "btn-disabled": selectedPhases === 0,
+      })} onclick={() => selectedPhases--}>«
+          </button>
+          <button class="join-item btn w-48">
+            {selectedPhases === phasesGraphData.length - 1 ? "All" : `Phase / Time Interval: ${selectedPhases + 1}`}
+          </button>
+          <button class={clsx("join-item btn", {
+          "btn-disabled":  !graphData ||  selectedPhases === phasesGraphData.length - 1,
+      })} onclick={() => selectedPhases++}>»
+          </button>
+        </div>
+      {/if}
+    </div>
   </div>
 </div>

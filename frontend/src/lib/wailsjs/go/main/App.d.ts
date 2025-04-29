@@ -22,6 +22,8 @@ export function Result():Promise<any>;
 
 export function RunAlgorithm():Promise<void>;
 
+export function SaveChartImage(arg1:string):Promise<string>;
+
 export function SaveFile(arg1:main.CommandType):Promise<void>;
 
 export function SelectFile():Promise<string>;

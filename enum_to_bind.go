@@ -140,6 +140,7 @@ type CommandType string
 
 const (
 	ExportResult CommandType = "ExportResult"
+	SaveChart    CommandType = "SaveChart"
 )
 
 var AllCommand = []struct {
@@ -149,5 +150,9 @@ var AllCommand = []struct {
 	{
 		Value:  ExportResult,
 		TSName: "ExportResult",
+	},
+	{
+		Value:  SaveChart,
+		TSName: "SaveChart",
 	},
 }

@@ -62,6 +62,7 @@ export namespace main {
 	}
 	export enum CommandType {
 	    ExportResult = "ExportResult",
+	    SaveChart = "SaveChart",
 	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;
