@@ -376,14 +376,13 @@
       </div>
     {/if}
     <div class="flex items-center space-x-2">
-      <button class="btn btn-primary" onclick={exportChart}>Save Chart</button>
       {#if phasesGraphData && phasesGraphData.length > 1}
         <div class="join flex-1/3 justify-end">
           <button class={clsx("join-item btn", {
           "btn-disabled": selectedPhases === 0,
       })} onclick={() => selectedPhases--}>«
           </button>
-          <button class="join-item btn w-48">
+          <button class="join-item btn w-48" onclick={exportChart}>
             {selectedPhases === phasesGraphData.length - 1 ? "All" : `Phase / Time Interval: ${selectedPhases + 1}`}
           </button>
           <button class={clsx("join-item btn", {

@@ -184,7 +184,7 @@
         ];
       } else {
         // Convergence chart (when numberOfValues == 1)
-        const convergenceData = results[0].convergence;
+        const convergenceData = convergence;
         if (convergenceData && convergenceData.length > 0) {
           options.tooltip = {
             trigger: 'axis',
@@ -320,8 +320,8 @@
     const range = max - min;
 
     // Add 2% padding on each side
-    const minBound = min - (range * 0.02);
-    const maxBound = max + (range * 0.02);
+    const minBound = min;
+    const maxBound = max;
 
     // Determine if we should use scientific notation
     const useScientific = shouldUseScientific(minBound, maxBound);

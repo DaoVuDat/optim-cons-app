@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/bytedance/sonic"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
@@ -149,7 +150,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 					Radius:       craneLocation.Radius,
 				}
 			}
-
+			fmt.Println(cranesLocation)
 			coverRangeConstraint := constraints.CreateCoverRangeCraneConstraint(
 				cranesLocation,
 				problem.GetPhases(),
