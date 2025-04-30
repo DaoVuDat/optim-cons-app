@@ -537,34 +537,34 @@ func (a *OMOAHAAlgorithm) initialization() []*objectives.Result {
 
 	results := make([]*objectives.Result, a.NumberOfAgents)
 
-	var wg sync.WaitGroup
-	wg.Add(a.NumberOfAgents)
+	//var wg sync.WaitGroup
+	//wg.Add(a.NumberOfAgents)
 	for agentIdx := 0; agentIdx < a.NumberOfAgents; agentIdx++ {
-		go func(agentIdx int) {
-			defer wg.Done()
-			positions := make([]float64, a.ObjectiveFunction.GetDimension())
+		//go func(agentIdx int) {
+		//	defer wg.Done()
+		positions := make([]float64, a.ObjectiveFunction.GetDimension())
 
-			for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
-				positions[i] = a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
-					(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
-			}
+		for i := 0; i < a.ObjectiveFunction.GetDimension(); i++ {
+			positions[i] = a.ObjectiveFunction.GetLowerBound()[i] + rand.Float64()*
+				(a.ObjectiveFunction.GetUpperBound()[i]-a.ObjectiveFunction.GetLowerBound()[i])
+		}
 
-			// evaluate
-			newAgent := &objectives.Result{
-				Idx:      agentIdx,
-				Position: positions,
-			}
+		// evaluate
+		newAgent := &objectives.Result{
+			Idx:      agentIdx,
+			Position: positions,
+		}
 
-			value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(positions)
-			newAgent.Value = value
-			newAgent.ValuesWithKey = valuesWithKey
-			newAgent.Penalty = penalty
-			newAgent.Key = keys
+		value, valuesWithKey, keys, penalty := a.ObjectiveFunction.Eval(positions)
+		newAgent.Value = value
+		newAgent.ValuesWithKey = valuesWithKey
+		newAgent.Penalty = penalty
+		newAgent.Key = keys
 
-			results[agentIdx] = newAgent
-		}(agentIdx)
+		results[agentIdx] = newAgent
+		//}(agentIdx)
 	}
-	wg.Wait()
+	//wg.Wait()
 
 	return results
 }

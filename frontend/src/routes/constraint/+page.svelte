@@ -70,16 +70,11 @@
       stepStore.nextStep()
     } catch (err) {
       toast.pop(0)
-
       toast.push(err as string, {
         theme: errorOpts
       })
 
     } finally {
-      toast.pop(0)
-      toast.push("Added constraints!", {
-        theme: successOpts
-      })
       loading = false
     }
 

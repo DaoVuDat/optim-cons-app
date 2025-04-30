@@ -1,6 +1,8 @@
 package data
 
-import "errors"
+import (
+	"errors"
+)
 
 // TwoDimensionalMatrix is (n*n) matrix
 type TwoDimensionalMatrix struct {
@@ -94,7 +96,7 @@ func (m *TwoDimensionalMatrix) GetNameFromIdx(idx int) (string, error) {
 
 func (m *TwoDimensionalMatrix) GetIdxFromName(nameItem string) (int, error) {
 	val, ok := m.NameToIdx[nameItem]
-
+	
 	if !ok {
 		return -1, errors.New("name not found")
 	}

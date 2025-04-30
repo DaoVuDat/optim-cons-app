@@ -88,6 +88,9 @@
 
         await goto('/data')
         stepStore.nextStep()
+        toast.push("Set up problem!", {
+          theme: successOpts
+        })
       }
     } catch (err) {
       toast.pop(0)
@@ -95,11 +98,6 @@
         theme: errorOpts
       })
     } finally {
-      toast.pop(0)
-      
-      toast.push("Set up problem!", {
-        theme: successOpts
-      })
       loading = false
     }
 

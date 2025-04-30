@@ -67,12 +67,12 @@ func constructionOptimization() {
 	// Create conslay_continuous problem and add objectives
 
 	consLayoutConfigs := conslay_continuous.ConsLayConfigs{
-		ConsLayoutLength: 120,
-		ConsLayoutWidth:  95,
+		ConsLayoutLength: 140,
+		ConsLayoutWidth:  90,
 	}
 
 	// LOAD LOCATIONS
-	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/continuous/locations.xlsx")
+	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/VD-1/facility_file.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func constructionOptimization() {
 	// LOAD PHASES
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
-	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/continuous/dynamicBuilding.xlsx")
+	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/VD-1/phase_file.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +96,8 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
-	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/continuous/hoisting_time_data.xlsx")
+	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/VD-1/hoisting_data_crane_1.xlsx")
+	hoistingTime2, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/VD-1/hoisting_data_crane_2.xlsx")
 
 	if err != nil {
 		log.Fatal(err)
@@ -104,11 +105,12 @@ func constructionOptimization() {
 
 	// Hoisting Objective Configs
 	hoistingConfigs := objectives.HoistingConfigs{
-		NumberOfFloors: 10,
+		NumberOfFloors: 11,
 		HoistingTime: map[string][]objectives.HoistingTime{
-			"TF14": hoistingTime,
+			"TF18": hoistingTime,
+			"TF19": hoistingTime2,
 		},
-		FloorHeight:          3.2,
+		FloorHeight:          3.3,
 		CraneLocations:       nil,
 		ZM:                   2,
 		Vuvg:                 37.5,
@@ -136,9 +138,14 @@ func constructionOptimization() {
 
 	selectedCrane := []SelectedCrane{
 		{
-			Name:          "TF14",
-			BuildingNames: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
-			Radius:        40,
+			Name:          "TF18",
+			BuildingNames: []string{"TF8", "TF10"},
+			Radius:        35,
+		},
+		{
+			Name:          "TF19",
+			BuildingNames: []string{"TF9", "TF11"},
+			Radius:        35,
 		},
 	}
 
@@ -157,9 +164,8 @@ func constructionOptimization() {
 	hoistingObj.CraneLocations = craneLocations
 
 	// RISK
-	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/continuous/risk_data.xlsx")
+	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/VD-1/hazard matrix.xlsx")
 
-	// Hoisting Objective Configs
 	riskConfigs := objectives.RiskConfigs{
 		HazardInteractionMatrix: hazardInteraction,
 		Delta:                   0.01,
@@ -171,9 +177,25 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
+	safetyMatrix, err := objectives.ReadSafetyProximityDataFromFile("./data/conslay/VD-1/safety matrix.xlsx")
+	if err != nil {
+		return
+	}
+
+	safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{
+		SafetyProximity:    safetyMatrix,
+		AlphaSafetyPenalty: 2000,
+		Phases:             phases,
+		FilePath:           "",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Add objectives to conslay_continuous problem
 	err = consLayObj.AddObjective(objectives.HoistingObjectiveType, hoistingObj)
 	err = consLayObj.AddObjective(objectives.RiskObjectiveType, riskObj)
+	err = consLayObj.AddObjective(objectives.SafetyObjectiveType, safetyObj)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -205,14 +227,9 @@ func constructionOptimization() {
 	zoneConstraint := constraints.CreateInclusiveZoneConstraint(
 		[]constraints.Zone{
 			{
-				Location:      locations["TF13"],
-				BuildingNames: []string{"TF7"},
-				Size:          20,
-			},
-			{
-				Location:      locations["TF13"],
-				BuildingNames: []string{"TF1", "TF2"},
-				Size:          15,
+				Location:      locations["TF22"],
+				BuildingNames: []string{"TF1", "TF2", "TF3", "TF4", "TF8", "TF9", "TF10", "TF11", "TF13", "TF14"},
+				Size:          25,
 			},
 		},
 		phases,

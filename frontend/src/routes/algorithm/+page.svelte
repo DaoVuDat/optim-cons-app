@@ -1,67 +1,69 @@
 <script lang="ts">
-    import clsx from "clsx";
-    import moahaConfig from '$lib/components/algo-configs/moaha-config.svelte'
-    import omoahaConfig from '$lib/components/algo-configs/omoaha-config.svelte'
-    import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
-    import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
-    import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
-    import {stepStore} from "$lib/stores/steps.svelte.js";
-    import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
-    import {algorithms, main} from "$lib/wailsjs/go/models";
-    import {goto} from "$app/navigation";
-    import {CreateAlgorithm} from "$lib/wailsjs/go/main/App";
-    import {toast} from "@zerodevx/svelte-toast";
-    import {infoOpts, successOpts} from "$lib/utils/toast-opts";
+  import clsx from "clsx";
+  import moahaConfig from '$lib/components/algo-configs/moaha-config.svelte'
+  import omoahaConfig from '$lib/components/algo-configs/omoaha-config.svelte'
+  import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
+  import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
+  import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
+  import {stepStore} from "$lib/stores/steps.svelte.js";
+  import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
+  import {algorithms, main} from "$lib/wailsjs/go/models";
+  import {goto} from "$app/navigation";
+  import {CreateAlgorithm} from "$lib/wailsjs/go/main/App";
+  import {toast} from "@zerodevx/svelte-toast";
+  import {errorOpts, infoOpts, successOpts} from "$lib/utils/toast-opts";
 
-    const configComponents = {
-        [algorithms.AlgorithmType.MOAHA]: moahaConfig,
-        [algorithms.AlgorithmType.AHA]: ahaConfig,
-        [algorithms.AlgorithmType.GWO]: gwoConfig,
-        [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
-        [algorithms.AlgorithmType.oMOAHA]: omoahaConfig,
+  const configComponents = {
+    [algorithms.AlgorithmType.MOAHA]: moahaConfig,
+    [algorithms.AlgorithmType.AHA]: ahaConfig,
+    [algorithms.AlgorithmType.GWO]: gwoConfig,
+    [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
+    [algorithms.AlgorithmType.oMOAHA]: omoahaConfig,
+  }
+
+  const component = $derived.by(() => {
+    if (algorithmsStore.getValidSelection()) {
+      return configComponents[algorithmsStore.selectedAlgorithm!.value]
     }
+  })
 
-    const component = $derived.by(() => {
-        if (algorithmsStore.getValidSelection()) {
-            return configComponents[algorithmsStore.selectedAlgorithm!.value]
-        }
+  const handleClick = (algo: AlgorithmWithLabel) => {
+    algorithmsStore.selectedAlgorithm = algo;
+  }
+
+  let loading = $state<boolean>(false)
+
+  const handleNext = async () => {
+    loading = true
+    toast.push("Configuring algorithm...", {
+      theme: infoOpts
     })
+    try {
+      if (algorithmsStore.selectedAlgorithm) {
 
-    const handleClick = (algo: AlgorithmWithLabel) => {
-        algorithmsStore.selectedAlgorithm = algo;
-    }
-
-    let loading = $state<boolean>(false)
-
-    const handleNext = async () => {
-        loading = true
-        toast.push("Configuring algorithm...", {
-            theme: infoOpts
+        await CreateAlgorithm({
+          algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
+          algorithmName: algorithmsStore.selectedAlgorithm.value,
         })
-        try {
-            if (algorithmsStore.selectedAlgorithm) {
-
-                await CreateAlgorithm({
-                    algorithmConfig: algorithmsStore.getConfig(algorithmsStore.selectedAlgorithm.value),
-                    algorithmName: algorithmsStore.selectedAlgorithm.value,
-                })
-            }
+      }
 
 
-            await goto('/optimize')
+      await goto('/optimize')
 
-            stepStore.nextStep()
-        } catch (err) {
-
-        } finally {
-            toast.pop(0)
-            toast.push("Configured algorithm!", {
-                theme: successOpts
-            })
-            loading = false
-        }
-
+      stepStore.nextStep()
+      toast.push("Configured algorithm!", {
+        theme: successOpts
+      })
+    } catch (err) {
+      toast.pop(0)
+      toast.push(err as string, {
+        theme: errorOpts
+      })
+    } finally {
+      loading = false
     }
+
+  }
 
 </script>
 

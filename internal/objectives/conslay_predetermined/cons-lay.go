@@ -3,13 +3,11 @@ package conslay_predetermined
 import (
 	"errors"
 	"fmt"
-	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/util"
 	"math"
 	"slices"
 	"sort"
-	"strings"
 )
 
 const PredeterminedConsLayoutName data.ProblemName = "Predetermined Construction Layout"
@@ -323,35 +321,4 @@ func (s *ConsLay) MappingLocations(input []float64) map[string]data.Location {
 	}
 
 	return mapLocations
-}
-
-func ReadPhasesFromFile(filePath string) ([][]string, error) {
-
-	// load data from file
-	file, err := excelize.OpenFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := file.GetRows("Sheet1")
-	if err != nil {
-		return nil, err
-	}
-
-	phases := make([][]string, 0)
-	for _, row := range rows {
-		for i, cell := range row {
-			switch i {
-			case 1:
-				vals := strings.Split(cell, ",")
-				for eachTF := range vals {
-					vals[eachTF] = strings.TrimSpace(vals[eachTF])
-				}
-				phases = append(phases, vals)
-			}
-
-		}
-	}
-
-	return phases, nil
 }

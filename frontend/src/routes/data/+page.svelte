@@ -60,6 +60,9 @@
       }
       await goto('/constraint')
       stepStore.nextStep()
+      toast.push("Loaded data!", {
+        theme: successOpts
+      })
     } catch (err: unknown) {
       toast.pop(0)
 
@@ -68,12 +71,7 @@
       })
 
     } finally {
-      toast.pop(0)
-      toast.push("Loaded data!", {
-        theme: successOpts
-      })
       loading = false
-
     }
   }
 

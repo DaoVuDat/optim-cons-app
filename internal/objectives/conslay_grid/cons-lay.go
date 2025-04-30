@@ -365,7 +365,13 @@ func ReadLocationsFromFile(filePath string) (locations map[string]data.Location,
 			case 0:
 				name = cell
 			case 1:
-				symbol = strings.ToUpper(cell)
+				symbol = strings.TrimSpace(cell)
+				// Validate that the symbol follows the pattern "TF<number>" or "tf<number>"
+				if err := util.ValidateTFNumber(symbol); err != nil {
+					return nil, nil, nil, err
+				}
+				// Convert to uppercase for consistency
+				symbol = strings.ToUpper(symbol)
 			case 2:
 				val, err := strconv.ParseFloat(cell, 64)
 				if err != nil {
@@ -454,7 +460,13 @@ func ReadPhasesFromFile(filePath string) ([][]string, error) {
 			case 1:
 				vals := strings.Split(cell, ",")
 				for eachTF := range vals {
-					vals[eachTF] = strings.ToUpper(strings.TrimSpace(vals[eachTF]))
+					vals[eachTF] = strings.TrimSpace(vals[eachTF])
+					// Validate that each phase entry follows the pattern "TF<number>" or "tf<number>"
+					if err := util.ValidateTFNumber(vals[eachTF]); err != nil {
+						return nil, err
+					}
+					// Convert to uppercase for consistency
+					vals[eachTF] = strings.ToUpper(vals[eachTF])
 				}
 				phases = append(phases, vals)
 			}

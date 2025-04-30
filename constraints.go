@@ -5,8 +5,47 @@ import (
 	"github.com/bytedance/sonic"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
+	"golang-moaha-construction/internal/util"
+	"regexp"
 	"strings"
 )
+
+// formatBuildingNames formats and validates building names according to the required format
+// It accepts a string with building names separated by spaces, and returns a slice of valid building names and an error if any invalid names are found
+// Valid building names are in the format "TF1", "TF2", etc. or "tf1", "tf2", etc.
+func formatBuildingNames(buildingNamesStr string) ([]string, error) {
+	// Trim spaces and replace multiple spaces with a single space
+	re := regexp.MustCompile(`\s+`)
+	trimmed := re.ReplaceAllString(strings.TrimSpace(buildingNamesStr), " ")
+
+	// Split by space
+	parts := strings.Split(trimmed, " ")
+
+	// Filter out empty strings and validate format
+	var result []string
+	var invalidNames []string
+
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+
+		// Validate format: must be "TF" or "tf" followed by numbers
+		if util.IsTFNumber(part) {
+			// Convert to uppercase for consistency
+			result = append(result, strings.ToUpper(part))
+		} else {
+			invalidNames = append(invalidNames, part)
+		}
+	}
+
+	// Return error if any invalid names were found
+	if len(invalidNames) > 0 {
+		return result, fmt.Errorf("invalid building names found: %s", strings.Join(invalidNames, ", "))
+	}
+
+	return result, nil
+}
 
 func (a *App) AddConstraints(cons []ConstraintInput) error {
 
@@ -86,10 +125,10 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			zones := make([]constraints.Zone, len(inclusiveCfg.Zones))
 
 			for i, zone := range inclusiveCfg.Zones {
-				facilitiesName := strings.Split(
-					strings.ToUpper(
-						strings.TrimSpace(zone.BuildingNames)),
-					" ")
+				facilitiesName, err := formatBuildingNames(zone.BuildingNames)
+				if err != nil {
+					return err
+				}
 
 				var location data.Location
 
@@ -132,10 +171,10 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			for i, craneLocation := range coverInCraneCfg.CraneLocations {
 
-				facilitiesName := strings.Split(
-					strings.ToUpper(
-						strings.TrimSpace(craneLocation.BuildingNames)),
-					" ")
+				facilitiesName, err := formatBuildingNames(craneLocation.BuildingNames)
+				if err != nil {
+					return err
+				}
 
 				var location data.Location
 
