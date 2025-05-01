@@ -99,7 +99,6 @@ func (obj *ConstructionCostObjective) Eval(locations map[string]data.Location) f
 
 			results += fref * distance
 		}
-
 	}
 
 	return results
@@ -140,6 +139,10 @@ func ReadMatrixFromFile(filePath string) (data.TwoDimensionalMatrix, error) {
 
 		for cellIdx, cell := range row {
 			if cellIdx == 0 {
+				continue
+			}
+
+			if cellIdx == idx {
 				continue
 			}
 
