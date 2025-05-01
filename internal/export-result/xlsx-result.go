@@ -1303,7 +1303,7 @@ func generateSheet3Graph(f *excelize.File, results algorithms.Result, numberOfOb
 	}
 
 	// Starting point
-	rowCount := 2
+	rowCount, startRow := 2, 2
 	columnCount := 2
 	index, err := f.NewSheet(SheetName)
 	if err != nil {
@@ -1341,7 +1341,8 @@ func generateSheet3Graph(f *excelize.File, results algorithms.Result, numberOfOb
 			}
 
 			// Iterate through the slice
-			for i := 0; i < resultField.Len(); i++ {
+			numberOfResults := resultField.Len()
+			for i := 0; i < numberOfResults; i++ {
 				algResult := resultField.Index(i)
 				cell, _ := excelize.CoordinatesToCellName(1, rowCount)
 				_ = f.SetCellValue(SheetName, cell, fmt.Sprintf("#%d", i+1))
@@ -1362,6 +1363,35 @@ func generateSheet3Graph(f *excelize.File, results algorithms.Result, numberOfOb
 					rowCount++
 				}
 			}
+
+			for i := 0; i < numberOfObjectives; i++ {
+				// add min and max rows
+				cell, _ := excelize.CoordinatesToCellName(1, rowCount)
+				_ = f.SetCellValue(SheetName, cell, "Min")
+				_ = f.SetCellStyle(SheetName, cell, cell, contentBoldStyle)
+
+				// Add MIN formula for this objective column
+				minCell, _ := excelize.CoordinatesToCellName(columnCount+i, rowCount)
+				startCell, _ := excelize.CoordinatesToCellName(columnCount+i, startRow)
+				endCell, _ := excelize.CoordinatesToCellName(columnCount+i, startRow+numberOfResults-1)
+				minFormula := fmt.Sprintf("=MIN(%s:%s)", startCell, endCell)
+				_ = f.SetCellFormula(SheetName, minCell, minFormula)
+				_ = f.SetCellStyle(SheetName, minCell, minCell, contentStyle)
+
+				cell, _ = excelize.CoordinatesToCellName(1, rowCount+1)
+				_ = f.SetCellValue(SheetName, cell, "Max")
+				_ = f.SetCellStyle(SheetName, cell, cell, contentBoldStyle)
+
+				// Add MAX formula for this objective column
+				maxCell, _ := excelize.CoordinatesToCellName(columnCount+i, rowCount+1)
+				maxFormula := fmt.Sprintf("=MAX(%s:%s)", startCell, endCell)
+				_ = f.SetCellFormula(SheetName, maxCell, maxFormula)
+				_ = f.SetCellStyle(SheetName, maxCell, maxCell, contentStyle)
+			}
+
+			// Update rowCount to account for the min and max rows
+			rowCount += 2
+
 		}
 	} else {
 		resultField := val.FieldByName("Convergence")
