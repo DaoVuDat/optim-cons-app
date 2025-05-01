@@ -41,7 +41,7 @@ func formatBuildingNames(buildingNamesStr string) ([]string, error) {
 
 	// Return error if any invalid names were found
 	if len(invalidNames) > 0 {
-		return result, fmt.Errorf("invalid building names found: %s", strings.Join(invalidNames, ", "))
+		return result, fmt.Errorf("invalid found: %s", strings.Join(invalidNames, ", "))
 	}
 
 	return result, nil
@@ -58,13 +58,13 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 		case constraints.ConstraintOverlap:
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
-				return err
+				return fmt.Errorf("Overlap: %w", err)
 			}
 
 			var overlapCfg overlapConfig
 			err = sonic.Unmarshal(configBytes, &overlapCfg)
 			if err != nil {
-				return err
+				return fmt.Errorf("Overlap: %w", err)
 			}
 
 			overlapConstraint := constraints.CreateOverlapConstraint(
@@ -75,24 +75,24 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			err = problem.AddConstraint(con.ConstraintName, overlapConstraint)
 			if err != nil {
-				return err
+				return fmt.Errorf("Overlap: %w", err)
 			}
 		case constraints.ConstraintOutOfBound:
 
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
-				return err
+				return fmt.Errorf("Out Of Bound: %w", err)
 			}
 
 			var outOfBoundCfg outOfBoundConfig
 			err = sonic.Unmarshal(configBytes, &outOfBoundCfg)
 			if err != nil {
-				return err
+				return fmt.Errorf("Out Of Bound: %w", err)
 			}
 
 			_, maxX, _, maxY, err := problem.GetLayoutSize()
 			if err != nil {
-				return err
+				return fmt.Errorf("Out Of Bound: %w", err)
 			}
 
 			outOfBoundsConstraint := constraints.CreateOutOfBoundsConstraint(
@@ -107,19 +107,19 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			err = problem.AddConstraint(con.ConstraintName, outOfBoundsConstraint)
 			if err != nil {
-				return err
+				return fmt.Errorf("Out Of Bound: %w", err)
 			}
 
 		case constraints.ConstraintInclusiveZone:
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
-				return err
+				return fmt.Errorf("Inclusive Zone: %w", err)
 			}
 
 			var inclusiveCfg inclusiveZoneConfig
 			err = sonic.Unmarshal(configBytes, &inclusiveCfg)
 			if err != nil {
-				return err
+				return fmt.Errorf("Inclusive Zone: %w", err)
 			}
 
 			zones := make([]constraints.Zone, len(inclusiveCfg.Zones))
@@ -127,7 +127,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			for i, zone := range inclusiveCfg.Zones {
 				facilitiesName, err := formatBuildingNames(zone.BuildingNames)
 				if err != nil {
-					return err
+					return fmt.Errorf("Inclusive Zone: %w", err)
 				}
 
 				var location data.Location
@@ -152,19 +152,19 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			err = problem.AddConstraint(con.ConstraintName, zoneConstraint)
 			if err != nil {
-				return err
+				return fmt.Errorf("Inclusive Zone: %w", err)
 			}
 
 		case constraints.ConstraintsCoverInCraneRadius:
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
-				return err
+				return fmt.Errorf("Cover In Crane Radius: %w", err)
 			}
 
 			var coverInCraneCfg coverInCraneRadiusConfig
 			err = sonic.Unmarshal(configBytes, &coverInCraneCfg)
 			if err != nil {
-				return err
+				return fmt.Errorf("Cover In Crane Radius: %w", err)
 			}
 
 			cranesLocation := make([]data.Crane, len(coverInCraneCfg.CraneLocations))
@@ -173,7 +173,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 				facilitiesName, err := formatBuildingNames(craneLocation.BuildingNames)
 				if err != nil {
-					return err
+					return fmt.Errorf("Cover In Crane Radius: %w", err)
 				}
 
 				var location data.Location
@@ -198,25 +198,25 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 			)
 			err = problem.AddConstraint(con.ConstraintName, coverRangeConstraint)
 			if err != nil {
-				return err
+				return fmt.Errorf("Cover In Crane Radius: %w", err)
 			}
 
 			err = problem.SetCranesLocations(cranesLocation)
 			if err != nil {
-				return err
+				return fmt.Errorf("Cover In Crane Radius: %w", err)
 			}
 
 		case constraints.ConstraintSize:
 
 			configBytes, err := sonic.Marshal(con.ConstraintConfig)
 			if err != nil {
-				return err
+				return fmt.Errorf("Size: %w", err)
 			}
 
 			var sizeCfg sizeConfig
 			err = sonic.Unmarshal(configBytes, &sizeCfg)
 			if err != nil {
-				return err
+				return fmt.Errorf("Size: %w", err)
 			}
 
 			sizeConstraint := constraints.CreateSizeConstraint(
@@ -228,7 +228,7 @@ func (a *App) AddConstraints(cons []ConstraintInput) error {
 
 			err = problem.AddConstraint(con.ConstraintName, sizeConstraint)
 			if err != nil {
-				return err
+				return fmt.Errorf("Size: %w", err)
 			}
 		}
 

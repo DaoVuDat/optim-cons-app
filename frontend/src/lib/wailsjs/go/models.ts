@@ -31,13 +31,6 @@ export namespace conslay_predetermined {
 
 export namespace data {
 	
-	export enum ConstraintType {
-	    Overlap = "Overlap",
-	    OutOfBound = "OutOfBound",
-	    CoverInCraneRadius = "CoverInCraneRadius",
-	    InclusiveZone = "InclusiveZone",
-	    Size = "Size",
-	}
 	export enum ProblemName {
 	    ContinuousConstructionLayout = "Continuous Construction Layout",
 	    GridConstructionLayout = "Grid Construction Layout",
@@ -50,6 +43,13 @@ export namespace data {
 	    TransportCostObjective = "Transport Cost Objective",
 	    SafetyHazardObjective = "Safety Hazard Objective",
 	    ConstructionCostObjective = "Construction Cost Objective",
+	}
+	export enum ConstraintType {
+	    Overlap = "Overlap",
+	    OutOfBound = "OutOfBound",
+	    CoverInCraneRadius = "CoverInCraneRadius",
+	    InclusiveZone = "InclusiveZone",
+	    Size = "Size",
 	}
 
 }
