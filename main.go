@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"golang-moaha-construction/internal/algorithms/mogwo"
+	"golang-moaha-construction/internal/algorithms/omoaha"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
@@ -239,77 +239,15 @@ func constructionOptimization() {
 	err = consLayObj.AddConstraint(constraints.ConstraintInclusiveZone, zoneConstraint)
 	err = consLayObj.AddConstraint(constraints.ConstraintsCoverInCraneRadius, coverRangeConstraint)
 
-	//// OMOAHA
-	//omoahaConfigs := omoaha.Configs{
-	//	NumAgents:     300,
-	//	NumIterations: 400,
-	//	ArchiveSize:   100,
-	//}
-	//
-	//algo, err := omoaha.Create(consLayObj, omoahaConfigs)
-	//if err != nil {
-	//	return
-	//}
-	//
-	//err = algo.Run()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println("===== Archive Results")
-	//for i := range algo.Archive {
-	//	fmt.Printf("%d. \n", i+1)
-	//	fmt.Println(algo.Archive[i].Position)
-	//	//fmt.Println(algo.Archive[i].PositionString())
-	//	fmt.Println(algo.Archive[i].Value)
-	//	fmt.Println(algo.Archive[i].Penalty)
-	//}
-	//
-	//fmt.Println("===== Pareto")
-	//f1Values := make([]float64, len(algo.Archive))
-	//f2Values := make([]float64, len(algo.Archive))
-	//for i := 0; i < 2; i++ {
-	//	var sb strings.Builder
-	//	values := make([]float64, len(algo.Archive))
-	//	for idx, agent := range algo.Archive {
-	//		if idx > 0 {
-	//			sb.WriteString(", ")
-	//		}
-	//		values[idx] = agent.Value[i]
-	//		sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
-	//	}
-	//	sb.WriteString(";")
-	//	fmt.Println(sb.String())
-	//	if i == 0 {
-	//		f1Values = values
-	//	} else {
-	//		f2Values = values
-	//	}
-	//
-	//}
-	//
-	//fmt.Println("===== Archive Size", len(algo.Archive))
-	//
-	//fmt.Println("Min F1", slices.Min(f1Values))
-	//fmt.Println("Max F1", slices.Max(f1Values))
-	//
-	//fmt.Println("Min F2", slices.Min(f2Values))
-	//fmt.Println("Max F2", slices.Max(f2Values))
-
-	// MOGWO
-	mogwoConfigs := mogwo.Config{
-		NumberOfAgents: 300,
-		NumberOfIter:   400,
-		AParam:         2,
-		ArchiveSize:    100,
-		NumberOfGrids:  10,
-		Gamma:          2,
-		Alpha:          0.1,
-		Beta:           4,
+	// OMOAHA
+	omoahaConfigs := omoaha.Configs{
+		NumAgents:     300,
+		NumIterations: 400,
+		ArchiveSize:   100,
 	}
 
-	algo, err := mogwo.Create(consLayObj, mogwoConfigs)
+	algo, err := omoaha.Create(consLayObj, omoahaConfigs)
 	if err != nil {
-		log.Fatal(err)
 		return
 	}
 
@@ -356,4 +294,66 @@ func constructionOptimization() {
 
 	fmt.Println("Min F2", slices.Min(f2Values))
 	fmt.Println("Max F2", slices.Max(f2Values))
+
+	//// MOGWO
+	//mogwoConfigs := mogwo.Config{
+	//	NumberOfAgents: 300,
+	//	NumberOfIter:   400,
+	//	AParam:         2,
+	//	ArchiveSize:    100,
+	//	NumberOfGrids:  10,
+	//	Gamma:          2,
+	//	Alpha:          0.1,
+	//	Beta:           4,
+	//}
+	//
+	//algo, err := mogwo.Create(consLayObj, mogwoConfigs)
+	//if err != nil {
+	//	log.Fatal(err)
+	//	return
+	//}
+	//
+	//err = algo.Run()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//fmt.Println("===== Archive Results")
+	//for i := range algo.Archive {
+	//	fmt.Printf("%d. \n", i+1)
+	//	fmt.Println(algo.Archive[i].Position)
+	//	//fmt.Println(algo.Archive[i].PositionString())
+	//	fmt.Println(algo.Archive[i].Value)
+	//	fmt.Println(algo.Archive[i].Penalty)
+	//}
+	//
+	//fmt.Println("===== Pareto")
+	//f1Values := make([]float64, len(algo.Archive))
+	//f2Values := make([]float64, len(algo.Archive))
+	//for i := 0; i < 2; i++ {
+	//	var sb strings.Builder
+	//	values := make([]float64, len(algo.Archive))
+	//	for idx, agent := range algo.Archive {
+	//		if idx > 0 {
+	//			sb.WriteString(", ")
+	//		}
+	//		values[idx] = agent.Value[i]
+	//		sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
+	//	}
+	//	sb.WriteString(";")
+	//	fmt.Println(sb.String())
+	//	if i == 0 {
+	//		f1Values = values
+	//	} else {
+	//		f2Values = values
+	//	}
+	//
+	//}
+	//
+	//fmt.Println("===== Archive Size", len(algo.Archive))
+	//
+	//fmt.Println("Min F1", slices.Min(f1Values))
+	//fmt.Println("Max F1", slices.Max(f1Values))
+	//
+	//fmt.Println("Min F2", slices.Min(f2Values))
+	//fmt.Println("Max F2", slices.Max(f2Values))
 }
