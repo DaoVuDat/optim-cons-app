@@ -18,7 +18,6 @@ type MOAHAAlgorithm struct {
 	NumberOfAgents    int
 	NumberOfIter      int
 	Agents            []*objectives.Result
-	BestResult        *objectives.Result
 	Convergence       []float64
 	ObjectiveFunction objectives.Problem
 	ArchiveSize       int
@@ -517,10 +516,6 @@ func (a *MOAHAAlgorithm) initialization() {
 		} else {
 			vals[i] = math.MinInt64
 		}
-	}
-
-	a.BestResult = &objectives.Result{
-		Value: vals,
 	}
 
 	var wg sync.WaitGroup

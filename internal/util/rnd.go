@@ -14,3 +14,39 @@ func RandN(dim int) []int {
 
 	return res
 }
+
+// RouletteWheelSelection implements the roulette wheel selection algorithm.
+// It takes a slice of probabilities as input and returns an index selected
+// based on those probabilities. The higher the probability, the more likely
+// the index is to be selected.
+func RouletteWheelSelection(p []float64) int {
+	if len(p) == 0 {
+		return -1
+	}
+
+	// Calculate the sum of all probabilities
+	sum := 0.0
+	for _, prob := range p {
+		sum += prob
+	}
+
+	// If sum is 0, return a random index
+	if sum == 0 {
+		return rand.Intn(len(p))
+	}
+
+	// Generate a random value between 0 and sum
+	r := rand.Float64() * sum
+
+	// Find the index corresponding to the random value
+	currentSum := 0.0
+	for i, prob := range p {
+		currentSum += prob
+		if r <= currentSum {
+			return i
+		}
+	}
+
+	// Fallback (should not reach here under normal circumstances)
+	return len(p) - 1
+}

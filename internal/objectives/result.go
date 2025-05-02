@@ -21,6 +21,8 @@ type Result struct {
 	Rank             int
 	DominationSet    []int
 	DominatedCount   int
+	GridIndex        int
+	GridSubIndex     []int
 }
 
 func (agent *Result) PositionString() string {
@@ -51,6 +53,8 @@ func (agent *Result) CopyAgent() *Result {
 		Rank:             agent.Rank,
 		DominationSet:    util.CopyArray(agent.DominationSet),
 		DominatedCount:   agent.DominatedCount,
+		GridIndex:        agent.GridIndex,
+		GridSubIndex:     util.CopyArray(agent.GridSubIndex),
 	}
 }
 
@@ -223,164 +227,6 @@ func SplitToNPop(agents []*Result, nPop int, paretoFront [][]int) []*Result {
 
 	return results
 }
-
-//// DECD Dynamic Elimination-based Crowding Distance
-//func DECD(agents []*Result, excess int) []*Result {
-//	fmt.Println("Start DECD")
-//
-//	numberOfAgents := len(agents)
-//	numberOfObjs := len(agents[0].Value)
-//
-//	// tracks the sorted values for each agent
-//	trackingList := make([]SortedDEDC, numberOfAgents)
-//	for i := 0; i < numberOfAgents; i++ {
-//		trackingList[i] = SortedDEDC{
-//			values:      agents[i].Value,
-//			originalIdx: i,
-//			sortedIdx:   make([]int, len(agents[i].Value)),
-//		}
-//	}
-//
-//	sortedValues := make([][]SortedValue, len(agents[0].Value))
-//
-//	for i := 0; i < numberOfObjs; i++ {
-//		values := make([]SortedValue, numberOfAgents)
-//		for j := 0; j < numberOfAgents; j++ {
-//			values[j] = SortedValue{
-//				Value: agents[j].Value[i],
-//				Idx:   j,
-//			}
-//		}
-//
-//		sort.Slice(values, func(i, j int) bool {
-//			return values[i].Value < values[j].Value
-//		})
-//
-//		for j := 0; j < len(values); j++ {
-//			trackingList[values[j].Idx].sortedIdx[i] = j
-//		}
-//
-//		sortedValues[i] = values
-//	}
-//
-//	// calculates distance matrix before removing
-//	distanceMatrix := util.InitializeNMMatrix(numberOfAgents, numberOfObjs)
-//
-//	for i := range numberOfObjs {
-//
-//		// eliminates the first and last (or min and max)
-//		for j := 1; j < len(distanceMatrix)-1; j++ {
-//			prev := sortedValues[i][j-1].Value
-//			next := sortedValues[i][j+1].Value
-//			distanceMatrix[sortedValues[i][j].Idx][i] = math.Abs(next-prev) / math.Abs(sortedValues[i][0].Value-sortedValues[i][len(sortedValues[i])-1].Value)
-//		}
-//
-//		// add max distance to the first and the last
-//		distanceMatrix[sortedValues[i][0].Idx][i] = math.MaxFloat64
-//		distanceMatrix[sortedValues[i][len(sortedValues[i])-1].Idx][i] = math.MaxFloat64
-//	}
-//
-//	distances := make([]float64, numberOfAgents)
-//	for i := range len(distances) {
-//		for j := range numberOfObjs {
-//			if distanceMatrix[i][j] == math.MaxFloat64 {
-//				distances[i] = math.MaxFloat64
-//				break
-//			} else {
-//				distances[i] += distanceMatrix[i][j]
-//			}
-//		}
-//	}
-//
-//	fmt.Println("start excess")
-//	// remove exceeded agents in archive
-//	for excess > 0 {
-//		_, minIdx := util.MinWithIdx(distances)
-//
-//		// get agent idx
-//		deletedIdx := util.CopyArray(trackingList[minIdx].sortedIdx)
-//
-//		// remove agent from archive
-//		agents = util.Remove(agents, minIdx)
-//		fmt.Println("start startedValues")
-//
-//		//  sortedValues
-//		for i := range numberOfObjs {
-//			// remove sortedValues
-//			sortedValues[i] = util.Remove(sortedValues[i], deletedIdx[i])
-//
-//		}
-//
-//		// remove distances matrix and distances
-//		distanceMatrix = util.Remove(distanceMatrix, minIdx)
-//		distances = util.Remove(distances, minIdx)
-//
-//		fmt.Println("start loop")
-//		// re-calculate crowding distance after removing agent from archive
-//		for i := 0; i < numberOfObjs; i++ {
-//			//values := sortedValues[i]
-//
-//			values := make([]SortedValue, len(sortedValues[i]))
-//			for j := 0; j < len(sortedValues[i]); j++ {
-//				values[j] = SortedValue{
-//					Value: agents[j].Value[i],
-//					Idx:   j,
-//				}
-//			}
-//
-//			sort.Slice(values, func(i, j int) bool {
-//				return values[i].Value < values[j].Value
-//			})
-//
-//			for j := 0; j < len(values); j++ {
-//				trackingList[values[j].Idx].sortedIdx[i] = j
-//			}
-//
-//			sortedValues[i] = values
-//		}
-//
-//		fmt.Println("start numberOfObjs")
-//		for i := range numberOfObjs {
-//			// we only re-calculate the prev and next after the removed agent
-//			// prev
-//			if deletedIdx[i] > 1 {
-//				currentPrev := sortedValues[i][deletedIdx[i]-2].Value
-//				currentNext := sortedValues[i][deletedIdx[i]].Value
-//				distanceMatrix[sortedValues[i][deletedIdx[i]-1].Idx][i] = math.Abs(currentNext-currentPrev) / math.Abs(sortedValues[i][0].Value-sortedValues[i][len(sortedValues[i])-1].Value)
-//			} else {
-//				distanceMatrix[sortedValues[i][deletedIdx[i]-1].Idx][i] = math.MaxFloat64
-//			}
-//
-//			// next
-//			if deletedIdx[i] < len(sortedValues[i])-1 {
-//				currentPrev := sortedValues[i][deletedIdx[i]-1].Value
-//				currentNext := sortedValues[i][deletedIdx[i]+1].Value
-//				distanceMatrix[sortedValues[i][deletedIdx[i]].Idx][i] = math.Abs(currentNext-currentPrev) / math.Abs(sortedValues[i][0].Value-sortedValues[i][len(sortedValues[i])-1].Value)
-//			} else {
-//				distanceMatrix[sortedValues[i][deletedIdx[i]].Idx][i] = math.MaxFloat64
-//			}
-//
-//		}
-//
-//		fmt.Println("start distances")
-//		distances = make([]float64, len(distances))
-//		for i := range len(distances) {
-//			for j := range numberOfObjs {
-//				if distanceMatrix[i][j] == math.MaxFloat64 {
-//					distances[i] = math.MaxFloat64
-//					break
-//				} else {
-//					distances[i] += distanceMatrix[i][j]
-//				}
-//			}
-//		}
-//
-//		excess--
-//	}
-//
-//	fmt.Println("End DECD")
-//	return agents
-//}
 
 func DECD(agents []*Result, excess int) []*Result {
 

@@ -6,9 +6,10 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"golang-moaha-construction/internal/algorithms/omoaha"
+	"golang-moaha-construction/internal/algorithms/mogwo"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
@@ -16,14 +17,12 @@ import (
 	"log"
 	"slices"
 	"strings"
-
-	"github.com/wailsapp/wails/v2"
 )
 
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main() {
+func main_test() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -59,7 +58,7 @@ func main() {
 	}
 }
 
-func main_test() {
+func main() {
 	constructionOptimization()
 }
 
@@ -67,12 +66,12 @@ func constructionOptimization() {
 	// Create conslay_continuous problem and add objectives
 
 	consLayoutConfigs := conslay_continuous.ConsLayConfigs{
-		ConsLayoutLength: 140,
-		ConsLayoutWidth:  90,
+		ConsLayoutLength: 120,
+		ConsLayoutWidth:  95,
 	}
 
 	// LOAD LOCATIONS
-	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/VD-1/facility_file.xlsx")
+	locations, fixedLocations, nonFixedLocations, err := conslay_continuous.ReadLocationsFromFile("./data/conslay/continuous/locations.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,7 +83,7 @@ func constructionOptimization() {
 	// LOAD PHASES
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/staticBuilding.xlsx")
 	//phases, err := conslay.ReadPhasesFromFile("./data/conslay/phaseBuilding.xlsx")
-	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/VD-1/phase_file.xlsx")
+	phases, err := conslay_continuous.ReadPhasesFromFile("./data/conslay/continuous/dynamicBuilding.xlsx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,8 +95,8 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
-	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/VD-1/hoisting_data_crane_1.xlsx")
-	hoistingTime2, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/VD-1/hoisting_data_crane_2.xlsx")
+	hoistingTime, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/continuous/hoisting_time_data.xlsx")
+	//hoistingTime2, err := objectives.ReadHoistingTimeDataFromFile("./data/conslay/VD-1/hoisting_data_crane_2.xlsx")
 
 	if err != nil {
 		log.Fatal(err)
@@ -105,12 +104,11 @@ func constructionOptimization() {
 
 	// Hoisting Objective Configs
 	hoistingConfigs := objectives.HoistingConfigs{
-		NumberOfFloors: 11,
+		NumberOfFloors: 10,
 		HoistingTime: map[string][]objectives.HoistingTime{
-			"TF18": hoistingTime,
-			"TF19": hoistingTime2,
+			"TF14": hoistingTime,
 		},
-		FloorHeight:          3.3,
+		FloorHeight:          3.2,
 		CraneLocations:       nil,
 		ZM:                   2,
 		Vuvg:                 37.5,
@@ -138,14 +136,9 @@ func constructionOptimization() {
 
 	selectedCrane := []SelectedCrane{
 		{
-			Name:          "TF18",
-			BuildingNames: []string{"TF8", "TF10"},
-			Radius:        35,
-		},
-		{
-			Name:          "TF19",
-			BuildingNames: []string{"TF9", "TF11"},
-			Radius:        35,
+			Name:          "TF14",
+			BuildingNames: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
+			Radius:        40,
 		},
 	}
 
@@ -164,7 +157,7 @@ func constructionOptimization() {
 	hoistingObj.CraneLocations = craneLocations
 
 	// RISK
-	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/VD-1/hazard matrix.xlsx")
+	hazardInteraction, err := objectives.ReadRiskHazardInteractionDataFromFile("./data/conslay/continuous/risk_data.xlsx")
 
 	riskConfigs := objectives.RiskConfigs{
 		HazardInteractionMatrix: hazardInteraction,
@@ -177,7 +170,7 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
-	safetyMatrix, err := objectives.ReadSafetyProximityDataFromFile("./data/conslay/VD-1/safety matrix.xlsx")
+	safetyMatrix, err := objectives.ReadSafetyProximityDataFromFile("./data/conslay/continuous/safety_data.xlsx")
 	if err != nil {
 		return
 	}
@@ -227,9 +220,14 @@ func constructionOptimization() {
 	zoneConstraint := constraints.CreateInclusiveZoneConstraint(
 		[]constraints.Zone{
 			{
-				Location:      locations["TF22"],
-				BuildingNames: []string{"TF1", "TF2", "TF3", "TF4", "TF8", "TF9", "TF10", "TF11", "TF13", "TF14"},
-				Size:          25,
+				Location:      locations["TF13"],
+				BuildingNames: []string{"TF7"},
+				Size:          20,
+			},
+			{
+				Location:      locations["TF13"],
+				BuildingNames: []string{"TF1", "TF2"},
+				Size:          15,
 			},
 		},
 		phases,
@@ -241,15 +239,77 @@ func constructionOptimization() {
 	err = consLayObj.AddConstraint(constraints.ConstraintInclusiveZone, zoneConstraint)
 	err = consLayObj.AddConstraint(constraints.ConstraintsCoverInCraneRadius, coverRangeConstraint)
 
-	// MOAHA
-	omoahaConfigs := omoaha.Configs{
-		NumAgents:     300,
-		NumIterations: 400,
-		ArchiveSize:   100,
+	//// OMOAHA
+	//omoahaConfigs := omoaha.Configs{
+	//	NumAgents:     300,
+	//	NumIterations: 400,
+	//	ArchiveSize:   100,
+	//}
+	//
+	//algo, err := omoaha.Create(consLayObj, omoahaConfigs)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = algo.Run()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//fmt.Println("===== Archive Results")
+	//for i := range algo.Archive {
+	//	fmt.Printf("%d. \n", i+1)
+	//	fmt.Println(algo.Archive[i].Position)
+	//	//fmt.Println(algo.Archive[i].PositionString())
+	//	fmt.Println(algo.Archive[i].Value)
+	//	fmt.Println(algo.Archive[i].Penalty)
+	//}
+	//
+	//fmt.Println("===== Pareto")
+	//f1Values := make([]float64, len(algo.Archive))
+	//f2Values := make([]float64, len(algo.Archive))
+	//for i := 0; i < 2; i++ {
+	//	var sb strings.Builder
+	//	values := make([]float64, len(algo.Archive))
+	//	for idx, agent := range algo.Archive {
+	//		if idx > 0 {
+	//			sb.WriteString(", ")
+	//		}
+	//		values[idx] = agent.Value[i]
+	//		sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
+	//	}
+	//	sb.WriteString(";")
+	//	fmt.Println(sb.String())
+	//	if i == 0 {
+	//		f1Values = values
+	//	} else {
+	//		f2Values = values
+	//	}
+	//
+	//}
+	//
+	//fmt.Println("===== Archive Size", len(algo.Archive))
+	//
+	//fmt.Println("Min F1", slices.Min(f1Values))
+	//fmt.Println("Max F1", slices.Max(f1Values))
+	//
+	//fmt.Println("Min F2", slices.Min(f2Values))
+	//fmt.Println("Max F2", slices.Max(f2Values))
+
+	// MOGWO
+	mogwoConfigs := mogwo.Config{
+		NumberOfAgents: 300,
+		NumberOfIter:   400,
+		AParam:         2,
+		ArchiveSize:    100,
+		NumberOfGrids:  10,
+		Gamma:          2,
+		Alpha:          0.1,
+		Beta:           4,
 	}
 
-	algo, err := omoaha.Create(consLayObj, omoahaConfigs)
+	algo, err := mogwo.Create(consLayObj, mogwoConfigs)
 	if err != nil {
+		log.Fatal(err)
 		return
 	}
 
