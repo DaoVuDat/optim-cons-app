@@ -273,14 +273,41 @@ func sectionAlgorithm(f *excelize.File, algorithm any, algorithmName algorithms.
 			switch field.Name {
 			case "NumberOfAgents":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of agents", value.Int())
+			case "Agents":
+				// Skip Agents field as it's a slice
 			case "Population":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Population", value.Int())
+				// Check if it's a slice (like in NSGA-II) or an integer
+				if value.Kind() == reflect.Int || value.Kind() == reflect.Int64 {
+					writeContentWithValue(f, colCount, rowCount, sheetName, "Population", value.Int())
+				}
+			case "PopulationSize":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Population size", value.Int())
 			case "ArchiveSize":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Archive size", value.Int())
 			case "NumberOfIter":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of iterations", value.Int())
+			case "MaxIterations":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Maximum iterations", value.Int())
 			case "Generation":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Generation", value.Int())
+			case "CrossoverRate":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Crossover rate", value.Float())
+			case "MutationRate":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Mutation rate", value.Float())
+			case "MutationStrength":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Mutation strength", value.Float())
+			case "TournamentSize":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Tournament size", value.Int())
+			case "AParam":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "A parameter", value.Float())
+			case "NumberOfGrids":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of grids", value.Int())
+			case "Alpha":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha", value.Float())
+			case "Beta":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Beta", value.Float())
+			case "Gamma":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Gamma", value.Float())
 
 			default:
 				continue
