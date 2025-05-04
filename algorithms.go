@@ -9,6 +9,8 @@ import (
 	"golang-moaha-construction/internal/algorithms/ga"
 	"golang-moaha-construction/internal/algorithms/gwo"
 	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/algorithms/mogwo"
+	"golang-moaha-construction/internal/algorithms/nsgaii"
 	"golang-moaha-construction/internal/algorithms/omoaha"
 )
 
@@ -134,6 +136,60 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 		}
 
 		a.algorithm = algo
+	case mogwo.NameType:
+		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
+		if err != nil {
+			return err
+		}
+
+		var config mogwoConfig
+		err = sonic.Unmarshal(configBytes, &config)
+		if err != nil {
+			return err
+		}
+
+		algo, err := mogwo.Create(a.problem, mogwo.Config{
+			NumberOfAgents: config.NumberOfAgents,
+			NumberOfIter:   config.NumberOfIterations,
+			AParam:         config.AParam,
+			ArchiveSize:    config.ArchiveSize,
+			NumberOfGrids:  config.NumberOfGrids,
+			Alpha:          config.Alpha,
+			Beta:           config.Beta,
+			Gamma:          config.Gamma,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		a.algorithm = algo
+	case nsgaii.NameType:
+		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
+		if err != nil {
+			return err
+		}
+
+		var config nsgaiiConfig
+		err = sonic.Unmarshal(configBytes, &config)
+		if err != nil {
+			return err
+		}
+
+		algo, err := nsgaii.Create(a.problem, nsgaii.Config{
+			PopulationSize:   config.Chromosome,
+			MaxIterations:    config.Generation,
+			CrossoverRate:    config.CrossoverRate,
+			MutationRate:     config.MutationRate,
+			TournamentSize:   config.TournamentSize,
+			MutationStrength: config.MutationStrength,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		a.algorithm = algo
 	default:
 		return errors.New("invalid algorithm name")
 	}
@@ -213,4 +269,24 @@ type omoahaConfig struct {
 	NumberOfIterations int `json:"iterations"`
 	NumberOfAgents     int `json:"population"`
 	ArchiveSize        int `json:"archiveSize"`
+}
+
+type mogwoConfig struct {
+	NumberOfIterations int     `json:"iterations"`
+	NumberOfAgents     int     `json:"population"`
+	AParam             float64 `json:"aParam"`
+	ArchiveSize        int     `json:"archiveSize"`
+	NumberOfGrids      int     `json:"numberOfGrids"`
+	Alpha              float64 `json:"alpha"`
+	Beta               float64 `json:"beta"`
+	Gamma              float64 `json:"gamma"`
+}
+
+type nsgaiiConfig struct {
+	Chromosome       int     `json:"chromosome"`
+	Generation       int     `json:"generation"`
+	CrossoverRate    float64 `json:"crossoverRate"`
+	MutationRate     float64 `json:"mutationRate"`
+	MutationStrength float64 `json:"mutationStrength"`
+	TournamentSize   int     `json:"tournamentSize"`
 }

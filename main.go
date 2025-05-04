@@ -22,7 +22,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main_test() {
+func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -58,7 +58,7 @@ func main_test() {
 	}
 }
 
-func main() {
+func main_test() {
 	constructionOptimization()
 }
 
@@ -239,14 +239,14 @@ func constructionOptimization() {
 	err = consLayObj.AddConstraint(constraints.ConstraintInclusiveZone, zoneConstraint)
 	err = consLayObj.AddConstraint(constraints.ConstraintsCoverInCraneRadius, coverRangeConstraint)
 
-	//// OMOAHA
-	//omoahaConfigs := omoaha.Configs{
+	//// MOAHA
+	//moahaConfigs := moaha.Configs{
 	//	NumAgents:     300,
 	//	NumIterations: 400,
 	//	ArchiveSize:   100,
 	//}
 	//
-	//algo, err := omoaha.Create(consLayObj, omoahaConfigs)
+	//algo, err := moaha.Create(consLayObj, moahaConfigs)
 	//if err != nil {
 	//	return
 	//}
@@ -299,9 +299,9 @@ func constructionOptimization() {
 	//mogwoConfigs := mogwo.Config{
 	//	NumberOfAgents: 300,
 	//	NumberOfIter:   400,
-	//	AParam:         2,
 	//	ArchiveSize:    100,
 	//	NumberOfGrids:  10,
+	//	AParam:         2,
 	//	Gamma:          2,
 	//	Alpha:          0.1,
 	//	Beta:           4,
@@ -359,12 +359,12 @@ func constructionOptimization() {
 
 	// NSGA-II
 	nsgaiiConfigs := nsgaii.Config{
-		PopulationSize: 300,
-		MaxIterations:  400,
-		CrossoverRate:  0.9,
-		MutationRate:   0.1,
-		TournamentSize: 2,
-		ArchiveSize:    100,
+		PopulationSize:   300,
+		MaxIterations:    400,
+		CrossoverRate:    0.9,
+		MutationRate:     0.1,
+		MutationStrength: 0.1,
+		TournamentSize:   5,
 	}
 
 	algoNSGAII, err := nsgaii.Create(consLayObj, nsgaiiConfigs)

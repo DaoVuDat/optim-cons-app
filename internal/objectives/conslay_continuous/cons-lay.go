@@ -93,6 +93,7 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 		upperBound[idx] = math.Max(upperBoundX, upperBoundXRotated)
 		upperBound[idx+1] = math.Max(upperBoundY, upperBoundYRotated)
 		upperBound[idx+2] = 1.0
+
 	}
 
 	consLay.Dimensions = dimensions

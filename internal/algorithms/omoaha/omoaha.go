@@ -72,7 +72,7 @@ func (a *OMOAHAAlgorithm) Run() error {
 	)
 
 	determinedDomination := objectives.DetermineDomination(newPopulation)
-	initAgents, initParetoFront := objectives.NonDominatedSort(determinedDomination)
+	initAgents, initParetoFront := objectives.FastNonDominatedSorting_Vectorized(determinedDomination)
 
 	a.Agents = objectives.SplitToNPop(initAgents, a.NumberOfAgents, initParetoFront)
 	a.Archive = objectives.GetNonDominatedAgents(a.Agents)
@@ -86,7 +86,7 @@ func (a *OMOAHAAlgorithm) Run() error {
 
 	for l < a.NumberOfIter {
 		newPop := make([]*objectives.Result, 0)
-		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
+		agents, paretoFront := objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 		a.Agents = agents
 
@@ -144,7 +144,7 @@ func (a *OMOAHAAlgorithm) Run() error {
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
+			a.Agents, paretoFront = objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 			for _, idx := range paretoFront[len(paretoFront)-1] {
 
@@ -217,7 +217,7 @@ func (a *OMOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<
 	)
 
 	determinedDomination := objectives.DetermineDomination(newPopulation)
-	initAgents, initParetoFront := objectives.NonDominatedSort(determinedDomination)
+	initAgents, initParetoFront := objectives.FastNonDominatedSorting_Vectorized(determinedDomination)
 
 	a.Agents = objectives.SplitToNPop(initAgents, a.NumberOfAgents, initParetoFront)
 	a.Archive = objectives.GetNonDominatedAgents(a.Agents)
@@ -228,7 +228,7 @@ func (a *OMOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<
 
 	for l < a.NumberOfIter {
 		newPop := make([]*objectives.Result, 0)
-		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
+		agents, paretoFront := objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 		a.Agents = agents
 
@@ -280,7 +280,7 @@ func (a *OMOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
+			a.Agents, paretoFront = objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 			for _, idx := range paretoFront[len(paretoFront)-1] {
 

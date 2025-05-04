@@ -72,7 +72,7 @@ func (a *MOAHAAlgorithm) Run() error {
 
 	for l < a.NumberOfIter {
 		newPop := make([]*objectives.Result, 0)
-		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
+		agents, paretoFront := objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 		a.Agents = agents
 
@@ -130,7 +130,7 @@ func (a *MOAHAAlgorithm) Run() error {
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
+			a.Agents, paretoFront = objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 			for _, idx := range paretoFront[len(paretoFront)-1] {
 
@@ -202,7 +202,7 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 
 	for l < a.NumberOfIter {
 		newPop := make([]*objectives.Result, 0)
-		agents, paretoFront := objectives.NonDominatedSort(a.Agents)
+		agents, paretoFront := objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 		a.Agents = agents
 
@@ -254,7 +254,7 @@ func (a *MOAHAAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<-
 
 		// migration foraging
 		if l%(a.NumberOfAgents*2) == 0 {
-			a.Agents, paretoFront = objectives.NonDominatedSort(a.Agents)
+			a.Agents, paretoFront = objectives.FastNonDominatedSorting_Vectorized(a.Agents)
 
 			for _, idx := range paretoFront[len(paretoFront)-1] {
 

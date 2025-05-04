@@ -6,6 +6,8 @@ export namespace algorithms {
 	    MOAHA = "MOAHA",
 	    GWO = "GWO",
 	    oMOAHA = "oMOAHA",
+	    MOGWO = "MOGWO",
+	    NSGAII = "NSGA-II",
 	}
 
 }

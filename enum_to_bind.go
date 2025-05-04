@@ -6,6 +6,8 @@ import (
 	"golang-moaha-construction/internal/algorithms/ga"
 	"golang-moaha-construction/internal/algorithms/gwo"
 	"golang-moaha-construction/internal/algorithms/moaha"
+	"golang-moaha-construction/internal/algorithms/mogwo"
+	"golang-moaha-construction/internal/algorithms/nsgaii"
 	"golang-moaha-construction/internal/algorithms/omoaha"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
@@ -112,6 +114,14 @@ var AllAlgorithmType = []struct {
 	{
 		Value:  omoaha.NameType,
 		TSName: "oMOAHA",
+	},
+	{
+		Value:  mogwo.NameType,
+		TSName: "MOGWO",
+	},
+	{
+		Value:  nsgaii.NameType,
+		TSName: "NSGAII",
 	},
 }
 

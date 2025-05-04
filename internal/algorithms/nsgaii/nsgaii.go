@@ -19,20 +19,20 @@ type NSGAIIAlgorithm struct {
 	MaxIterations     int
 	CrossoverRate     float64
 	MutationRate      float64
+	MutationStrength  float64
 	TournamentSize    int
 	Population        []*objectives.Result
 	Archive           []*objectives.Result
-	ArchiveSize       int
 	ObjectiveFunction objectives.Problem
 }
 
 type Config struct {
-	PopulationSize int
-	MaxIterations  int
-	CrossoverRate  float64
-	MutationRate   float64
-	TournamentSize int
-	ArchiveSize    int
+	PopulationSize   int
+	MaxIterations    int
+	CrossoverRate    float64
+	MutationRate     float64
+	MutationStrength float64
+	TournamentSize   int
 }
 
 func Create(problem objectives.Problem, configs Config) (*NSGAIIAlgorithm, error) {
@@ -46,16 +46,16 @@ func Create(problem objectives.Problem, configs Config) (*NSGAIIAlgorithm, error
 		MaxIterations:     configs.MaxIterations,
 		CrossoverRate:     configs.CrossoverRate,
 		MutationRate:      configs.MutationRate,
+		MutationStrength:  configs.MutationStrength,
 		TournamentSize:    configs.TournamentSize,
-		ArchiveSize:       configs.ArchiveSize,
-		Archive:           make([]*objectives.Result, 0, configs.ArchiveSize),
+		Archive:           make([]*objectives.Result, 0, configs.PopulationSize),
 		ObjectiveFunction: problem,
 	}, nil
 }
 
 func (ga *NSGAIIAlgorithm) reset() {
 	ga.Population = make([]*objectives.Result, ga.PopulationSize)
-	ga.Archive = make([]*objectives.Result, 0, ga.ArchiveSize)
+	ga.Archive = make([]*objectives.Result, 0, ga.PopulationSize)
 }
 
 func (ga *NSGAIIAlgorithm) Type() data.TypeProblem {
@@ -75,9 +75,9 @@ func (ga *NSGAIIAlgorithm) Run() error {
 	numObjectives := ga.ObjectiveFunction.NumberOfObjectives()
 
 	// Parameters for NSGA-II
-	pc := ga.CrossoverRate // Probability of crossover
-	pm := ga.MutationRate  // Probability of mutation
-	ms := 0.1              // Mutation strength (similar to MATLAB implementation)
+	pc := ga.CrossoverRate    // Probability of crossover
+	pm := ga.MutationRate     // Probability of mutation
+	ms := ga.MutationStrength // Mutation strength
 
 	// Initialize Q (offspring) as empty for first iteration
 	var Q []*objectives.Result
@@ -155,14 +155,14 @@ func (ga *NSGAIIAlgorithm) Run() error {
 		}
 
 		// If archive exceeds size limit, use crowding distance to reduce it
-		if len(ga.Archive) > ga.ArchiveSize {
-			ga.Archive = reduceArchiveByDistance(ga.Archive, ga.ArchiveSize)
+		if len(ga.Archive) > ga.PopulationSize {
+			ga.Archive = reduceArchiveByDistance(ga.Archive, ga.PopulationSize)
 		}
 
 		// Store convergence metrics
 		for obj := 0; obj < numObjectives; obj++ {
 			if len(ga.Archive) > 0 {
-				// Find best value for this objective in the archive
+				// Find the best value for this objective in the archive
 				bestVal := ga.Archive[0].Value[obj]
 				for _, sol := range ga.Archive {
 					if sol.Value[obj] < bestVal {
@@ -192,9 +192,9 @@ func (ga *NSGAIIAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan
 	numObjectives := ga.ObjectiveFunction.NumberOfObjectives()
 
 	// Parameters for NSGA-II
-	pc := ga.CrossoverRate // Probability of crossover
-	pm := ga.MutationRate  // Probability of mutation
-	ms := 0.1              // Mutation strength (similar to MATLAB implementation)
+	pc := ga.CrossoverRate    // Probability of crossover
+	pm := ga.MutationRate     // Probability of mutation
+	ms := ga.MutationStrength // Mutation strength
 
 	// Initialize Q (offspring) as empty for first iteration
 	var Q []*objectives.Result
@@ -272,8 +272,8 @@ func (ga *NSGAIIAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan
 		}
 
 		// If archive exceeds size limit, use crowding distance to reduce it
-		if len(ga.Archive) > ga.ArchiveSize {
-			ga.Archive = reduceArchiveByDistance(ga.Archive, ga.ArchiveSize)
+		if len(ga.Archive) > ga.PopulationSize {
+			ga.Archive = reduceArchiveByDistance(ga.Archive, ga.PopulationSize)
 		}
 
 		// Store convergence metrics
@@ -291,13 +291,13 @@ func (ga *NSGAIIAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan
 
 		// Send progress to channel
 		channel <- struct {
-			Progress    float64 `json:"progress"`
-			ArchiveSize int     `json:"archiveSize"`
-			Type        string  `json:"type"`
+			Progress                float64 `json:"progress"`
+			NumberOfAgentsInArchive int     `json:"numberOfAgentsInArchive"`
+			Type                    string  `json:"type"`
 		}{
-			Progress:    (float64(iter+1) / float64(ga.MaxIterations)) * 100,
-			ArchiveSize: len(ga.Archive),
-			Type:        "multi",
+			Progress:                (float64(iter+1) / float64(ga.MaxIterations)) * 100,
+			NumberOfAgentsInArchive: len(ga.Archive),
+			Type:                    "multi",
 		}
 	}
 
@@ -685,6 +685,7 @@ func getObjectiveValues(agents []*objectives.Result) [][]*float64 {
 
 // reduceArchiveByDistance reduces the archive size using crowding distance
 func reduceArchiveByDistance(archive []*objectives.Result, targetSize int) []*objectives.Result {
+
 	if len(archive) <= targetSize {
 		return archive
 	}

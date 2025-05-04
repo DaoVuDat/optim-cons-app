@@ -198,6 +198,52 @@ func NonDominatedSort(agents []*Result) ([]*Result, [][]int) {
 	return agents, paretoFront
 }
 
+// FastNonDominatedSorting_Vectorized performs a fast non-dominated sorting algorithm
+// It returns both the ranks of each solution and the Pareto fronts
+func FastNonDominatedSorting_Vectorized(agents []*Result) ([]*Result, [][]int) {
+	// Initialization
+	Np := len(agents)
+	RANK := make([]int, Np)
+
+	// Initialize all ranks to 0
+	for i := range RANK {
+		RANK[i] = 0
+	}
+
+	// Check domination for all pairs
+	for i := 0; i < Np-1; i++ {
+		for j := i + 1; j < Np; j++ {
+			if agents[i].Dominates(agents[j]) {
+				RANK[j]++
+			} else if agents[j].Dominates(agents[i]) {
+				RANK[i]++
+			}
+		}
+	}
+
+	// Find the maximum rank
+	maxRank := 0
+	for _, rank := range RANK {
+		if rank > maxRank {
+			maxRank = rank
+		}
+	}
+
+	// Create Pareto fronts
+	paretoFront := make([][]int, maxRank+1)
+	for i := range paretoFront {
+		paretoFront[i] = make([]int, 0)
+	}
+
+	// Assign solutions to fronts
+	for i, rank := range RANK {
+		paretoFront[rank] = append(paretoFront[rank], i)
+		agents[i].Rank = rank
+	}
+
+	return agents, paretoFront
+}
+
 type SortedDEDC struct {
 	values      []float64
 	originalIdx int

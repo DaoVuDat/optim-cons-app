@@ -5,6 +5,8 @@
   import gaConfig from '$lib/components/algo-configs/ga-config.svelte'
   import ahaConfig from '$lib/components/algo-configs/aha-config.svelte'
   import gwoConfig from '$lib/components/algo-configs/gwo-config.svelte'
+  import nsgaiiConfig from '$lib/components/algo-configs/nsgaii-config.svelte'
+  import mogwoConfig from '$lib/components/algo-configs/mogwo-config.svelte'
   import {stepStore} from "$lib/stores/steps.svelte.js";
   import {algorithmsStore, type AlgorithmWithLabel} from "$lib/stores/algorithms.svelte";
   import {algorithms, main} from "$lib/wailsjs/go/models";
@@ -19,6 +21,8 @@
     [algorithms.AlgorithmType.GWO]: gwoConfig,
     [algorithms.AlgorithmType.GeneticAlgorithm]: gaConfig,
     [algorithms.AlgorithmType.oMOAHA]: omoahaConfig,
+    [algorithms.AlgorithmType.MOGWO]: mogwoConfig,
+    [algorithms.AlgorithmType.NSGAII]: nsgaiiConfig,
   }
 
   const component = $derived.by(() => {
