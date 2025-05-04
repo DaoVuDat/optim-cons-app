@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/data"
-	eprs "golang-moaha-construction/internal/export-result"
+	eprs "golang-moaha-construction/internal/export-result-new"
 	"golang-moaha-construction/internal/objectives"
 	"os"
 	"strings"
