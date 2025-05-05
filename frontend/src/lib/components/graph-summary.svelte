@@ -7,6 +7,7 @@
   import {toast} from "@zerodevx/svelte-toast";
   import {errorOpts, successOpts} from "$lib/utils/toast-opts";
   import {SaveChartImage} from "$lib/wailsjs/go/main/App";
+  import {roundNDecimal} from "$lib/utils/rounding.js";
 
 
   interface Props {
@@ -48,7 +49,8 @@
         convergence: res.Convergence || []
       }
     })
-    console.log(results)
+    // console.log("graphData",graphsData)
+    // console.log("results", results)
 
     let title = '';
     if (numberOfValues > 1) {
@@ -157,8 +159,8 @@
         options.xAxis = {
           type: 'value',
           name: results[0].keys[0],
-          min: xBounds.min.toFixed(3),
-          max: xBounds.max.toFixed(3),
+          min: xBounds.min,
+          max: xBounds.max,
           nameLocation: 'middle',
           nameGap: 30,
           axisLabel: {
@@ -168,8 +170,8 @@
         options.yAxis = {
           type: 'value',
           name: results[0].keys[1],
-          min: yBounds.min.toFixed(3),
-          max: yBounds.max.toFixed(3),
+          min: yBounds.min,
+          max: yBounds.max,
           nameLocation: 'middle',
           nameGap: 70,
           axisLabel: {
@@ -179,7 +181,23 @@
         options.series = [
           {
             data: results,
-            type: "scatter"
+            type: "scatter",
+          }
+        ];
+        options.dataZoom = [
+          {
+            type: 'inside',
+            xAxisIndex: 0,
+            start: 0,
+            end: 100,
+            filterMode: 'filter'
+          },
+          {
+            type: 'inside',
+            yAxisIndex: 0,
+            start: 0,
+            end: 100,
+            filterMode: 'filter'
           }
         ];
       } else {
@@ -315,13 +333,13 @@
   const calculateAxisBounds = (values: number[]) => {
     if (!values || values.length === 0) return {min: 0, max: 1, useScientific: false};
 
-    const min = Math.min(...values);
-    const max = Math.max(...values);
+    const min = Math.min(...values) * 0.999;
+    const max = Math.max(...values) * 1.001;
     const range = max - min;
 
     // Add 2% padding on each side
-    const minBound = min;
-    const maxBound = max;
+    const minBound = roundNDecimal(min, 3);
+    const maxBound = roundNDecimal(max, 3);
 
     // Determine if we should use scientific notation
     const useScientific = shouldUseScientific(minBound, maxBound);
