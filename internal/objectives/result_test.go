@@ -1,7 +1,6 @@
 package objectives
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -609,4 +608,83 @@ func TestNonDominatedSortSetEachRank(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestNonDominatedSorting(t *testing.T) {
+	populations := []*Result{
+		{Idx: 0, Value: []float64{17482666.7708616, 1744703659.10514}},
+		{Idx: 1, Value: []float64{9052134.75096372, 901508700.908080}},
+		{Idx: 2, Value: []float64{13124158.3347648, 1309485059.52912}},
+		{Idx: 3, Value: []float64{5032354.37946573, 499739906.074043}},
+		{Idx: 4, Value: []float64{9987372.54571255, 995070325.219069}},
+	}
+
+	populationsFast := []*Result{
+		{Idx: 0, Value: []float64{17482666.7708616, 1744703659.10514}},
+		{Idx: 1, Value: []float64{9052134.75096372, 901508700.908080}},
+		{Idx: 2, Value: []float64{13124158.3347648, 1309485059.52912}},
+		{Idx: 3, Value: []float64{5032354.37946573, 499739906.074043}},
+		{Idx: 4, Value: []float64{9987372.54571255, 995070325.219069}},
+	}
+
+	expectedRanks := []int{4, 1, 3, 0, 2}
+	expectedDominationSets := [][]int{
+		{},           // Pop 0
+		{0, 2, 4},    // Pop 1
+		{0},          // Pop 2
+		{0, 1, 2, 4}, // Pop 3
+		{0, 2},       // Pop 4
+	}
+	expectedParetoFront := [][]int{
+		{3}, {1}, {4}, {2}, {0},
+	}
+
+	// Test NonDominatedSort
+	sortedPop, paretoFront := NonDominatedSort(populations)
+	for i, pop := range sortedPop {
+		if pop.Rank != expectedRanks[i] {
+			t.Errorf("NonDominatedSort Rank mismatch for pop %d: got %d, expected %d", i, pop.Rank, expectedRanks[i])
+		}
+		if !equalIntSlices(pop.DominationSet, expectedDominationSets[i]) {
+			t.Errorf("NonDominatedSort DominationSet mismatch for pop %d: got %v, expected %v", i, pop.DominationSet, expectedDominationSets[i])
+		}
+	}
+	if !equalParetoFronts(paretoFront, expectedParetoFront) {
+		t.Errorf("NonDominatedSort ParetoFront mismatch: got %v, expected %v", paretoFront, expectedParetoFront)
+	}
+
+	// Test FastNonDominatedSorting_Vectorized
+	sortedPopFast, paretoFrontFast := FastNonDominatedSorting_Vectorized(populationsFast)
+	for i, pop := range sortedPopFast {
+		if pop.Rank != expectedRanks[i] {
+			t.Errorf("FastNonDominatedSorting_Vectorized Rank mismatch for pop %d: got %d, expected %d", i, pop.Rank, expectedRanks[i])
+		}
+	}
+	if !equalParetoFronts(paretoFrontFast, expectedParetoFront) {
+		t.Errorf("FastNonDominatedSorting_Vectorized ParetoFront mismatch: got %v, expected %v", paretoFrontFast, expectedParetoFront)
+	}
+}
+
+func equalIntSlices(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func equalParetoFronts(a, b [][]int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !equalIntSlices(a[i], b[i]) {
+			return false
+		}
+	}
+	return true
 }

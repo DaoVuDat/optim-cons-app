@@ -181,7 +181,7 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 			MaxIterations:    config.Generation,
 			CrossoverRate:    config.CrossoverRate,
 			MutationRate:     config.MutationRate,
-			TournamentSize:   config.TournamentSize,
+			Sigma:            config.Sigma,
 			MutationStrength: config.MutationStrength,
 		})
 
@@ -288,5 +288,5 @@ type nsgaiiConfig struct {
 	CrossoverRate    float64 `json:"crossoverRate"`
 	MutationRate     float64 `json:"mutationRate"`
 	MutationStrength float64 `json:"mutationStrength"`
-	TournamentSize   int     `json:"tournamentSize"`
+	Sigma            float64 `json:"sigma"`
 }

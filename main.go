@@ -22,7 +22,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main() {
+func main_test() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -58,7 +58,7 @@ func main() {
 	}
 }
 
-func main_test() {
+func main() {
 	constructionOptimization()
 }
 
@@ -170,25 +170,25 @@ func constructionOptimization() {
 		log.Fatal(err)
 	}
 
-	safetyMatrix, err := objectives.ReadSafetyProximityDataFromFile("./data/conslay/continuous/safety_data.xlsx")
-	if err != nil {
-		return
-	}
+	//safetyMatrix, err := objectives.ReadSafetyProximityDataFromFile("./data/conslay/continuous/safety_data.xlsx")
+	//if err != nil {
+	//	return
+	//}
 
-	safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{
-		SafetyProximity:    safetyMatrix,
-		AlphaSafetyPenalty: 2000,
-		Phases:             phases,
-		FilePath:           "",
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	//safetyObj, err := objectives.CreateSafetyObjectiveFromConfig(objectives.SafetyConfigs{
+	//	SafetyProximity:    safetyMatrix,
+	//	AlphaSafetyPenalty: 2000,
+	//	Phases:             phases,
+	//	FilePath:           "",
+	//})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	// Add objectives to conslay_continuous problem
 	err = consLayObj.AddObjective(objectives.HoistingObjectiveType, hoistingObj)
 	err = consLayObj.AddObjective(objectives.RiskObjectiveType, riskObj)
-	err = consLayObj.AddObjective(objectives.SafetyObjectiveType, safetyObj)
+	//err = consLayObj.AddObjective(objectives.SafetyObjectiveType, safetyObj)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -359,12 +359,12 @@ func constructionOptimization() {
 
 	// NSGA-II
 	nsgaiiConfigs := nsgaii.Config{
-		PopulationSize:   300,
+		PopulationSize:   200,
 		MaxIterations:    400,
-		CrossoverRate:    0.9,
-		MutationRate:     0.1,
-		MutationStrength: 0.1,
-		TournamentSize:   5,
+		CrossoverRate:    0.7,
+		MutationRate:     0.4,
+		MutationStrength: 0.02,
+		Sigma:            0.1,
 	}
 
 	algoNSGAII, err := nsgaii.Create(consLayObj, nsgaiiConfigs)

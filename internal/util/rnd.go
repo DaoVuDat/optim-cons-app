@@ -50,3 +50,24 @@ func RouletteWheelSelection(p []float64) int {
 	// Fallback (should not reach here under normal circumstances)
 	return len(p) - 1
 }
+
+func RandomSample(max int, n int) []int {
+	// Ensure we don't try to sample more elements than available
+	if n > max {
+		n = max
+	}
+
+	// Create a slice of all indices
+	indices := make([]int, max)
+	for i := range indices {
+		indices[i] = i
+	}
+
+	// Shuffle the indices
+	rand.Shuffle(len(indices), func(i, j int) {
+		indices[i], indices[j] = indices[j], indices[i]
+	})
+
+	// Return the first n indices
+	return indices[:n]
+}

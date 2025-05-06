@@ -62,38 +62,46 @@ func CreateConsLayFromConfig(consLayConfigs ConsLayConfigs) (*ConsLay, error) {
 	upperBound := make([]float64, dimensions)
 	lowerBound := make([]float64, dimensions)
 	for i := 0; i < len(consLay.NonFixedLocations); i++ {
+		//idx := i * 3
+		//loc := consLay.NonFixedLocations[i]
+		//
+		//// Calculate half of length and width
+		//halfLength := loc.Length / 2
+		//halfWidth := loc.Width / 2
+		//
+		//// Set lower bounds for x, y, r
+		//lowerBoundX := 0 + halfLength
+		//lowerBoundY := 0 + halfWidth
+		//
+		//// Set upper bounds for x, y, r
+		//upperBoundX := consLay.LayoutLength - halfLength
+		//upperBoundY := consLay.LayoutWidth - halfWidth
+		//
+		//// For rotation case (r > 0.5), consider swapped dimensions
+		//// For lower bounds, take the minimum
+		//lowerBoundXRotated := 0 + halfWidth
+		//lowerBoundYRotated := 0 + halfLength
+		//
+		//lowerBound[idx] = math.Min(lowerBoundX, lowerBoundXRotated)
+		//lowerBound[idx+1] = math.Min(lowerBoundY, lowerBoundYRotated)
+		//lowerBound[idx+2] = 0
+		//
+		//// For upper bounds, take the maximum
+		//upperBoundXRotated := consLay.LayoutLength - halfWidth
+		//upperBoundYRotated := consLay.LayoutWidth - halfLength
+		//
+		//upperBound[idx] = math.Max(upperBoundX, upperBoundXRotated)
+		//upperBound[idx+1] = math.Max(upperBoundY, upperBoundYRotated)
+		//upperBound[idx+2] = 1.0
+
 		idx := i * 3
-		loc := consLay.NonFixedLocations[i]
-
-		// Calculate half of length and width
-		halfLength := loc.Length / 2
-		halfWidth := loc.Width / 2
-
-		// Set lower bounds for x, y, r
-		lowerBoundX := 0 + halfLength
-		lowerBoundY := 0 + halfWidth
-
-		// Set upper bounds for x, y, r
-		upperBoundX := consLay.LayoutLength - halfLength
-		upperBoundY := consLay.LayoutWidth - halfWidth
-
-		// For rotation case (r > 0.5), consider swapped dimensions
-		// For lower bounds, take the minimum
-		lowerBoundXRotated := 0 + halfWidth
-		lowerBoundYRotated := 0 + halfLength
-
-		lowerBound[idx] = math.Min(lowerBoundX, lowerBoundXRotated)
-		lowerBound[idx+1] = math.Min(lowerBoundY, lowerBoundYRotated)
-		lowerBound[idx+2] = 0
-
-		// For upper bounds, take the maximum
-		upperBoundXRotated := consLay.LayoutLength - halfWidth
-		upperBoundYRotated := consLay.LayoutWidth - halfLength
-
-		upperBound[idx] = math.Max(upperBoundX, upperBoundXRotated)
-		upperBound[idx+1] = math.Max(upperBoundY, upperBoundYRotated)
+		upperBound[idx] = consLay.LayoutLength
+		upperBound[idx+1] = consLay.LayoutWidth
 		upperBound[idx+2] = 1.0
 
+		lowerBound[idx] = 0
+		lowerBound[idx+1] = 0
+		lowerBound[idx+2] = 0
 	}
 
 	consLay.Dimensions = dimensions
