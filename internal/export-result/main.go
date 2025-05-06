@@ -8,7 +8,7 @@ import (
 )
 
 // WriteXlsxResult exports the optimization results to an Excel file.
-func WriteXlsxResult1(option Options) error {
+func WriteXlsxResult(option Options) error {
 
 	f := excelize.NewFile()
 	defer func() {

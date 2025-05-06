@@ -1,5 +1,5 @@
 // Package export_result provides functionality for exporting optimization results to Excel files.
-package export_result
+package export_result_old
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // WriteXlsxResult exports the optimization results to an Excel file.
-func WriteXlsxResult(option Options) error {
+func WriteXlsxResult1(option Options) error {
 
 	f := excelize.NewFile()
 	defer func() {

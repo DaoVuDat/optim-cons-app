@@ -15,6 +15,7 @@ import (
 
 const NameType algorithms.AlgorithmType = "NSGA-II"
 
+// NSGAIIAlgorithm proposed by Deb et al., in 2002
 type NSGAIIAlgorithm struct {
 	PopulationSize    int
 	MaxIterations     int
@@ -81,7 +82,7 @@ func (ga *NSGAIIAlgorithm) Run() error {
 
 	// Non-Dominated Sorting
 	var paretoFront [][]int
-	ga.Population, paretoFront = objectives.NonDominatedSort(ga.Population)
+	ga.Population, paretoFront = objectives.FastNonDominatedSorting_Vectorized(ga.Population)
 
 	// Calculate Crowding Distance
 	ga.Population = ga.calculateCrowdingDistance(ga.Population, paretoFront)
@@ -181,48 +182,6 @@ func (ga *NSGAIIAlgorithm) Run() error {
 	return nil
 }
 
-func crossOver(p1, p2 *objectives.Result) (*objectives.Result, *objectives.Result) {
-
-	child1 := &objectives.Result{
-		Position: make([]float64, len(p1.Position)),
-	}
-	child2 := &objectives.Result{
-		Position: make([]float64, len(p1.Position)),
-	}
-
-	for i := 0; i < len(p1.Position); i++ {
-		alpha := rand.Float64()
-		child1.Position[i] = p1.Position[i]*alpha + (1-alpha)*(p2.Position[i])
-		child2.Position[i] = p2.Position[i]*alpha + (1-alpha)*(p1.Position[i])
-	}
-
-	return child1, child2
-}
-
-func mutation(p *objectives.Result, mu float64, sigma []float64) *objectives.Result {
-	child := &objectives.Result{
-		Position: make([]float64, len(p.Position)),
-	}
-
-	copy(child.Position, p.Position)
-
-	nVar := len(p.Position)
-	nMutations := int(math.Ceil(mu * float64(nVar)))
-
-	if nMutations == 0 {
-		return child
-	}
-	indices := util.RandomSample(nVar, nMutations)
-
-	for _, idx := range indices {
-		gaussianNoise := rand.NormFloat64()
-
-		child.Position[idx] = p.Position[idx] + sigma[idx]*gaussianNoise
-	}
-
-	return child
-}
-
 func (ga *NSGAIIAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
 	ga.reset()
 
@@ -316,6 +275,7 @@ func (ga *NSGAIIAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan
 		trunkedPop := make([]*objectives.Result, ga.PopulationSize)
 		for i := 0; i < ga.PopulationSize; i++ {
 			trunkedPop[i] = newPop[i].CopyAgent()
+			trunkedPop[i].Idx = i
 		}
 
 		trunkedPop, paretoFront = objectives.FastNonDominatedSorting_Vectorized(trunkedPop)
@@ -539,4 +499,46 @@ func SortPopulation(pop []*objectives.Result) ([]*objectives.Result, [][]int) {
 	}
 
 	return sorted, F
+}
+
+func crossOver(p1, p2 *objectives.Result) (*objectives.Result, *objectives.Result) {
+
+	child1 := &objectives.Result{
+		Position: make([]float64, len(p1.Position)),
+	}
+	child2 := &objectives.Result{
+		Position: make([]float64, len(p1.Position)),
+	}
+
+	for i := 0; i < len(p1.Position); i++ {
+		alpha := rand.Float64()
+		child1.Position[i] = p1.Position[i]*alpha + (1-alpha)*(p2.Position[i])
+		child2.Position[i] = p2.Position[i]*alpha + (1-alpha)*(p1.Position[i])
+	}
+
+	return child1, child2
+}
+
+func mutation(p *objectives.Result, mu float64, sigma []float64) *objectives.Result {
+	child := &objectives.Result{
+		Position: make([]float64, len(p.Position)),
+	}
+
+	copy(child.Position, p.Position)
+
+	nVar := len(p.Position)
+	nMutations := int(math.Ceil(mu * float64(nVar)))
+
+	if nMutations == 0 {
+		return child
+	}
+	indices := util.RandomSample(nVar, nMutations)
+
+	for _, idx := range indices {
+		gaussianNoise := rand.NormFloat64()
+
+		child.Position[idx] = p.Position[idx] + sigma[idx]*gaussianNoise
+	}
+
+	return child
 }

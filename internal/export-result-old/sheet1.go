@@ -1,5 +1,5 @@
 // Package export_result provides functionality for exporting optimization results to Excel files.
-package export_result
+package export_result_old
 
 import (
 	"github.com/xuri/excelize/v2"
@@ -64,6 +64,8 @@ func sectionAlgorithm(f *excelize.File, algorithm any, algorithmName algorithms.
 			switch field.Name {
 			case "NumberOfAgents":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of agents", value.Int())
+			case "Agents":
+				// Skip Agents field as it's a slice
 			case "Population":
 				// Check if it's a slice (like in NSGA-II) or an integer
 				if value.Kind() == reflect.Int || value.Kind() == reflect.Int64 {
@@ -85,8 +87,8 @@ func sectionAlgorithm(f *excelize.File, algorithm any, algorithmName algorithms.
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Mutation rate", value.Float())
 			case "MutationStrength":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Mutation strength", value.Float())
-			case "TournamentSize":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Tournament size", value.Int())
+			case "Sigma":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Sigma", value.Float())
 			case "AParam":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "A parameter", value.Float())
 			case "NumberOfGrids":

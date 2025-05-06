@@ -4,15 +4,15 @@ export interface INSGAIIConfig extends IAlgorithmBiologyConfigBase {
   crossoverRate: number
   mutationRate: number
   mutationStrength: number
-  tournamentSize: number
+  sigma: number
 }
 
 export const nsgaiiConfig = $state<INSGAIIConfig>({
   chromosome: 100,
   generation: 300,
-  mutationStrength: 0.1,
+  crossoverRate: 0.7,
+  mutationRate: 0.4,
+  mutationStrength: 0.01,
+  sigma: 0.1,
   type: 'Biology',
-  crossoverRate: 0.9,
-  mutationRate: 0.1,
-  tournamentSize: 10,
 })

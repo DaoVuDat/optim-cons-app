@@ -30,8 +30,8 @@
       <input type="number" class="input input-lg" placeholder="0.1" bind:value={config.mutationStrength}/>
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg text-nowrap">Tournament Size:</legend>
-      <input type="number" class="input input-lg" placeholder="2" bind:value={config.tournamentSize}/>
+      <legend class="fieldset-legend text-lg text-nowrap">Sigma:</legend>
+      <input type="number" class="input input-lg" placeholder="2" bind:value={config.sigma}/>
     </fieldset>
   </div>
 </div>
