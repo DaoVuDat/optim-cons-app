@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"golang-moaha-construction/internal/algorithms/mopso"
 	"golang-moaha-construction/internal/algorithms/nsgaii"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
@@ -22,7 +23,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main() {
+func main_test() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -58,7 +59,7 @@ func main() {
 	}
 }
 
-func main_test() {
+func main() {
 	constructionOptimization()
 }
 
@@ -295,67 +296,68 @@ func constructionOptimization() {
 	//fmt.Println("Min F2", slices.Min(f2Values))
 	//fmt.Println("Max F2", slices.Max(f2Values))
 	//
-	//// MOGWO
-	//mogwoConfigs := mogwo.Config{
-	//	NumberOfAgents: 300,
-	//	NumberOfIter:   400,
-	//	ArchiveSize:    100,
-	//	NumberOfGrids:  10,
-	//	AParam:         2,
-	//	Gamma:          2,
-	//	Alpha:          0.1,
-	//	Beta:           4,
-	//}
-	//
-	//algoMogwo, err := mogwo.Create(consLayObj, mogwoConfigs)
-	//if err != nil {
-	//	log.Fatal(err)
-	//	return
-	//}
-	//
-	//err = algoMogwo.Run()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println("===== Archive Results")
-	//for i := range algoMogwo.Archive {
-	//	fmt.Printf("%d. \n", i+1)
-	//	fmt.Println(algoMogwo.Archive[i].Position)
-	//	//fmt.Println(algo.Archive[i].PositionString())
-	//	fmt.Println(algoMogwo.Archive[i].Value)
-	//	fmt.Println(algoMogwo.Archive[i].Penalty)
-	//}
-	//
-	//fmt.Println("===== Pareto")
-	//f1Values = make([]float64, len(algoMogwo.Archive))
-	//f2Values = make([]float64, len(algoMogwo.Archive))
-	//for i := 0; i < 2; i++ {
-	//	var sb strings.Builder
-	//	values := make([]float64, len(algoMogwo.Archive))
-	//	for idx, agent := range algoMogwo.Archive {
-	//		if idx > 0 {
-	//			sb.WriteString(", ")
-	//		}
-	//		values[idx] = agent.Value[i]
-	//		sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
-	//	}
-	//	sb.WriteString(";")
-	//	fmt.Println(sb.String())
-	//	if i == 0 {
-	//		f1Values = values
-	//	} else {
-	//		f2Values = values
-	//	}
-	//
-	//}
-	//
-	//fmt.Println("===== Archive Size", len(algo.Archive))
-	//
-	//fmt.Println("Min F1", slices.Min(f1Values))
-	//fmt.Println("Max F1", slices.Max(f1Values))
-	//
-	//fmt.Println("Min F2", slices.Min(f2Values))
-	//fmt.Println("Max F2", slices.Max(f2Values))
+	// MPSO
+	mopsoConfigs := mopso.Config{
+		NumberOfAgents: 300,
+		NumberOfIter:   400,
+		ArchiveSize:    100,
+		NumberOfGrids:  20,
+		MutationRate:   0.5,
+		MaxVelocity:    5,
+		C1:             2,
+		C2:             2,
+		W:              0.4,
+	}
+
+	algoMopso, err := mopso.Create(consLayObj, mopsoConfigs)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	err = algoMopso.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("===== Archive Results")
+	for i := range algoMopso.Archive {
+		fmt.Printf("%d. \n", i+1)
+		fmt.Println(algoMopso.Archive[i].Position)
+		//fmt.Println(algo.Archive[i].PositionString())
+		fmt.Println(algoMopso.Archive[i].Value)
+		fmt.Println(algoMopso.Archive[i].Penalty)
+	}
+
+	fmt.Println("===== Pareto")
+	f1Values := make([]float64, len(algoMopso.Archive))
+	f2Values := make([]float64, len(algoMopso.Archive))
+	for i := 0; i < 2; i++ {
+		var sb strings.Builder
+		values := make([]float64, len(algoMopso.Archive))
+		for idx, agent := range algoMopso.Archive {
+			if idx > 0 {
+				sb.WriteString(", ")
+			}
+			values[idx] = agent.Value[i]
+			sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
+		}
+		sb.WriteString(";")
+		fmt.Println(sb.String())
+		if i == 0 {
+			f1Values = values
+		} else {
+			f2Values = values
+		}
+
+	}
+
+	fmt.Println("===== Archive Size", len(algoMopso.Archive))
+
+	fmt.Println("Min F1", slices.Min(f1Values))
+	fmt.Println("Max F1", slices.Max(f1Values))
+
+	fmt.Println("Min F2", slices.Min(f2Values))
+	fmt.Println("Max F2", slices.Max(f2Values))
 
 	// NSGA-II
 	nsgaiiConfigs := nsgaii.Config{
@@ -386,8 +388,8 @@ func constructionOptimization() {
 	}
 
 	fmt.Println("===== NSGA-II Pareto")
-	f1Values := make([]float64, len(algoNSGAII.Archive))
-	f2Values := make([]float64, len(algoNSGAII.Archive))
+	f1Values = make([]float64, len(algoNSGAII.Archive))
+	f2Values = make([]float64, len(algoNSGAII.Archive))
 	for i := 0; i < 2; i++ {
 		var sb strings.Builder
 		values := make([]float64, len(algoNSGAII.Archive))
