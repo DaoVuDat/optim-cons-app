@@ -122,10 +122,19 @@ func GenerateSub(size []int) [][]int {
 	return result
 }
 
+const epsilon = 1e-9
+
 func FindLess(arr []float64, val float64) int {
 	for i, v := range arr {
-		if val < v {
-			return i
+		if val < v+epsilon {
+			// Return i-1 to convert from 1-based to 0-based indexing
+			// This matches the MATLAB code: find(...)-1
+			if i == 0 {
+				// In MATLAB, if the result is 0, it's set to 1
+				// In Go with 0-based indexing, we should return 0
+				return 0
+			}
+			return i - 1
 		}
 	}
 	return -1
@@ -133,8 +142,15 @@ func FindLess(arr []float64, val float64) int {
 
 func FindLessOrEqual(arr []float64, val float64) int {
 	for i, v := range arr {
-		if val <= v {
-			return i
+		if val <= v+epsilon {
+			// Return i-1 to convert from 1-based to 0-based indexing
+			// This matches the MATLAB code: find(...)-1
+			if i == 0 {
+				// In MATLAB, if the result is 0, it's set to 1
+				// In Go with 0-based indexing, we should return 0
+				return 0
+			}
+			return i - 1
 		}
 	}
 

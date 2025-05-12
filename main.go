@@ -10,7 +10,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"golang-moaha-construction/internal/algorithms/mopso"
-	"golang-moaha-construction/internal/algorithms/nsgaii"
 	"golang-moaha-construction/internal/constraints"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives/conslay_continuous"
@@ -298,7 +297,7 @@ func constructionOptimization() {
 	//
 	// MPSO
 	mopsoConfigs := mopso.Config{
-		NumberOfAgents: 300,
+		NumberOfAgents: 200,
 		NumberOfIter:   400,
 		ArchiveSize:    100,
 		NumberOfGrids:  20,
@@ -309,7 +308,7 @@ func constructionOptimization() {
 		W:              0.4,
 	}
 
-	algoMopso, err := mopso.Create(consLayObj, mopsoConfigs)
+	algoMopso, err := mopso.CreateReimpl(consLayObj, mopsoConfigs)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -359,61 +358,61 @@ func constructionOptimization() {
 	fmt.Println("Min F2", slices.Min(f2Values))
 	fmt.Println("Max F2", slices.Max(f2Values))
 
-	// NSGA-II
-	nsgaiiConfigs := nsgaii.Config{
-		PopulationSize:   100,
-		MaxIterations:    200,
-		CrossoverRate:    0.7,
-		MutationRate:     0.4,
-		MutationStrength: 0.02,
-		Sigma:            0.1,
-	}
-
-	algoNSGAII, err := nsgaii.Create(consLayObj, nsgaiiConfigs)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	err = algoNSGAII.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("===== NSGA-II Archive Results")
-	for i := range algoNSGAII.Archive {
-		fmt.Printf("%d. \n", i+1)
-		fmt.Println(algoNSGAII.Archive[i].Position)
-		fmt.Println(algoNSGAII.Archive[i].Value)
-		fmt.Println(algoNSGAII.Archive[i].Penalty)
-	}
-
-	fmt.Println("===== NSGA-II Pareto")
-	f1Values = make([]float64, len(algoNSGAII.Archive))
-	f2Values = make([]float64, len(algoNSGAII.Archive))
-	for i := 0; i < 2; i++ {
-		var sb strings.Builder
-		values := make([]float64, len(algoNSGAII.Archive))
-		for idx, agent := range algoNSGAII.Archive {
-			if idx > 0 {
-				sb.WriteString(", ")
-			}
-			values[idx] = agent.Value[i]
-			sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
-		}
-		sb.WriteString(";")
-		fmt.Println(sb.String())
-		if i == 0 {
-			f1Values = values
-		} else {
-			f2Values = values
-		}
-	}
-
-	fmt.Println("===== NSGA-II Archive Size", len(algoNSGAII.Archive))
-
-	fmt.Println("Min F1", slices.Min(f1Values))
-	fmt.Println("Max F1", slices.Max(f1Values))
-
-	fmt.Println("Min F2", slices.Min(f2Values))
-	fmt.Println("Max F2", slices.Max(f2Values))
+	//// NSGA-II
+	//nsgaiiConfigs := nsgaii.Config{
+	//	PopulationSize:   100,
+	//	MaxIterations:    200,
+	//	CrossoverRate:    0.7,
+	//	MutationRate:     0.4,
+	//	MutationStrength: 0.02,
+	//	Sigma:            0.1,
+	//}
+	//
+	//algoNSGAII, err := nsgaii.Create(consLayObj, nsgaiiConfigs)
+	//if err != nil {
+	//	log.Fatal(err)
+	//	return
+	//}
+	//
+	//err = algoNSGAII.Run()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//fmt.Println("===== NSGA-II Archive Results")
+	//for i := range algoNSGAII.Archive {
+	//	fmt.Printf("%d. \n", i+1)
+	//	fmt.Println(algoNSGAII.Archive[i].Position)
+	//	fmt.Println(algoNSGAII.Archive[i].Value)
+	//	fmt.Println(algoNSGAII.Archive[i].Penalty)
+	//}
+	//
+	//fmt.Println("===== NSGA-II Pareto")
+	//f1Values = make([]float64, len(algoNSGAII.Archive))
+	//f2Values = make([]float64, len(algoNSGAII.Archive))
+	//for i := 0; i < 2; i++ {
+	//	var sb strings.Builder
+	//	values := make([]float64, len(algoNSGAII.Archive))
+	//	for idx, agent := range algoNSGAII.Archive {
+	//		if idx > 0 {
+	//			sb.WriteString(", ")
+	//		}
+	//		values[idx] = agent.Value[i]
+	//		sb.WriteString(fmt.Sprintf("%g", agent.Value[i]))
+	//	}
+	//	sb.WriteString(";")
+	//	fmt.Println(sb.String())
+	//	if i == 0 {
+	//		f1Values = values
+	//	} else {
+	//		f2Values = values
+	//	}
+	//}
+	//
+	//fmt.Println("===== NSGA-II Archive Size", len(algoNSGAII.Archive))
+	//
+	//fmt.Println("Min F1", slices.Min(f1Values))
+	//fmt.Println("Max F1", slices.Max(f1Values))
+	//
+	//fmt.Println("Min F2", slices.Min(f2Values))
+	//fmt.Println("Max F2", slices.Max(f2Values))
 }

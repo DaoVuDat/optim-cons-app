@@ -2,7 +2,6 @@ package mopso
 
 import (
 	"fmt"
-	"github.com/schollz/progressbar/v3"
 	"golang-moaha-construction/internal/algorithms"
 	"golang-moaha-construction/internal/data"
 	"golang-moaha-construction/internal/objectives"
@@ -11,6 +10,8 @@ import (
 	"math/rand"
 	"slices"
 	"sync"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 const NameType algorithms.AlgorithmType = "MOPSO"
@@ -155,88 +156,109 @@ func (g *MOPSOAlgorithm) Run() error {
 	g.reset()
 
 	bar := progressbar.Default(int64(g.NumberOfIter))
-	// initialization
 	g.initialization()
 
+	// Initial archive: non-dominated solutions from initial population
 	onlyAgents := getResultsFromResultWithPersonalBest(g.Agents)
-
 	onlyAgents = objectives.DetermineDomination(onlyAgents)
 	g.Archive = objectives.GetNonDominatedAgents(onlyAgents)
-	g.hypercube.UpdateHyperCube(getResultsFromArchive(g.Archive))
 
-	l := 0
-
-	for l < g.NumberOfIter {
-		// selectLeader
-		leaderAgent := g.hypercube.SelectLeader(g.Archive)
-
-		for agentIdx := range g.Agents {
-			for posIdx := range g.ObjectiveFunction.GetDimension() {
-				velocity := g.W*g.Agents[agentIdx].Velocity[posIdx] +
-					g.C1*rand.Float64()*(g.Agents[agentIdx].GetPersonalBest().Position[posIdx]-g.Agents[agentIdx].Result.Position[posIdx]) +
-					g.C2*rand.Float64()*(leaderAgent.Position[posIdx]-g.Agents[agentIdx].Result.Position[posIdx])
-
-				g.Agents[agentIdx].Velocity[posIdx] = velocity
-
-				g.Agents[agentIdx].Result.Position[posIdx] = g.Agents[agentIdx].Result.Position[posIdx] + velocity
-			}
-		}
-
-		// apply mutation
-		g.Agents = mutation(g.Agents, l,
-			g.NumberOfIter,
-			g.NumberOfAgents,
-			g.ObjectiveFunction.GetLowerBound(),
-			g.ObjectiveFunction.GetUpperBound(),
-			g.MutationRate)
-
-		for agentIdx := range g.Agents {
-			// check out of boundaries
-			g.outOfBoundaries(g.Agents[agentIdx].Result.Position)
-			// evaluate
-			value, valuesWithKey, keys, penalty := g.ObjectiveFunction.Eval(g.Agents[agentIdx].Result.Position)
-			g.Agents[agentIdx].Result.Value = value
-			g.Agents[agentIdx].Result.Penalty = penalty
-			g.Agents[agentIdx].Result.Key = keys
-			g.Agents[agentIdx].Result.ValuesWithKey = valuesWithKey
-		}
-
-		// update repository
-		g.Archive = g.updateRepository(g.Archive, g.Agents)
-		if len(g.Archive) > g.ArchiveSize {
-			exceeded := len(g.Archive) - g.ArchiveSize
-			g.Archive = g.hypercube.deleteFromRepository(g.Archive, exceeded)
-		}
-
-		// update PersonalBest
-		curDominatesPBest := make([]bool, len(g.Agents))
-		pBestDominatesCur := make([]bool, len(g.Agents))
-
-		for i := 0; i < len(g.Agents); i++ {
-			if g.Agents[i].Result.Dominates(g.Agents[i].PersonalBest) {
-				curDominatesPBest[i] = true
-			}
-
-			if !g.Agents[i].PersonalBest.Dominates(g.Agents[i].Result) {
-				if rand.Float64() > 0.5 {
-					pBestDominatesCur[i] = true
+	for iter := 0; iter < g.NumberOfIter; iter++ {
+		// For each agent, select a leader from the archive and update velocity/position
+		leader := selectLeaderFromArchive(g.Archive)
+		for _, agent := range g.Agents {
+			for d := 0; d < g.ObjectiveFunction.GetDimension(); d++ {
+				r1 := rand.Float64()
+				r2 := rand.Float64()
+				v := g.W*agent.Velocity[d] +
+					g.C1*r1*(agent.PersonalBest.Position[d]-agent.Result.Position[d]) +
+					g.C2*r2*(leader.Position[d]-agent.Result.Position[d])
+				// Clamp velocity
+				if math.Abs(v) > g.MaxVelocity[d] {
+					if v > 0 {
+						v = g.MaxVelocity[d]
+					} else {
+						v = -g.MaxVelocity[d]
+					}
 				}
+				agent.Velocity[d] = v
+				agent.Result.Position[d] += v
 			}
 		}
 
-		for i := 0; i < len(g.Agents); i++ {
-			if curDominatesPBest[i] || pBestDominatesCur[i] {
-				g.Agents[i].PersonalBest = g.Agents[i].Result.CopyAgent()
-			}
+		// Apply mutation (as in MATLAB, to a subset of agents)
+		applyMutation(g.Agents, iter, g.NumberOfIter, g.ObjectiveFunction.GetLowerBound(), g.ObjectiveFunction.GetUpperBound(), g.MutationRate)
 
+		// Evaluate and update personal bests
+		for _, agent := range g.Agents {
+			g.outOfBoundaries(agent.Result.Position)
+			value, valuesWithKey, keys, penalty := g.ObjectiveFunction.Eval(agent.Result.Position)
+			agent.Result.Value = value
+			agent.Result.ValuesWithKey = valuesWithKey
+			agent.Result.Penalty = penalty
+			agent.Result.Key = keys
+			// Update personal best if dominated or equal (random tie-break)
+			if agent.Result.Dominates(agent.PersonalBest) || (!agent.PersonalBest.Dominates(agent.Result) && rand.Float64() > 0.5) {
+				agent.PersonalBest = agent.Result.CopyAgent()
+			}
 		}
 
-		bar.Describe(fmt.Sprintf("Iteration %d: %d", l+1, len(g.Archive)))
+		// Merge new agents into archive, keep only non-dominated
+		agentResults := getResultsFromResultWithPersonalBest(g.Agents)
+		g.Archive = objectives.MergeAgents(g.Archive, agentResults)
+		g.Archive = objectives.DetermineDomination(g.Archive)
+		g.Archive = objectives.GetNonDominatedAgents(g.Archive)
+
+		// Truncate archive if needed (crowding distance)
+		if len(g.Archive) > g.ArchiveSize {
+			excess := len(g.Archive) - g.ArchiveSize
+			g.Archive = objectives.DECD(g.Archive, excess)
+		}
+
+		bar.Describe(fmt.Sprintf("Iteration %d: %d", iter+1, len(g.Archive)))
 		bar.Add(1)
-		l++
 	}
 
 	return nil
+}
+
+// selectLeaderFromArchive selects a leader from the archive using roulette/crowding (MATLAB style)
+func selectLeaderFromArchive(archive []*objectives.Result) *objectives.Result {
+	if len(archive) == 0 {
+		return nil
+	}
+	// Use crowding distance as selection probability
+	crowd := make([]float64, len(archive))
+	total := 0.0
+	for i, a := range archive {
+		crowd[i] = a.CrowdingDistance
+		total += crowd[i]
+	}
+	if total == 0 {
+		return archive[rand.Intn(len(archive))]
+	}
+	pick := rand.Float64() * total
+	cumsum := 0.0
+	for i, a := range archive {
+		cumsum += crowd[i]
+		if pick <= cumsum {
+			return a
+		}
+	}
+	return archive[len(archive)-1]
+}
+
+// applyMutation mutates a subset of agents (as in MATLAB MOGWO/MOPSO)
+func applyMutation(agents []*ResultWithPersonalBest, iter, maxIter int, lower, upper []float64, mutationRate float64) {
+	n := len(agents)
+	nMut := int(float64(n) * mutationRate)
+	for i := 0; i < nMut; i++ {
+		idx := rand.Intn(n)
+		for d := range agents[idx].Result.Position {
+			// Uniform mutation within bounds
+			agents[idx].Result.Position[d] = lower[d] + rand.Float64()*(upper[d]-lower[d])
+		}
+	}
 }
 
 func (g *MOPSOAlgorithm) RunWithChannel(doneChan chan<- struct{}, channel chan<- any) error {
