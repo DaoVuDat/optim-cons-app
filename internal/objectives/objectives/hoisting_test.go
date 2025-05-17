@@ -307,6 +307,199 @@ func CreateInputLocation(feasible bool) map[string]data.Location {
 
 	return locations
 }
+func create21TFLocations() map[string]data.Location {
+	return map[string]data.Location{
+		"TF1": {
+			Coordinate: data.Coordinate{X: 76.5, Y: 46},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF1",
+			Name:       "TF1",
+		},
+		"TF2": {
+			Coordinate: data.Coordinate{X: 87, Y: 113},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF2",
+			Name:       "TF2",
+		},
+		"TF3": {
+			Coordinate: data.Coordinate{X: 134.5, Y: 46},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF3",
+			Name:       "TF3",
+		},
+		"TF4": {
+			Coordinate: data.Coordinate{X: 148, Y: 113},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF4",
+			Name:       "TF4",
+		},
+		"TF5": {
+			Coordinate: data.Coordinate{X: 87, Y: 96},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF5",
+			Name:       "TF5",
+		},
+		"TF6": {
+			Coordinate: data.Coordinate{X: 88.5, Y: 65.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF6",
+			Name:       "TF6",
+		},
+		"TF7": {
+			Coordinate: data.Coordinate{X: 88.5, Y: 31.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF7",
+			Name:       "TF7",
+		},
+		"TF8": {
+			Coordinate: data.Coordinate{X: 148, Y: 96},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF8",
+			Name:       "TF8",
+		},
+		"TF9": {
+			Coordinate: data.Coordinate{X: 146.5, Y: 65.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF9",
+			Name:       "TF9",
+		},
+		"TF10": {
+			Coordinate: data.Coordinate{X: 146.5, Y: 31.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF10",
+			Name:       "TF10",
+		},
+		"TF11": {
+			Coordinate: data.Coordinate{X: 55.5, Y: 79.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF11",
+			Name:       "TF11",
+		},
+		"TF12": {
+			Coordinate: data.Coordinate{X: 179.5, Y: 79.5},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF12",
+			Name:       "TF12",
+		},
+		"TF13": {
+			Coordinate: data.Coordinate{X: 120.1990347, Y: 91.33520845},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF13",
+			Name:       "TF13",
+		},
+		"TF14": {
+			Coordinate: data.Coordinate{X: 107.2621819, Y: 105.0985223},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF14",
+			Name:       "TF14",
+		},
+		"TF15": {
+			Coordinate: data.Coordinate{X: 109.3430739, Y: 97.01057704},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF15",
+			Name:       "TF15",
+		},
+		"TF16": {
+			Coordinate: data.Coordinate{X: 129.1399147, Y: 99.28900721},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF16",
+			Name:       "TF16",
+		},
+		"TF17": {
+			Coordinate: data.Coordinate{X: 129.7248822, Y: 92.33679167},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF17",
+			Name:       "TF17",
+		},
+		"TF18": {
+			Coordinate: data.Coordinate{X: 108.0600246, Y: 61.62097451},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF18",
+			Name:       "TF18",
+		},
+		"TF19": {
+			Coordinate: data.Coordinate{X: 114.8243976, Y: 45.54548162},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF19",
+			Name:       "TF19",
+		},
+		"TF20": {
+			Coordinate: data.Coordinate{X: 120.6192131, Y: 77.47075693},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF20",
+			Name:       "TF20",
+		},
+		"TF21": {
+			Coordinate: data.Coordinate{X: 127.3023653, Y: 62.5552764},
+			Rotation:   false,
+			Length:     12,
+			Width:      5,
+			IsFixed:    false,
+			Symbol:     "TF21",
+			Name:       "TF21",
+		},
+	}
+}
 
 func CreateInputPhases() [][]string {
 	return [][]string{
@@ -346,11 +539,15 @@ func TestHoistingObjective_Eval(t *testing.T) {
 	// Hoisting Objective Configs
 	hoistingConfigs := HoistingConfigs{
 		//PrefabricatedLocations: []string{"TF8", "TF9", "TF10"},
-		NumberOfFloors: 10,
 		HoistingTime: map[string][]HoistingTime{
-			"TF14": hoistingTime,
+			"TF14-B1": hoistingTime,
 		},
-		FloorHeight:          3.2,
+		Buildings: map[string]Building{
+			"B1": {
+				NumberOfFloors: 10,
+				FloorHeight:    3.2,
+			},
+		},
 		ZM:                   2,
 		Vuvg:                 37.5,
 		Vlvg:                 37.5 / 2,
@@ -373,7 +570,108 @@ func TestHoistingObjective_Eval(t *testing.T) {
 			Location:     test.locations["TF14"],
 			BuildingName: []string{"TF8", "TF9", "TF10"},
 			Radius:       40,
-			CraneSymbol:  "TF14",
+			CraneSymbol:  "TF14-B1",
+		})
+
+		hoistingObj.CraneLocations = craneLocations
+		t.Run(test.name, func(t *testing.T) {
+
+			result := hoistingObj.Eval(test.locations)
+			if util.RoundTo(result, 2) != test.expected {
+				t.Errorf("expected result to be %f, got %f", test.expected, result)
+			}
+		})
+	}
+
+}
+
+func TestHoistingObjectiveWith2CranesAnd4Building_Eval(t *testing.T) {
+
+	testTable := []struct {
+		locations map[string]data.Location
+		expected  float64
+		name      string
+	}{
+		{
+			locations: create21TFLocations(),
+			expected:  27088.28,
+			name:      "2 cranes and 4 buildings",
+		},
+	}
+
+	hoistingTime1, err := ReadHoistingTimeDataFromFile("../../../data/conslay/hoistingTime2Cranes4Buildings/hoisting_time_data_1.xlsx")
+	hoistingTime2, err := ReadHoistingTimeDataFromFile("../../../data/conslay/hoistingTime2Cranes4Buildings/hoisting_time_data_2.xlsx")
+	hoistingTime3, err := ReadHoistingTimeDataFromFile("../../../data/conslay/hoistingTime2Cranes4Buildings/hoisting_time_data_3.xlsx")
+	hoistingTime4, err := ReadHoistingTimeDataFromFile("../../../data/conslay/hoistingTime2Cranes4Buildings/hoisting_time_data_4.xlsx")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Hoisting Objective Configs
+	hoistingConfigs := HoistingConfigs{
+		//PrefabricatedLocations: []string{"TF8", "TF9", "TF10"},
+		HoistingTime: map[string][]HoistingTime{
+			"TF1-B1": hoistingTime1,
+			"TF1-B2": hoistingTime2,
+			"TF3-B3": hoistingTime3,
+			"TF3-B4": hoistingTime4,
+		},
+		Buildings: map[string]Building{
+			"B1": {
+				NumberOfFloors: 15,
+				FloorHeight:    3,
+			},
+			"B2": {
+				NumberOfFloors: 10,
+				FloorHeight:    3,
+			},
+			"B3": {
+				NumberOfFloors: 15,
+				FloorHeight:    3,
+			},
+			"B4": {
+				NumberOfFloors: 10,
+				FloorHeight:    3,
+			},
+		},
+		ZM:                   2,
+		Vuvg:                 37.5,
+		Vlvg:                 37.5 / 2,
+		Vag:                  50,
+		Vwg:                  0.5,
+		AlphaHoistingPenalty: 1,
+		AlphaHoisting:        0.25,
+		BetaHoisting:         1, // beta hoisting = n hoisting
+		NHoisting:            1,
+	}
+	hoistingObj, err := CreateHoistingObjectiveFromConfig(hoistingConfigs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// calculate result
+	for _, test := range testTable {
+		craneLocations := make([]data.Crane, 0)
+		craneLocations = append(craneLocations, data.Crane{
+			Location:     test.locations["TF1"],
+			BuildingName: []string{"TF18", "TF19"},
+			CraneSymbol:  "TF1-B1",
+		})
+		craneLocations = append(craneLocations, data.Crane{
+			Location:     test.locations["TF3"],
+			BuildingName: []string{"TF20", "TF21"},
+			CraneSymbol:  "TF3-B3",
+		})
+		craneLocations = append(craneLocations, data.Crane{
+			Location:     test.locations["TF1"],
+			BuildingName: []string{"TF18", "TF19"},
+			CraneSymbol:  "TF1-B2",
+		})
+		craneLocations = append(craneLocations, data.Crane{
+			Location:     test.locations["TF3"],
+			BuildingName: []string{"TF20", "TF21"},
+			CraneSymbol:  "TF3-B4",
 		})
 
 		hoistingObj.CraneLocations = craneLocations

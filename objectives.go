@@ -65,6 +65,7 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 			hoistingTime := make(map[string][]objectives.HoistingTime, len(hoistingCfg.CraneLocations))
 			cranesLocation := make([]data.Crane, len(hoistingCfg.CraneLocations))
+			buildings := make(map[string]objectives.Building)
 			hoistingTimeWithInfo := make([]objectives.HoistingTimeWithInfo, len(hoistingCfg.CraneLocations))
 
 			for i, craneLocation := range hoistingCfg.CraneLocations {
@@ -73,32 +74,43 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 					return fmt.Errorf("Hoisting Objective: %w", err)
 				}
 
-				hoistingTime[craneLocation.Name] = hoistingTimeForCrane
+				hoistingTime[fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding))] = hoistingTimeForCrane
 
 				facilitiesName, err := formatBuildingNames(craneLocation.BuildingNames)
 				if err != nil {
 					return fmt.Errorf("Hoisting Objective: %w", err)
 				}
 
+				// combine crane symbol and for building name CraneName-ForBuildingName
 				cranesLocation[i] = data.Crane{
-					CraneSymbol:  strings.ToUpper(craneLocation.Name),
+					CraneSymbol:  fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
 					BuildingName: facilitiesName,
 					Radius:       craneLocation.Radius,
 				}
 
 				hoistingTimeWithInfo[i] = objectives.HoistingTimeWithInfo{
-					CraneSymbol:  craneLocation.Name,
+					CraneSymbol:  fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
 					FilePath:     craneLocation.HoistingTimeFilePath,
 					Radius:       craneLocation.Radius,
 					BuildingName: facilitiesName,
 				}
 			}
 
+			for _, building := range hoistingCfg.Buildings {
+				upperName := strings.ToUpper(building.Name)
+				if _, ok := buildings[upperName]; !ok {
+					buildings[upperName] = objectives.Building{
+						NumberOfFloors: building.NumberOfFloors,
+						FloorHeight:    building.FloorHeight,
+					}
+				}
+
+			}
+
 			// setup Cranes Locations and Hoisting Time
 			hoistingObj, err := objectives.CreateHoistingObjectiveFromConfig(objectives.HoistingConfigs{
-				NumberOfFloors:       hoistingCfg.NumberOfFloors,
+				Buildings:            buildings,
 				HoistingTime:         hoistingTime,
-				FloorHeight:          hoistingCfg.FloorHeight,
 				CraneLocations:       cranesLocation,
 				ZM:                   hoistingCfg.ZM,
 				Vuvg:                 hoistingCfg.Vuvg,
@@ -302,8 +314,7 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 		case objectives.HoistingObjectiveType:
 			hoisting := obj.(*objectives.HoistingObjective)
 			res.Hoisting = struct {
-				NumberOfFloors       int                                  `json:"numberOfFloors"`
-				FloorHeight          float64                              `json:"floorHeight"`
+				Buildings            map[string]objectives.Building       `json:"buildings"`
 				ZM                   float64                              `json:"zm"`
 				Vuvg                 float64                              `json:"vuvg"`
 				Vlvg                 float64                              `json:"vlvg"`
@@ -318,9 +329,8 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				CraneLocations       []data.Crane                         `json:"craneLocations"`
 				HoistingTimeWithInfo []objectives.HoistingTimeWithInfo    `json:"hoistingTimeWithInfo"`
 			}{
-				NumberOfFloors:       hoisting.NumberOfFloors,
+				Buildings:            hoisting.Buildings,
 				HoistingTime:         hoisting.HoistingTime,
-				FloorHeight:          hoisting.FloorHeight,
 				CraneLocations:       hoisting.CraneLocations,
 				ZM:                   hoisting.ZM,
 				Vuvg:                 hoisting.Vuvg,
@@ -405,12 +415,16 @@ type ObjectiveInput struct {
 type hoistingConfig struct {
 	CraneLocations []struct {
 		Name                 string  `json:"Name"`
-		BuildingNames        string  `json:"BuildingNames"`
+		BuildingNames        string  `json:"BuildingNames"` // Precast components
 		Radius               float64 `json:"Radius"`
 		HoistingTimeFilePath string  `json:"HoistingTimeFilePath"`
+		ForBuilding          string  `json:"ForBuilding"`
 	}
-	NumberOfFloors       int     `json:"NumberOfFloors"`
-	FloorHeight          float64 `json:"FloorHeight"`
+	Buildings []struct {
+		Name           string  `json:"Name"`
+		NumberOfFloors int     `json:"NumberOfFloors"`
+		FloorHeight    float64 `json:"FloorHeight"`
+	}
 	ZM                   float64 `json:"ZM"`
 	Vuvg                 float64 `json:"Vuvg"`
 	Vlvg                 float64 `json:"Vlvg"`

@@ -3,6 +3,7 @@ package objectives
 import (
 	"github.com/xuri/excelize/v2"
 	"golang-moaha-construction/internal/data"
+	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -11,9 +12,8 @@ import (
 const HoistingObjectiveType data.ObjectiveType = "Hoisting Objective"
 
 type HoistingConfigs struct {
-	NumberOfFloors       int
 	HoistingTime         map[string][]HoistingTime
-	FloorHeight          float64
+	Buildings            map[string]Building
 	CraneLocations       []data.Crane
 	ZM                   float64
 	Vuvg                 float64
@@ -28,6 +28,11 @@ type HoistingConfigs struct {
 	HoistingTimeWithInfo []HoistingTimeWithInfo
 }
 
+type Building struct {
+	NumberOfFloors int
+	FloorHeight    float64
+}
+
 type HoistingTime struct {
 	Coordinate     data.Coordinate
 	HoistingNumber int
@@ -36,9 +41,8 @@ type HoistingTime struct {
 }
 
 type HoistingObjective struct {
-	NumberOfFloors       int
 	HoistingTime         map[string][]HoistingTime
-	FloorHeight          float64
+	Buildings            map[string]Building
 	CraneLocations       []data.Crane
 	ZM                   float64
 	Vuvg                 float64
@@ -55,9 +59,8 @@ type HoistingObjective struct {
 
 func CreateHoistingObjectiveFromConfig(hoistingConfigs HoistingConfigs) (*HoistingObjective, error) {
 	hoistingObj := &HoistingObjective{
-		NumberOfFloors:       hoistingConfigs.NumberOfFloors,
+		Buildings:            hoistingConfigs.Buildings,
 		HoistingTime:         hoistingConfigs.HoistingTime,
-		FloorHeight:          hoistingConfigs.FloorHeight,
 		CraneLocations:       hoistingConfigs.CraneLocations,
 		ZM:                   hoistingConfigs.ZM,
 		Vuvg:                 hoistingConfigs.Vuvg,
@@ -79,9 +82,15 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 	result := 0.0
 
 	cranes := make([]data.Crane, len(obj.CraneLocations))
+	buildings := make([]string, len(obj.CraneLocations))
 	for i, location := range obj.CraneLocations {
-		if loc, ok := locations[location.CraneSymbol]; ok {
-			cranes[i].CraneSymbol = location.Symbol
+		parts := strings.Split(location.CraneSymbol, "-")
+		// extract crane symbol into crane symbol and building name
+		// CraneName-ForBuildingName
+		craneSymbol := parts[0]
+		if loc, ok := locations[craneSymbol]; ok {
+			buildings[i] = parts[1]
+			cranes[i].CraneSymbol = location.CraneSymbol
 			cranes[i].Radius = location.Radius
 			cranes[i].BuildingName = location.BuildingName
 			cranes[i].Coordinate.X = loc.Coordinate.X
@@ -92,18 +101,26 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 			cranes[i].Rotation = loc.Rotation
 			cranes[i].Symbol = loc.Symbol
 			cranes[i].Name = loc.Name
+		} else {
+			log.Fatal("[HoistingTime - Eval()] Crane location not found in locations map")
 		}
 	}
 
 	// calculate Hdjg = distance(crane, prefabricated)
-	for _, crane := range cranes {
+	for i, crane := range cranes {
 		TB := 0.0
 		HDjg := make(map[string]float64, len(crane.BuildingName))
+
+		// the building names are prefabricated symbols
 		for _, prefabricatedName := range crane.BuildingName {
 			HDjg[prefabricatedName] = data.Distance2D(crane.Coordinate, locations[prefabricatedName].Coordinate)
 		}
 
-		hoistingTime := obj.HoistingTime[crane.Symbol]
+		// get number of floors and floor height
+		numberOfFloors := obj.Buildings[buildings[i]].NumberOfFloors
+		floorHeight := obj.Buildings[buildings[i]].FloorHeight
+
+		hoistingTime := obj.HoistingTime[crane.CraneSymbol]
 		for _, hoisting := range hoistingTime {
 			// calculate distance between hoisting and prefabricated
 			HDkg := data.Distance2D(hoisting.Coordinate, crane.Coordinate)
@@ -117,8 +134,8 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 
 			Thg := max(Tag, Twg) + obj.AlphaHoisting*min(Tag, Twg)
 
-			for i := 0; i < obj.NumberOfFloors; i++ {
-				ZOj := float64(i) * obj.FloorHeight
+			for i := 0; i < numberOfFloors; i++ {
+				ZOj := float64(i) * floorHeight
 
 				Tvg := (1/obj.Vuvg + 1/obj.Vlvg) * math.Abs(ZOj-obj.ZM)
 				Tg := max(Thg, Tvg) + obj.BetaHoisting*min(Thg, Tvg)
