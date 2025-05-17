@@ -582,7 +582,6 @@ func TestHoistingObjective_Eval(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestHoistingObjectiveWith2CranesAnd4Building_Eval(t *testing.T) {

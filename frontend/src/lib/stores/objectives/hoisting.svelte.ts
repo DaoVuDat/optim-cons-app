@@ -4,16 +4,22 @@ export interface ISelectedCrane {
     BuildingNames: string;
     Radius: number;
     HoistingTimeFilePath: string;
+    ForBuilding: string;
 }
 
 export interface ISelectedCraneWithId extends ISelectedCrane {
     Id: string
 }
 
-export interface IHoistingConfig {
-    CraneLocations: ISelectedCraneWithId[];
+export interface Building {
     NumberOfFloors: number;
     FloorHeight: number;
+    Name: string;
+}
+
+export interface IHoistingConfig {
+    CraneLocations: ISelectedCraneWithId[];
+    Buildings : Building[];
     ZM: number;
     Vuvg: number;
     Vlvg: number;
@@ -22,14 +28,12 @@ export interface IHoistingConfig {
     AlphaHoistingPenalty: number;
     AlphaHoisting: number;
     BetaHoisting: number;
-    NHoisting: number;
 }
 
 
 export const hoistingConfig = $state<IHoistingConfig>({
     CraneLocations: [],
-    NumberOfFloors: 10,
-    FloorHeight: 3.2,
+    Buildings: [],
     ZM: 2,
     Vuvg: 37.5,
     Vlvg: 37.5 / 2,
@@ -38,5 +42,4 @@ export const hoistingConfig = $state<IHoistingConfig>({
     AlphaHoistingPenalty: 1,
     AlphaHoisting: 0.25,
     BetaHoisting: 1,
-    NHoisting: 1,
 })

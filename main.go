@@ -22,7 +22,7 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main_test() {
+func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
@@ -58,7 +58,7 @@ func main_test() {
 	}
 }
 
-func main() {
+func main_test() {
 	constructionOptimization()
 }
 
@@ -104,11 +104,15 @@ func constructionOptimization() {
 
 	// Hoisting Objective Configs
 	hoistingConfigs := objectives.HoistingConfigs{
-		NumberOfFloors: 10,
 		HoistingTime: map[string][]objectives.HoistingTime{
-			"TF14": hoistingTime,
+			"TF14-B1": hoistingTime,
 		},
-		FloorHeight:          3.2,
+		Buildings: map[string]objectives.Building{
+			"B1": {
+				NumberOfFloors: 10,
+				FloorHeight:    3.2,
+			},
+		},
 		CraneLocations:       nil,
 		ZM:                   2,
 		Vuvg:                 37.5,
@@ -136,7 +140,7 @@ func constructionOptimization() {
 
 	selectedCrane := []SelectedCrane{
 		{
-			Name:          "TF14",
+			Name:          "TF14-B1",
 			BuildingNames: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
 			Radius:        40,
 		},

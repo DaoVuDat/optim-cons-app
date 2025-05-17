@@ -107,6 +107,10 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 			}
 
+			fmt.Println("hoisting time", hoistingTime)
+			fmt.Println("cranes location", cranesLocation)
+			fmt.Println("buildings", buildings)
+
 			// setup Cranes Locations and Hoisting Time
 			hoistingObj, err := objectives.CreateHoistingObjectiveFromConfig(objectives.HoistingConfigs{
 				Buildings:            buildings,
@@ -119,7 +123,6 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				Vwg:                  hoistingCfg.Vwg,
 				AlphaHoisting:        hoistingCfg.AlphaHoisting,
 				BetaHoisting:         hoistingCfg.BetaHoisting,
-				NHoisting:            hoistingCfg.NHoisting,
 				Phases:               problem.GetPhases(),
 				AlphaHoistingPenalty: hoistingCfg.AlphaHoistingPenalty,
 				HoistingTimeWithInfo: hoistingTimeWithInfo,
@@ -322,7 +325,6 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				Vwg                  float64                              `json:"vwg"`
 				AlphaHoisting        float64                              `json:"alphaHoisting"`
 				BetaHoisting         float64                              `json:"betaHoisting"`
-				NHoisting            float64                              `json:"NHoisting"`
 				Phases               [][]string                           `json:"phases"`
 				AlphaHoistingPenalty float64                              `json:"alphaHoistingPenalty"`
 				HoistingTime         map[string][]objectives.HoistingTime `json:"hoistingTime"`
@@ -340,7 +342,6 @@ func (a *App) ObjectivesInfo() (*ObjectiveConfigResponse, error) {
 				AlphaHoistingPenalty: hoisting.AlphaHoistingPenalty,
 				AlphaHoisting:        hoisting.AlphaHoisting,
 				BetaHoisting:         hoisting.BetaHoisting,
-				NHoisting:            hoisting.NHoisting,
 				Phases:               hoisting.Phases,
 				HoistingTimeWithInfo: hoisting.HoistingTimeWithInfo,
 			}
@@ -433,7 +434,6 @@ type hoistingConfig struct {
 	AlphaHoistingPenalty float64 `json:"AlphaHoistingPenalty"`
 	AlphaHoisting        float64 `json:"AlphaHoisting"`
 	BetaHoisting         float64 `json:"BetaHoisting"`
-	NHoisting            float64 `json:"NHoisting"`
 }
 
 type riskConfig struct {
