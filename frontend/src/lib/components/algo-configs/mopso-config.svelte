@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {mogwoConfig} from "$lib/stores/algorithms";
+  import {mopsoConfig} from "$lib/stores/algorithms";
 
-  let config = mogwoConfig
+  let config = mopsoConfig
 </script>
 
 <div class="p-2 w-full h-full">
@@ -18,8 +18,8 @@
       <input type="number" class="input input-lg" placeholder="300" bind:value={config.population}/>
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg text-nowrap">a Parameter:</legend>
-      <input type="number" class="input input-lg" placeholder="2" bind:value={config.aParam}/>
+      <legend class="fieldset-legend text-lg text-nowrap">Mutation rate:</legend>
+      <input type="number" class="input input-lg" placeholder="0.5" bind:value={config.mutationRate}/>
     </fieldset>
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-lg text-nowrap">Archive Size:</legend>
@@ -27,19 +27,19 @@
     </fieldset>
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-lg text-nowrap">Number of Grids:</legend>
-      <input type="number" class="input input-lg" placeholder="10" bind:value={config.numberOfGrids}/>
+      <input type="number" class="input input-lg" placeholder="20" bind:value={config.numberOfGrids}/>
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg text-nowrap">Alpha (Grid Inflation):</legend>
-      <input type="number" class="input input-lg" placeholder="0.1" bind:value={config.alpha}/>
+      <legend class="fieldset-legend text-lg text-nowrap">C1:</legend>
+      <input type="number" class="input input-lg" placeholder="2" bind:value={config.c1}/>
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg text-nowrap">Beta (Leader Selection):</legend>
-      <input type="number" class="input input-lg" placeholder="4" bind:value={config.beta}/>
+      <legend class="fieldset-legend text-lg text-nowrap">C2:</legend>
+      <input type="number" class="input input-lg" placeholder="2" bind:value={config.c2}/>
     </fieldset>
     <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg text-nowrap">Gamma (Repository Selection):</legend>
-      <input type="number" class="input input-lg" placeholder="2" bind:value={config.gamma}/>
+      <legend class="fieldset-legend text-lg text-nowrap">W:</legend>
+      <input type="number" class="input input-lg" placeholder="0.4" bind:value={config.w}/>
     </fieldset>
   </div>
 </div>

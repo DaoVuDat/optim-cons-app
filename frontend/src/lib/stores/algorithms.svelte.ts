@@ -5,9 +5,9 @@ import {
     type IAHAConfig,
     type IGAConfig,
     type IOMOAHAConfig,
-    type IMOGWOConfig,
+    type IMOPSOConfig,
     type INSGAIIConfig,
-    moahaConfig, gwoConfig, ahaConfig, gaConfig, omoahaConfig, mogwoConfig, nsgaiiConfig
+    moahaConfig, gwoConfig, ahaConfig, gaConfig, omoahaConfig, mopsoConfig, nsgaiiConfig
 } from "$lib/stores/algorithms";
 import {algorithms} from "$lib/wailsjs/go/models";
 
@@ -17,7 +17,7 @@ export type AlgorithmConfigMap = {
     [algorithms.AlgorithmType.MOAHA]: IMOAHAConfig;
     [algorithms.AlgorithmType.GWO]: IGWOConfig;
     [algorithms.AlgorithmType.oMOAHA]: IOMOAHAConfig;
-    [algorithms.AlgorithmType.MOGWO]: IMOGWOConfig;
+    [algorithms.AlgorithmType.MOPSO]: IMOPSOConfig;
     [algorithms.AlgorithmType.NSGAII]: INSGAIIConfig;
 }
 
@@ -51,8 +51,8 @@ const MultiList: AlgorithmWithLabel[] = [
         value: algorithms.AlgorithmType.oMOAHA,
     },
     {
-        label: 'Multi-Objective Grey Wolf Optimizer',
-        value: algorithms.AlgorithmType.MOGWO,
+        label: 'Multi-Objective Particle Swarm Optimization (MOPSO)',
+        value: algorithms.AlgorithmType.MOPSO,
     },
     {
         label: 'Non-dominated Sorting Genetic Algorithm II (NSGA-II)',
@@ -101,8 +101,8 @@ class AlgorithmStore {
                 return gwoConfig as AlgorithmConfigMap[T]
             case algorithms.AlgorithmType.oMOAHA:
                 return omoahaConfig as AlgorithmConfigMap[T]
-            case algorithms.AlgorithmType.MOGWO:
-                return mogwoConfig as AlgorithmConfigMap[T]
+            case algorithms.AlgorithmType.MOPSO:
+                return mopsoConfig as AlgorithmConfigMap[T]
             case algorithms.AlgorithmType.NSGAII:
                 return nsgaiiConfig as AlgorithmConfigMap[T]
         }

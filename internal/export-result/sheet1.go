@@ -2,10 +2,12 @@
 package export_result
 
 import (
-	"github.com/xuri/excelize/v2"
+	"fmt"
 	"golang-moaha-construction/internal/algorithms"
 	"reflect"
 	"strings"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // Sheet 1 - Summary
@@ -91,13 +93,14 @@ func sectionAlgorithm(f *excelize.File, algorithm any, algorithmName algorithms.
 				writeContentWithValue(f, colCount, rowCount, sheetName, "A parameter", value.Float())
 			case "NumberOfGrids":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of grids", value.Int())
-			case "Alpha":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Alpha", value.Float())
-			case "Beta":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Beta", value.Float())
-			case "Gamma":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Gamma", value.Float())
-
+			case "MaxVelocityInfo":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "Max Velocity", value.Float())
+			case "C1":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "C1", value.Float())
+			case "C2":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "C2", value.Float())
+			case "W":
+				writeContentWithValue(f, colCount, rowCount, sheetName, "W", value.Float())
 			default:
 				continue
 			}
@@ -298,10 +301,35 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 		// Only exported fields (unexported fields can't be accessed)
 		if field.PkgPath == "" {
 			switch field.Name {
-			case "NumberOfFloors":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Number of floors", value.Int())
-			case "FloorHeight":
-				writeContentWithValue(f, colCount, rowCount, sheetName, "Floor height", value.Float())
+			case "Buildings":
+				// Export each building's name and its properties except NumberOfFloors and FloorHeight
+				cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+				endCell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+				_ = f.MergeCell(sheetName, cell, endCell)
+				_ = f.SetCellValue(sheetName, cell, "Buildings")
+				_ = f.SetCellStyle(sheetName, cell, cell, contentMiddleAlignStyle)
+				rowCount++
+				for _, key := range value.MapKeys() {
+					buildingName := key.String()
+					buildingVal := value.MapIndex(key)
+					cell, _ := excelize.CoordinatesToCellName(colCount, rowCount)
+					_ = f.SetCellValue(sheetName, cell, buildingName)
+					_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
+					// Export only fields except NumberOfFloors and FloorHeight
+					bVal := buildingVal
+					bType := bVal.Type()
+					for j := 0; j < bVal.NumField(); j++ {
+						bField := bType.Field(j)
+						bFieldValue := bVal.Field(j)
+						if bField.Name != "NumberOfFloors" && bField.Name != "FloorHeight" {
+							continue
+						}
+						rowCount++
+						cell, _ := excelize.CoordinatesToCellName(colCount+1, rowCount)
+						_ = f.SetCellValue(sheetName, cell, bField.Name+": "+toString(bFieldValue))
+						_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
+					}
+				}
 			case "ZM":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "ZM", value.Float())
 			case "Vuvg":
@@ -321,7 +349,6 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 			case "NHoisting":
 				writeContentWithValue(f, colCount, rowCount, sheetName, "NHoisting", value.Float())
 			case "HoistingTimeWithInfo":
-
 				// slices
 				for j := 0; j < value.Len(); j++ {
 					startRow := rowCount
@@ -332,32 +359,12 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 						subValue := elem.Field(k)
 
 						switch subField.Name {
-						case "BuildingName":
-							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+2)
-							_ = f.SetCellValue(sheetName, cell, "Facilities")
-							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
-
-							names := make([]string, 0)
-							for nameIdx := 0; nameIdx < subValue.Len(); nameIdx++ {
-								names = append(names, subValue.Index(nameIdx).String())
-							}
-
-							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+2)
-							_ = f.SetCellValue(sheetName, cell, strings.Join(names, " "))
-							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
 						case "FilePath":
 							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+1)
 							_ = f.SetCellValue(sheetName, cell, "Hoisting file path")
 							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
 							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+1)
 							_ = f.SetCellValue(sheetName, cell, subValue.String())
-							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
-						case "Radius":
-							cell, _ = excelize.CoordinatesToCellName(colCount, startRow+3)
-							_ = f.SetCellValue(sheetName, cell, "Radius")
-							_ = f.SetCellStyle(sheetName, cell, cell, contentBoldStyle)
-							cell, _ = excelize.CoordinatesToCellName(colCount+1, startRow+3)
-							_ = f.SetCellValue(sheetName, cell, subValue.Float())
 							_ = f.SetCellStyle(sheetName, cell, cell, contentStyle)
 						case "CraneSymbol":
 							cell, _ = excelize.CoordinatesToCellName(colCount, startRow)
@@ -368,7 +375,7 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 						default:
 							continue
 						}
-						rowCount = startRow + 3
+						rowCount = startRow + 2
 					}
 				}
 			default:
@@ -379,6 +386,22 @@ func hoistingInfo(f *excelize.File, hoisting any, sheetName string, rowCount int
 	}
 
 	return rowCount
+}
+
+// Helper to convert reflect.Value to string for export
+func toString(v reflect.Value) string {
+	switch v.Kind() {
+	case reflect.String:
+		return v.String()
+	case reflect.Int, reflect.Int64:
+		return fmt.Sprintf("%d", v.Int())
+	case reflect.Float32, reflect.Float64:
+		return fmt.Sprintf("%f", v.Float())
+	case reflect.Bool:
+		return fmt.Sprintf("%t", v.Bool())
+	default:
+		return ""
+	}
 }
 
 // safetyInfo adds safety objective information to the summary sheet

@@ -9,7 +9,7 @@ import (
 	"golang-moaha-construction/internal/algorithms/ga"
 	"golang-moaha-construction/internal/algorithms/gwo"
 	"golang-moaha-construction/internal/algorithms/moaha"
-	"golang-moaha-construction/internal/algorithms/mogwo"
+	"golang-moaha-construction/internal/algorithms/mopso"
 	"golang-moaha-construction/internal/algorithms/nsgaii"
 	"golang-moaha-construction/internal/algorithms/omoaha"
 )
@@ -136,27 +136,28 @@ func (a *App) CreateAlgorithm(algorithmInput AlgorithmInput) error {
 		}
 
 		a.algorithm = algo
-	case mogwo.NameType:
+	case mopso.NameType:
 		configBytes, err := sonic.Marshal(algorithmInput.AlgorithmConfig)
 		if err != nil {
 			return err
 		}
 
-		var config mogwoConfig
+		var config mopsoConfig
 		err = sonic.Unmarshal(configBytes, &config)
 		if err != nil {
 			return err
 		}
 
-		algo, err := mogwo.Create(a.problem, mogwo.Config{
+		algo, err := mopso.Create(a.problem, mopso.Config{
 			NumberOfAgents: config.NumberOfAgents,
 			NumberOfIter:   config.NumberOfIterations,
-			AParam:         config.AParam,
 			ArchiveSize:    config.ArchiveSize,
 			NumberOfGrids:  config.NumberOfGrids,
-			Alpha:          config.Alpha,
-			Beta:           config.Beta,
-			Gamma:          config.Gamma,
+			MutationRate:   config.MutationRate,
+			MaxVelocity:    config.MaxVelocity,
+			C1:             config.C1,
+			C2:             config.C2,
+			W:              config.W,
 		})
 
 		if err != nil {
@@ -271,15 +272,16 @@ type omoahaConfig struct {
 	ArchiveSize        int `json:"archiveSize"`
 }
 
-type mogwoConfig struct {
+type mopsoConfig struct {
 	NumberOfIterations int     `json:"iterations"`
 	NumberOfAgents     int     `json:"population"`
-	AParam             float64 `json:"aParam"`
+	MutationRate       float64 `json:"mutationRate"`
 	ArchiveSize        int     `json:"archiveSize"`
 	NumberOfGrids      int     `json:"numberOfGrids"`
-	Alpha              float64 `json:"alpha"`
-	Beta               float64 `json:"beta"`
-	Gamma              float64 `json:"gamma"`
+	MaxVelocity        float64 `json:"maxVelocity"`
+	C1                 float64 `json:"c1"`
+	C2                 float64 `json:"c2"`
+	W                  float64 `json:"w"`
 }
 
 type nsgaiiConfig struct {

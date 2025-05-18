@@ -76,23 +76,15 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 
 				hoistingTime[fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding))] = hoistingTimeForCrane
 
-				facilitiesName, err := formatBuildingNames(craneLocation.BuildingNames)
-				if err != nil {
-					return fmt.Errorf("Hoisting Objective: %w", err)
-				}
-
 				// combine crane symbol and for building name CraneName-ForBuildingName
 				cranesLocation[i] = data.Crane{
-					CraneSymbol:  fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
-					BuildingName: facilitiesName,
-					Radius:       craneLocation.Radius,
+					CraneSymbol: fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
+					Radius:      craneLocation.Radius,
 				}
 
 				hoistingTimeWithInfo[i] = objectives.HoistingTimeWithInfo{
-					CraneSymbol:  fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
-					FilePath:     craneLocation.HoistingTimeFilePath,
-					Radius:       craneLocation.Radius,
-					BuildingName: facilitiesName,
+					CraneSymbol: fmt.Sprintf("%s-%s", strings.ToUpper(craneLocation.Name), strings.ToUpper(craneLocation.ForBuilding)),
+					FilePath:    craneLocation.HoistingTimeFilePath,
 				}
 			}
 
@@ -106,10 +98,6 @@ func (a *App) CreateObjectives(objs []ObjectiveInput) error {
 				}
 
 			}
-
-			fmt.Println("hoisting time", hoistingTime)
-			fmt.Println("cranes location", cranesLocation)
-			fmt.Println("buildings", buildings)
 
 			// setup Cranes Locations and Hoisting Time
 			hoistingObj, err := objectives.CreateHoistingObjectiveFromConfig(objectives.HoistingConfigs{
@@ -416,7 +404,6 @@ type ObjectiveInput struct {
 type hoistingConfig struct {
 	CraneLocations []struct {
 		Name                 string  `json:"Name"`
-		BuildingNames        string  `json:"BuildingNames"` // Precast components
 		Radius               float64 `json:"Radius"`
 		HoistingTimeFilePath string  `json:"HoistingTimeFilePath"`
 		ForBuilding          string  `json:"ForBuilding"`

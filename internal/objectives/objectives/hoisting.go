@@ -91,8 +91,6 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 		if loc, ok := locations[craneSymbol]; ok {
 			buildings[i] = parts[1]
 			cranes[i].CraneSymbol = location.CraneSymbol
-			cranes[i].Radius = location.Radius
-			cranes[i].BuildingName = location.BuildingName
 			cranes[i].Coordinate.X = loc.Coordinate.X
 			cranes[i].Coordinate.Y = loc.Coordinate.Y
 			cranes[i].IsFixed = loc.IsFixed
@@ -109,12 +107,6 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 	// calculate Hdjg = distance(crane, prefabricated)
 	for i, crane := range cranes {
 		TB := 0.0
-		HDjg := make(map[string]float64, len(crane.BuildingName))
-
-		// the building names are prefabricated symbols
-		for _, prefabricatedName := range crane.BuildingName {
-			HDjg[prefabricatedName] = data.Distance2D(crane.Coordinate, locations[prefabricatedName].Coordinate)
-		}
 
 		// get number of floors and floor height
 		numberOfFloors := obj.Buildings[buildings[i]].NumberOfFloors
@@ -124,13 +116,13 @@ func (obj *HoistingObjective) Eval(locations map[string]data.Location) float64 {
 		for _, hoisting := range hoistingTime {
 			// calculate distance between hoisting and prefabricated
 			HDkg := data.Distance2D(hoisting.Coordinate, crane.Coordinate)
-
 			// calculate distance between demand and prefabricated
 			Djk := data.Distance2D(locations[hoisting.FacilitySymbol].Coordinate, hoisting.Coordinate)
 
-			Tag := 2 * (math.Abs(HDjg[hoisting.FacilitySymbol]-HDkg) / obj.Vag)
-			Twg := 2 * (1 / obj.Vwg) * math.Acos((HDjg[hoisting.FacilitySymbol]*HDjg[hoisting.FacilitySymbol]+HDkg*HDkg-Djk*Djk)/
-				(2*HDjg[hoisting.FacilitySymbol]*HDkg))
+			HDjg := data.Distance2D(crane.Coordinate, locations[hoisting.FacilitySymbol].Coordinate)
+			Tag := 2 * (math.Abs(HDjg-HDkg) / obj.Vag)
+			Twg := 2 * (1 / obj.Vwg) * math.Acos((HDjg*HDjg+HDkg*HDkg-Djk*Djk)/
+				(2*HDjg*HDkg))
 
 			Thg := max(Tag, Twg) + obj.AlphaHoisting*min(Tag, Twg)
 
@@ -157,7 +149,6 @@ func (obj *HoistingObjective) GetAlphaPenalty() float64 {
 type HoistingTimeWithInfo struct {
 	CraneSymbol  string
 	FilePath     string
-	Radius       float64
 	BuildingName []string
 }
 

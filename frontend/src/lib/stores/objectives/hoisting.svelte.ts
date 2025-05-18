@@ -1,8 +1,6 @@
 
 export interface ISelectedCrane {
     Name: string;
-    BuildingNames: string;
-    Radius: number;
     HoistingTimeFilePath: string;
     ForBuilding: string;
 }

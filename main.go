@@ -133,27 +133,25 @@ func constructionOptimization() {
 	// select TF that is crane (fixed locations only) - after Selection
 	// simulate selected crane
 	type SelectedCrane struct {
-		Name          string // for reference from FixedLocations
-		BuildingNames []string
-		Radius        float64
+		Name   string // for reference from FixedLocations
+		Radius float64
 	}
 
 	selectedCrane := []SelectedCrane{
 		{
-			Name:          "TF14-B1",
-			BuildingNames: []string{"TF4", "TF5", "TF8", "TF9", "TF10"},
-			Radius:        40,
+			Name:   "TF14-B1",
+			Radius: 40,
 		},
 	}
 
 	craneLocations := make([]data.Crane, 0)
 	for _, loc := range selectedCrane {
-		if _, ok := consLayObj.Locations[loc.Name]; ok {
+		craneLocName := strings.Split(loc.Name, "-")[0]
+		if _, ok := consLayObj.Locations[craneLocName]; ok {
 			craneLocations = append(craneLocations, data.Crane{
 				//Location:     craneLoc,
-				BuildingName: loc.BuildingNames,
-				Radius:       loc.Radius,
-				CraneSymbol:  loc.Name,
+				Radius:      loc.Radius,
+				CraneSymbol: loc.Name,
 			})
 		}
 	}

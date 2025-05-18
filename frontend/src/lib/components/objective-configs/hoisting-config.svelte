@@ -26,8 +26,8 @@
 
     // New building form data
     let newBuilding = $state<Building>({
-        NumberOfFloors: 10,
-        FloorHeight: 3.2,
+        NumberOfFloors: 0,
+        FloorHeight: 0,
         Name: ""
     })
 
@@ -89,8 +89,6 @@
         cranes.push({
             Id: Math.random().toString(),
             Name: "",
-            BuildingNames: "",
-            Radius: 0,
             HoistingTimeFilePath: "",
             ForBuilding: defaultBuilding.Name
         })
@@ -282,20 +280,6 @@
                                 <option value={building.Name}>{building.Name}</option>
                               {/each}
                             </select>
-                          </fieldset>
-                        </div>
-                        <div class="flex items-center">
-                          <fieldset class="fieldset flex flex-col">
-                            <legend class="fieldset-legend text-base">Facilities in the crane:</legend>
-                            <input type="text" class="input input-sm" placeholder="TF1 TF2"
-                                   bind:value={crane.BuildingNames}/>
-                          </fieldset>
-                        </div>
-                        <div class="flex items-center">
-                          <fieldset class="fieldset flex flex-col">
-                            <legend class="fieldset-legend text-base ">Crane's radius:</legend>
-                            <input type="number" class="input input-sm" placeholder="40"
-                                   bind:value={crane.Radius}/>
                           </fieldset>
                         </div>
                         <div class="flex items-center">

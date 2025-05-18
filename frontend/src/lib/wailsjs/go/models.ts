@@ -6,7 +6,7 @@ export namespace algorithms {
 	    MOAHA = "MOAHA",
 	    GWO = "GWO",
 	    oMOAHA = "oMOAHA",
-	    MOGWO = "MOGWO",
+	    MOPSO = "MOPSO",
 	    NSGAII = "NSGA-II",
 	}
 
@@ -58,13 +58,13 @@ export namespace data {
 
 export namespace main {
 	
-	export enum EventType {
-	    ProgressEvent = "ProgressEvent",
-	    ResultEvent = "ResultEvent",
-	}
 	export enum CommandType {
 	    ExportResult = "ExportResult",
 	    SaveChart = "SaveChart",
+	}
+	export enum EventType {
+	    ProgressEvent = "ProgressEvent",
+	    ResultEvent = "ResultEvent",
 	}
 	export class AlgorithmInput {
 	    algorithmName: algorithms.AlgorithmType;

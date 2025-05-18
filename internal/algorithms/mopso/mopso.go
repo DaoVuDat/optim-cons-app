@@ -97,6 +97,7 @@ type MOPSOAlgorithm struct {
 	Archive           []*objectives.Result
 	ObjectiveFunction objectives.Problem
 	MaxVelocity       []float64
+	MaxVelocityInfo   float64
 	// for multi-objective hypercubes
 	NumberOfGrids int
 	MutationRate  float64
@@ -133,6 +134,7 @@ func Create(
 		ObjectiveFunction: problem,
 		NumberOfGrids:     configs.NumberOfGrids,
 		MaxVelocity:       maxVelocity,
+		MaxVelocityInfo: configs.MaxVelocity,
 		MutationRate:      configs.MutationRate,
 		C1:                configs.C1,
 		C2:                configs.C2,
